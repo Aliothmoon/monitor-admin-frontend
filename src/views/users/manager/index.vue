@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <Breadcrumb :items="['监考员管理', '考生管理']" />
+    <Breadcrumb :items="['监考员管理', '考生管理']" direct />
     <a-card class="general-card" :title="'查询表格'">
       <a-row>
         <a-col :flex="1">
@@ -49,7 +49,7 @@
             </a-button>
             <a-upload action="/">
               <template #upload-button>
-                <a-button> 批量导入 </a-button>
+                <a-button> 批量导入</a-button>
               </template>
             </a-upload>
           </a-space>
@@ -67,6 +67,14 @@
       >
         <template #index="{ rowIndex }">
           {{ rowIndex + 1 + (pagination.current - 1) * pagination.pageSize }}
+        </template>
+
+        <template #updatedAt="{ record }">
+          {{ dayjs(record.createdAt).format("YYYY-MM-DD HH:mm:ss") }}
+        </template>
+
+        <template #createdAt="{ record }">
+          {{ dayjs(record.createdAt).format("YYYY-MM-DD HH:mm:ss") }}
         </template>
 
         <template #operation="{ rowIndex, record }">
@@ -138,6 +146,7 @@ import axios from "axios";
 import { TableDataInfo } from "@/api/types";
 import { useTrigger } from "@/utils/trigger";
 import { Message } from "@arco-design/web-vue";
+import dayjs from "dayjs";
 
 const generateFormModel = () => {
   return {
@@ -173,14 +182,14 @@ const columns = computed<TableColumnData[]>(() => [
     dataIndex: "username",
   },
   {
-    title: t("searchTable.columns.contentType"),
-    dataIndex: "contentType",
-    slotName: "contentType",
+    title: "创建时间",
+    align: "center",
+    slotName: "createdAt",
   },
   {
-    title: t("searchTable.columns.filterType"),
+    title: "上次修改",
     align: "center",
-    dataIndex: "filterType",
+    slotName: "updatedAt",
   },
   {
     title: "操作",

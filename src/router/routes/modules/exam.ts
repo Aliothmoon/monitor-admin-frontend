@@ -1,12 +1,12 @@
 import { AppRouteRecordRaw } from "@/router/routes/types";
 import { DEFAULT_LAYOUT } from "@/router/routes/base";
 
-const USERS: AppRouteRecordRaw = {
-  path: "/users",
-  name: "users",
+const EXAMS: AppRouteRecordRaw = {
+  path: "/exam",
+  name: "exam",
   component: DEFAULT_LAYOUT,
   meta: {
-    menuName: "用户管理",
+    menuName: "考试管理",
     icon: "icon-user",
     requiresAuth: true,
     order: 1,
@@ -14,7 +14,7 @@ const USERS: AppRouteRecordRaw = {
   children: [
     {
       path: "manage",
-      name: "manage",
+      name: "exam-manage",
       component: () => import("@/views/users/manager/index.vue"),
       meta: {
         locale: "manager.candidates",
@@ -22,17 +22,7 @@ const USERS: AppRouteRecordRaw = {
         roles: ["*"],
       },
     },
-    {
-      path: "candidate",
-      name: "candidate",
-      component: () => import("@/views/users/candidate/index.vue"),
-      meta: {
-        locale: "menu.user.setting",
-        requiresAuth: true,
-        roles: ["*"],
-      },
-    },
   ],
 };
 
-export default USERS;
+export default EXAMS;

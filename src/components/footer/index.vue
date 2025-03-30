@@ -1,5 +1,5 @@
 <template>
-  <a-layout-footer class="footer">我是footer</a-layout-footer>
+  <a-layout-footer class="footer">在线考试监考系统 v1.0</a-layout-footer>
 </template>
 
 <script lang="ts" setup></script>
