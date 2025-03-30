@@ -1,7 +1,7 @@
 <template>
   <div class="container">
-    <Breadcrumb :items="['menu.list', 'menu.list.searchTable']" />
-    <a-card class="general-card" :title="$t('menu.list.searchTable')">
+    <Breadcrumb :items="['监考员管理', '考生管理']" />
+    <a-card class="general-card" :title="'查询表格'">
       <a-row>
         <a-col :flex="1">
           <a-form
@@ -11,29 +11,9 @@
             label-align="left"
           >
             <a-row :gutter="16">
-              <a-col :span="8">
-                <a-form-item field="number" :label="'1'">
-                  <a-input v-model="formModel.number" />
-                </a-form-item>
-              </a-col>
-              <a-col :span="8">
-                <a-form-item field="name" :label="$t('searchTable.form.name')">
-                  <a-input
-                    v-model="formModel.name"
-                    :placeholder="$t('searchTable.form.name.placeholder')"
-                  />
-                </a-form-item>
-              </a-col>
-              <a-col :span="8">
-                <a-form-item
-                  field="contentType"
-                  :label="$t('searchTable.form.contentType')"
-                >
-                  <a-select
-                    v-model="formModel.contentType"
-                    :options="contentTypeOptions"
-                    :placeholder="$t('searchTable.form.selectDefault')"
-                  />
+              <a-col :span="12">
+                <a-form-item field="number" :label="'用户名'">
+                  <a-input v-model="formModel.username" />
                 </a-form-item>
               </a-col>
             </a-row>
@@ -61,388 +41,230 @@
       <a-row style="margin-bottom: 16px">
         <a-col :span="12">
           <a-space>
-            <a-button type="primary">
+            <a-button type="primary" @click="handleInsert">
               <template #icon>
                 <icon-plus />
               </template>
-              {{ $t('searchTable.operation.create') }}
+              新建
             </a-button>
-            <!--            <a-upload action="/">-->
-            <!--              <template #upload-button>-->
-            <!--                <a-button>-->
-            <!--                  {{ $t('searchTable.operation.import') }}-->
-            <!--                </a-button>-->
-            <!--              </template>-->
-            <!--            </a-upload>-->
-          </a-space>
-        </a-col>
-        <a-col
-          :span="12"
-          style="display: flex; align-items: center; justify-content: end"
-        >
-          <a-button>
-            <template #icon>
-              <icon-download />
-            </template>
-            {{ $t('searchTable.operation.download') }}
-          </a-button>
-          <a-tooltip :content="$t('searchTable.actions.refresh')">
-            <div class="action-icon" @click="search">
-              <icon-refresh size="18" />
-            </div>
-          </a-tooltip>
-          <a-dropdown @select="handleSelectDensity">
-            <a-tooltip :content="$t('searchTable.actions.density')">
-              <div class="action-icon">
-                <icon-line-height size="18" />
-              </div>
-            </a-tooltip>
-            <template #content>
-              <a-doption
-                v-for="item in densityList"
-                :key="item.value"
-                :value="item.value"
-                :class="{ active: item.value === size }"
-              >
-                <span>{{ item.name }}</span>
-              </a-doption>
-            </template>
-          </a-dropdown>
-          <a-tooltip :content="$t('searchTable.actions.columnSetting')">
-            <a-popover
-              trigger="click"
-              position="bl"
-              @popup-visible-change="popupVisibleChange"
-            >
-              <div class="action-icon">
-                <icon-settings size="18" />
-              </div>
-              <template #content>
-                <div id="tableSetting">
-                  <div
-                    v-for="(item, index) in showColumns"
-                    :key="item.dataIndex"
-                    class="setting"
-                  >
-                    <div style="margin-right: 4px; cursor: move">
-                      <icon-drag-arrow />
-                    </div>
-                    <div>
-                      <a-checkbox
-                        v-model="item.checked"
-                        @change="
-                          handleChange($event, item as TableColumnData, index)
-                        "
-                      >
-                      </a-checkbox>
-                    </div>
-                    <div class="title">
-                      {{ item.title === '#' ? '序列号' : item.title }}
-                    </div>
-                  </div>
-                </div>
+            <a-upload action="/">
+              <template #upload-button>
+                <a-button> 批量导入 </a-button>
               </template>
-            </a-popover>
-          </a-tooltip>
+            </a-upload>
+          </a-space>
         </a-col>
       </a-row>
       <a-table
         row-key="id"
         :loading="loading"
         :pagination="pagination"
-        :columns="(cloneColumns as TableColumnData[])"
+        :columns="columns"
         :data="renderData"
         :bordered="false"
-        :size="size"
-        @page-change="onPageChange"
+        :size="'medium'"
+        @page-change="fetchData"
       >
         <template #index="{ rowIndex }">
           {{ rowIndex + 1 + (pagination.current - 1) * pagination.pageSize }}
         </template>
-        <template #contentType="{ record }">
-          <a-space>
-            <a-avatar
-              v-if="record.contentType === 'img'"
-              :size="16"
-              shape="square"
-            >
-              <img
-                alt="avatar"
-                src="//p3-armor.byteimg.com/tos-cn-i-49unhts6dw/581b17753093199839f2e327e726b157.svg~tplv-49unhts6dw-image.image"
-              />
-            </a-avatar>
-            <a-avatar
-              v-else-if="record.contentType === 'horizontalVideo'"
-              :size="16"
-              shape="square"
-            >
-              <img
-                alt="avatar"
-                src="//p3-armor.byteimg.com/tos-cn-i-49unhts6dw/77721e365eb2ab786c889682cbc721c1.svg~tplv-49unhts6dw-image.image"
-              />
-            </a-avatar>
-            <a-avatar v-else :size="16" shape="square">
-              <img
-                alt="avatar"
-                src="//p3-armor.byteimg.com/tos-cn-i-49unhts6dw/ea8b09190046da0ea7e070d83c5d1731.svg~tplv-49unhts6dw-image.image"
-              />
-            </a-avatar>
-            {{ $t(`searchTable.form.contentType.${record.contentType}`) }}
-          </a-space>
-        </template>
-        <template #filterType="{ record }">
-          {{ $t(`searchTable.form.filterType.${record.filterType}`) }}
-        </template>
-        <template #status="{ record }">
-          <span v-if="record.status === 'offline'" class="circle"></span>
-          <span v-else class="circle pass"></span>
-          {{ $t(`searchTable.form.status.${record.status}`) }}
-        </template>
-        <template #operations>
-          <a-button v-permission="['admin']" type="text" size="small">
-            {{ $t('searchTable.columns.operations.view') }}
+
+        <template #operation="{ rowIndex, record }">
+          <a-button
+            @click="handleUpdate(record)"
+            type="primary"
+            style="margin-right: 10px"
+            size="small"
+          >
+            修改
+          </a-button>
+          <a-button
+            @click="handleRemove(record)"
+            type="primary"
+            status="danger"
+            size="small"
+          >
+            删除
           </a-button>
         </template>
       </a-table>
     </a-card>
+    <a-modal
+      v-model:visible="visible"
+      :title="upsertType == 'c' ? '新增' : '修改'"
+      :on-before-ok="handleCompete"
+    >
+      <a-form
+        :auto-label-width="true"
+        :model="upsertForm"
+        :size="'large'"
+        ref="upsertFormRef"
+      >
+        <a-form-item
+          field="account"
+          label="账号"
+          :rules="[{ required: true, message: '不能为空' }]"
+        >
+          <a-input v-model="upsertForm.account"></a-input>
+        </a-form-item>
+        <a-form-item
+          field="username"
+          label="用户名"
+          :rules="[{ required: true, message: '不能为空' }]"
+        >
+          <a-input v-model="upsertForm.username"></a-input>
+        </a-form-item>
+        <a-form-item
+          v-if="upsertType !== 'u'"
+          field="password"
+          label="密码"
+          :rules="[{ required: true, message: '不能为空' }]"
+        >
+          <a-input-password v-model="upsertForm.password"></a-input-password>
+        </a-form-item>
+      </a-form>
+    </a-modal>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, reactive, watch, nextTick } from 'vue';
-import { useI18n } from 'vue-i18n';
-import useLoading from '@/hooks/loading';
-import { queryPolicyList, PolicyRecord, PolicyParams } from '@/api/list';
-import { Pagination } from '@/types/global';
-import type { SelectOptionData } from '@arco-design/web-vue/es/select/interface';
-import type { TableColumnData } from '@arco-design/web-vue/es/table/interface';
-import cloneDeep from 'lodash/cloneDeep';
-import Sortable from 'sortablejs';
-
-type SizeProps = 'mini' | 'small' | 'medium' | 'large';
-type Column = TableColumnData & { checked?: true };
+import { computed, ref, reactive, watch, nextTick } from "vue";
+import { useI18n } from "vue-i18n";
+import useLoading from "@/hooks/loading";
+import { Pagination } from "@/types/global";
+import type { TableColumnData } from "@arco-design/web-vue/es/table/interface";
+import { MonitorUser } from "@/api/code/models/monitor-user";
+import axios from "axios";
+import { TableDataInfo } from "@/api/types";
+import { useTrigger } from "@/utils/trigger";
+import { Message } from "@arco-design/web-vue";
 
 const generateFormModel = () => {
   return {
-    number: '',
-    name: '',
-    contentType: '',
-    filterType: '',
-    createdTime: [],
-    status: '',
+    username: "",
   };
 };
 const { loading, setLoading } = useLoading(true);
 const { t } = useI18n();
-const renderData = ref<PolicyRecord[]>([]);
+const renderData = ref<Array<MonitorUser>>([]);
 const formModel = ref(generateFormModel());
-const cloneColumns = ref<Column[]>([]);
-const showColumns = ref<Column[]>([]);
 
-const size = ref<SizeProps>('medium');
-
-const basePagination: Pagination = {
+const pagination = reactive<Pagination>({
   current: 1,
-  pageSize: 20,
-};
-const pagination = reactive({
-  ...basePagination,
+  pageSize: 10,
 });
-const densityList = computed(() => [
-  {
-    name: t('searchTable.size.mini'),
-    value: 'mini',
-  },
-  {
-    name: t('searchTable.size.small'),
-    value: 'small',
-  },
-  {
-    name: t('searchTable.size.medium'),
-    value: 'medium',
-  },
-  {
-    name: t('searchTable.size.large'),
-    value: 'large',
-  },
-]);
+
 const columns = computed<TableColumnData[]>(() => [
   {
-    title: t('searchTable.columns.index'),
-    dataIndex: 'index',
-    slotName: 'index',
+    title: "序号",
+    dataIndex: "userId",
+    slotName: "index",
   },
   {
-    title: t('searchTable.columns.number'),
-    dataIndex: 'number',
+    title: "ID",
+    dataIndex: "userId",
   },
   {
-    title: t('searchTable.columns.name'),
-    dataIndex: 'name',
+    title: "账户",
+    dataIndex: "account",
   },
   {
-    title: t('searchTable.columns.contentType'),
-    dataIndex: 'contentType',
-    slotName: 'contentType',
+    title: "用户名",
+    dataIndex: "username",
   },
   {
-    title: t('searchTable.columns.filterType'),
-    dataIndex: 'filterType',
+    title: t("searchTable.columns.contentType"),
+    dataIndex: "contentType",
+    slotName: "contentType",
   },
   {
-    title: t('searchTable.columns.count'),
-    dataIndex: 'count',
+    title: t("searchTable.columns.filterType"),
+    align: "center",
+    dataIndex: "filterType",
   },
   {
-    title: t('searchTable.columns.createdTime'),
-    dataIndex: 'createdTime',
-  },
-  {
-    title: t('searchTable.columns.status'),
-    dataIndex: 'status',
-    slotName: 'status',
-  },
-  {
-    title: t('searchTable.columns.operations'),
-    dataIndex: 'operations',
-    slotName: 'operations',
+    title: "操作",
+    align: "center",
+    slotName: "operation",
   },
 ]);
-const contentTypeOptions = computed<SelectOptionData[]>(() => [
-  {
-    label: t('searchTable.form.contentType.img'),
-    value: 'img',
-  },
-  {
-    label: t('searchTable.form.contentType.horizontalVideo'),
-    value: 'horizontalVideo',
-  },
-  {
-    label: t('searchTable.form.contentType.verticalVideo'),
-    value: 'verticalVideo',
-  },
-]);
-const filterTypeOptions = computed<SelectOptionData[]>(() => [
-  {
-    label: t('searchTable.form.filterType.artificial'),
-    value: 'artificial',
-  },
-  {
-    label: t('searchTable.form.filterType.rules'),
-    value: 'rules',
-  },
-]);
-const statusOptions = computed<SelectOptionData[]>(() => [
-  {
-    label: t('searchTable.form.status.online'),
-    value: 'online',
-  },
-  {
-    label: t('searchTable.form.status.offline'),
-    value: 'offline',
-  },
-]);
-const fetchData = async (
-  params: PolicyParams = { current: 1, pageSize: 20 }
-) => {
+
+const fetchData = async () => {
   setLoading(true);
   try {
-    const { data } = await queryPolicyList(params);
-    renderData.value = data.list;
-    pagination.current = params.current;
+    const data = (await axios.post("/api/monitorUser/getPageData", {
+      pageNum: pagination.current,
+      pageSize: pagination.pageSize,
+    })) as TableDataInfo<MonitorUser>;
+
+    renderData.value = data!.rows!;
     pagination.total = data.total;
-  } catch (err) {
-    // you can report use errorHandler or other
   } finally {
     setLoading(false);
   }
 };
 
 const search = () => {
-  fetchData({
-    ...basePagination,
-    ...formModel.value,
-  } as unknown as PolicyParams);
-};
-const onPageChange = (current: number) => {
-  fetchData({ ...basePagination, current });
+  fetchData();
 };
 
+const [visible] = useTrigger();
+
 fetchData();
+watch(visible, () => {});
 const reset = () => {
   formModel.value = generateFormModel();
 };
 
-const handleSelectDensity = (
-  val: string | number | Record<string, any> | undefined,
-  e: Event
-) => {
-  size.value = val as SizeProps;
-};
+const getUpsertForm = () => ({
+  account: "",
+  username: "",
+  password: "",
+});
+const upsertForm = ref(getUpsertForm());
+const upsertFormRef = ref();
+const upsertType = ref<"c" | "u">("c");
 
-const handleChange = (
-  checked: boolean | (string | boolean | number)[],
-  column: Column,
-  index: number
-) => {
-  if (!checked) {
-    cloneColumns.value = showColumns.value.filter(
-      (item) => item.dataIndex !== column.dataIndex
-    );
-  } else {
-    cloneColumns.value.splice(index, 0, column);
+const handleCompete = async () => {
+  const validate = await upsertFormRef.value.validate();
+  if (validate !== undefined) {
+    return false;
   }
+  const data = await (upsertType.value === "c"
+    ? axios.post("/api/monitorUser/save", upsertForm.value)
+    : axios.put("/api/monitorUser/update", upsertForm.value));
+
+  console.log(data);
+  Message.success(upsertType.value === "c" ? "创建成功" : "更新成功");
+
+  await fetchData();
+  return true;
+};
+const handleInsert = () => {
+  upsertForm.value = getUpsertForm();
+  visible.value = true;
+  upsertType.value = "c";
 };
 
-const exchangeArray = <T extends Array<any>>(
-  array: T,
-  beforeIdx: number,
-  newIdx: number,
-  isDeep = false
-): T => {
-  const newArray = isDeep ? cloneDeep(array) : array;
-  if (beforeIdx > -1 && newIdx > -1) {
-    // 先替换后面的，然后拿到替换的结果替换前面的
-    newArray.splice(
-      beforeIdx,
-      1,
-      newArray.splice(newIdx, 1, newArray[beforeIdx]).pop()
-    );
-  }
-  return newArray;
+const handleUpdate = (record: MonitorUser) => {
+  upsertForm.value = getUpsertForm();
+  visible.value = true;
+  // @ts-ignore
+  upsertForm.value = {
+    ...record,
+  };
+  upsertType.value = "u";
 };
-
-const popupVisibleChange = (val: boolean) => {
-  if (val) {
-    nextTick(() => {
-      const el = document.getElementById('tableSetting') as HTMLElement;
-      const sortable = new Sortable(el, {
-        onEnd(e: any) {
-          const { oldIndex, newIndex } = e;
-          exchangeArray(cloneColumns.value, oldIndex, newIndex);
-          exchangeArray(showColumns.value, oldIndex, newIndex);
-        },
-      });
-    });
-  }
+const handleRemove = async (record: MonitorUser) => {
+  const data = await axios.delete(`/api/monitorUser/remove/${record.userId}`);
+  await fetchData();
+  console.log(data);
 };
-
-watch(
-  () => columns.value,
-  (val) => {
-    cloneColumns.value = cloneDeep(val);
-    cloneColumns.value.forEach((item, index) => {
-      item.checked = true;
-    });
-    showColumns.value = cloneDeep(cloneColumns.value);
-  },
-  { deep: true, immediate: true }
-);
 </script>
 
 <script lang="ts">
 export default {
-  name: 'SearchTable',
+  name: "SearchTable",
 };
 </script>
 

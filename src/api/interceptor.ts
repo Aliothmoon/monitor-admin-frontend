@@ -11,9 +11,9 @@ export interface HttpResponse<T = unknown> {
   data: T;
 }
 
-if (import.meta.env.VITE_API_BASE_URL) {
-  axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL;
-}
+// if (import.meta.env.VITE_API_BASE_URL) {
+//   axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL;
+// }
 
 axios.interceptors.request.use(
   (config: AxiosRequestConfig) => {
@@ -40,7 +40,7 @@ axios.interceptors.response.use(
   (response: AxiosResponse<HttpResponse>) => {
     const res = response.data;
     // if the custom code is not 20000, it is judged as an error.
-    if (res.code !== 20000) {
+    if (res.code !== 0 && res.code !== 20000) {
       Message.error({
         content: res.msg || 'Error',
         duration: 5 * 1000,
