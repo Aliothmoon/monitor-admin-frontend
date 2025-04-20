@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container-form">
     <Breadcrumb :items="['监考员管理', '监考员管理']" direct />
     <a-card class="general-card" :title="'查询表格'">
       <a-row>
@@ -286,7 +286,7 @@ export default {
 </script>
 
 <style scoped lang="less">
-.container {
+.container-form {
   padding: 0 20px 20px 20px;
 }
 

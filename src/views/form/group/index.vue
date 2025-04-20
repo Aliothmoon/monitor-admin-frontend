@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container-form">
     <Breadcrumb :items="['menu.form', 'menu.form.group']" />
     <a-form ref="formRef" layout="vertical" :model="formData">
       <a-space direction="vertical" :size="16">
@@ -275,7 +275,7 @@
 </script>
 
 <style scoped lang="less">
-  .container {
+  .container-form {
     padding: 0 20px 40px 20px;
     overflow: hidden;
   }

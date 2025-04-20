@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container-form">
     <Breadcrumb :items="['menu.list', 'menu.list.cardList']" />
     <a-row :gutter="20" align="stretch">
       <a-col :span="24">
@@ -47,7 +47,7 @@
 </script>
 
 <style scoped lang="less">
-  .container {
+  .container-form {
     padding: 0 20px 20px 20px;
     :deep(.arco-list-content) {
       overflow-x: hidden;

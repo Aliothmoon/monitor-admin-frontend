@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container-form">
     <Breadcrumb :items="['menu.list', 'menu.list.searchTable']" />
     <a-card class="general-card" :title="$t('menu.list.searchTable')">
       <a-row>
@@ -484,7 +484,7 @@
 </script>
 
 <style scoped lang="less">
-  .container {
+  .container-form {
     padding: 0 20px 20px 20px;
   }
   :deep(.arco-table-th) {

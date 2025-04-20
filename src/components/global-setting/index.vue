@@ -1,7 +1,7 @@
 <template>
   <div v-if="!appStore.navbar" class="fixed-settings" @click="setVisible">
     <a-button type="primary">
-      <template #icon class="">
+      <template #icon >
         <icon-settings />
       </template>
     </a-button>

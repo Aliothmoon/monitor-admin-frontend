@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container-form">
     <div class="left-side">
       <div class="panel overview-panel">
         <a-row :gutter="16" class="welcome-section">
@@ -302,7 +302,7 @@ export default {
 </script>
 
 <style lang="less" scoped>
-.container {
+.container-form {
   background-color: var(--color-fill-2);
   padding: 16px 20px;
   display: flex;
@@ -464,7 +464,7 @@ export default {
 
 // 响应式
 @media screen and (max-width: 1200px) {
-  .container {
+  .container-form {
     flex-direction: column;
   }
   

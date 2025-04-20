@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container-form">
     <Breadcrumb :items="['menu.dashboard', 'menu.dashboard.monitor']" />
     <div class="layout">
       <div class="layout-left-side">
@@ -38,7 +38,7 @@
 </script>
 
 <style scoped lang="less">
-  .container {
+  .container-form {
     padding: 0 20px 20px 20px;
   }
 

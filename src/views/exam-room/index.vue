@@ -234,7 +234,7 @@ const handleRemove = async (record) => {
 </script>
 
 <template>
-  <div class="container"  >
+  <div class="container-form"  >
     <Breadcrumb :items="['考场管理']" direct />
     <a-card :title="'考场管理'">
       <a-row>
@@ -396,7 +396,7 @@ const handleRemove = async (record) => {
 </template>
 
 <style scoped lang="less">
-.container {
+.container-form {
   padding: 0 20px 20px 20px;
 }
 
