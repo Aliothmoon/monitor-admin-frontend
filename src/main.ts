@@ -14,6 +14,9 @@ import App from './App.vue';
 import '@/assets/style/global.less';
 import '@/api/interceptor';
 
+import '@/tailwind.css';
+
+
 const app = createApp(App);
 
 app.use(ArcoVue, {});

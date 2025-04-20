@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container-login">
     <div class="content">
       <div class="content-inner">
         <LoginForm />
@@ -17,9 +17,12 @@
 </script>
 
 <style lang="less" scoped>
-  .container {
+  .container-login {
     display: flex;
     height: 100vh;
+    width: 100vw;
+    align-items: center;
+    justify-content: center;
 
     .banner {
       width: 550px;
@@ -27,9 +30,9 @@
     }
 
     .content {
-      position: relative;
       display: flex;
       flex: 1;
+      width: 100%;
       align-items: center;
       justify-content: center;
       padding-bottom: 40px;
@@ -60,13 +63,3 @@
   }
 </style>
 
-<style lang="less" scoped>
-  // responsive
-  @media (max-width: @screen-lg) {
-    .container {
-      .banner {
-        width: 25%;
-      }
-    }
-  }
-</style>

@@ -8,7 +8,7 @@
               欢迎回来，{{ userInfo.name }} - 在线考试监考系统
             </a-typography-title>
             <a-typography-paragraph type="secondary">
-              当前有 <a-tag color="blue">{{ stats.activeExams }}</a-tag> 场考试需要监控
+              当前有 <a-tag color="blue" >{{ stats.activeExams }}</a-tag> 场考试需要监控
             </a-typography-paragraph>
           </a-col>
           <a-col :span="8" class="text-right">

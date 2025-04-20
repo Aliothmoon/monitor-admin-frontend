@@ -1,5 +1,5 @@
 <template>
-  <a-config-provider :locale="zhCN">
+  <a-config-provider :locale="zhCN" >
     <router-view />
     <global-setting />
   </a-config-provider>

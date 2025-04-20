@@ -234,7 +234,7 @@ const handleRemove = async (record) => {
 </script>
 
 <template>
-  <div class="container">
+  <div class="container"  >
     <Breadcrumb :items="['考场管理']" direct />
     <a-card :title="'考场管理'">
       <a-row>

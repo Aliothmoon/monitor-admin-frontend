@@ -46,6 +46,12 @@ export default defineConfig({
     "process.env": {},
   },
   css: {
+    postcss: {
+      plugins: [
+        require('tailwindcss'),
+        require('autoprefixer'),
+      ],
+    },
     preprocessorOptions: {
       less: {
         modifyVars: {
