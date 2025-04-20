@@ -2,10 +2,9 @@
   <div class="navbar">
     <div class="left-side">
       <a-space>
-        <img
-          alt="logo"
-          src="//p3-armor.byteimg.com/tos-cn-i-49unhts6dw/dfdba5317c0c20ce20e64fac803d52bc.svg~tplv-49unhts6dw-image.image"
-        />
+        <!--        LOGO -->
+        <img :width="30" :src="'/src/assets/logo.svg'"></img>
+<!--        <icon-computer size="" />-->
         <a-typography-title
           :style="{ margin: 0, fontSize: '18px' }"
           :heading="5"
@@ -99,16 +98,20 @@
         <a-dropdown trigger="click">
           <a-avatar
             :size="32"
-            :style="{ marginRight: '8px', cursor: 'pointer' }"
-          >
-            <img alt="avatar" :src="avatar" />
+            :style="{
+              marginRight: '8px',
+              cursor: 'pointer',
+              backgroundColor: avatarColor,
+              color: 'white'
+            }">
+            {{ userInitial }}
           </a-avatar>
           <template #content>
             <a-doption>
               <a-space @click="switchRoles">
                 <icon-tag />
                 <span>
-                  {{ $t('messageBox.switchRoles') }}
+                  {{ $t("messageBox.switchRoles") }}
                 </span>
               </a-space>
             </a-doption>
@@ -116,7 +119,7 @@
               <a-space @click="$router.push({ name: 'Info' })">
                 <icon-user />
                 <span>
-                  {{ $t('messageBox.userCenter') }}
+                  {{ $t("messageBox.userCenter") }}
                 </span>
               </a-space>
             </a-doption>
@@ -124,7 +127,7 @@
               <a-space @click="$router.push({ name: 'Setting' })">
                 <icon-settings />
                 <span>
-                  {{ $t('messageBox.userSettings') }}
+                  {{ $t("messageBox.userSettings") }}
                 </span>
               </a-space>
             </a-doption>
@@ -132,7 +135,7 @@
               <a-space @click="handleLogout">
                 <icon-export />
                 <span>
-                  {{ $t('messageBox.logout') }}
+                  {{ $t("messageBox.logout") }}
                 </span>
               </a-space>
             </a-doption>
@@ -144,114 +147,134 @@
 </template>
 
 <script lang="ts" setup>
-  import { computed, ref, inject } from 'vue';
-  import { Message } from '@arco-design/web-vue';
-  import { useDark, useToggle, useFullscreen } from '@vueuse/core';
-  import { useAppStore, useUserStore } from '@/store';
-  import { LOCALE_OPTIONS } from '@/locale';
-  import useLocale from '@/hooks/locale';
-  import useUser from '@/hooks/user';
-  import Menu from '@/components/menu/index.vue';
-  import MessageBox from '../message-box/index.vue';
+import { computed, ref, inject } from "vue";
+import { Message } from "@arco-design/web-vue";
+import { useDark, useToggle, useFullscreen } from "@vueuse/core";
+import { useAppStore, useUserStore } from "@/store";
+import { LOCALE_OPTIONS } from "@/locale";
+import useLocale from "@/hooks/locale";
+import useUser from "@/hooks/user";
+import Menu from "@/components/menu/index.vue";
+import MessageBox from "../message-box/index.vue";
 
-  const appStore = useAppStore();
-  const userStore = useUserStore();
-  const { logout } = useUser();
-  const { changeLocale, currentLocale } = useLocale();
-  const { isFullscreen, toggle: toggleFullScreen } = useFullscreen();
-  const locales = [...LOCALE_OPTIONS];
-  const avatar = computed(() => {
-    return userStore.avatar;
+const appStore = useAppStore();
+const userStore = useUserStore();
+
+const getColorHash = (str: string) => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const h = Math.abs(hash % 360);
+  return `hsl(${h}, 70%, 40%)`;
+};
+
+const userInitial = computed(() => {
+  return userStore.name?.[0]?.toUpperCase() || '';
+});
+
+const avatarColor = computed(() => {
+  return getColorHash(userStore.name || 'user');
+});
+const { logout } = useUser();
+const { changeLocale, currentLocale } = useLocale();
+const { isFullscreen, toggle: toggleFullScreen } = useFullscreen();
+const locales = [...LOCALE_OPTIONS];
+
+const topMenu = computed(() => appStore.topMenu && appStore.menu);
+
+const setVisible = () => {
+  appStore.updateSettings({ globalSettings: true });
+};
+const refBtn = ref();
+const triggerBtn = ref();
+const setPopoverVisible = () => {
+  const event = new MouseEvent("click", {
+    view: window,
+    bubbles: true,
+    cancelable: true,
   });
-  const topMenu = computed(() => appStore.topMenu && appStore.menu);
-
-  const setVisible = () => {
-    appStore.updateSettings({ globalSettings: true });
-  };
-  const refBtn = ref();
-  const triggerBtn = ref();
-  const setPopoverVisible = () => {
-    const event = new MouseEvent('click', {
-      view: window,
-      bubbles: true,
-      cancelable: true,
-    });
-    refBtn.value.dispatchEvent(event);
-  };
-  const handleLogout = () => {
-    logout();
-  };
-  const setDropDownVisible = () => {
-    const event = new MouseEvent('click', {
-      view: window,
-      bubbles: true,
-      cancelable: true,
-    });
-    triggerBtn.value.dispatchEvent(event);
-  };
-  const switchRoles = async () => {
-    const res = await userStore.switchRoles();
-    Message.success(res as string);
-  };
-  const toggleDrawerMenu = inject('toggleDrawerMenu') as () => void;
+  refBtn.value.dispatchEvent(event);
+};
+const handleLogout = () => {
+  logout();
+};
+const setDropDownVisible = () => {
+  const event = new MouseEvent("click", {
+    view: window,
+    bubbles: true,
+    cancelable: true,
+  });
+  triggerBtn.value.dispatchEvent(event);
+};
+const switchRoles = async () => {
+  const res = await userStore.switchRoles();
+  Message.success(res as string);
+};
+const toggleDrawerMenu = inject("toggleDrawerMenu") as () => void;
 </script>
 
 <style scoped lang="less">
-  .navbar {
-    display: flex;
-    justify-content: space-between;
-    height: 100%;
-    background-color: var(--color-bg-2);
-    border-bottom: 1px solid var(--color-border);
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  height: 100%;
+  background-color: var(--color-bg-2);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.left-side {
+  display: flex;
+  align-items: center;
+  padding-left: 20px;
+}
+
+.center-side {
+  flex: 1;
+}
+
+.right-side {
+  display: flex;
+  padding-right: 20px;
+  list-style: none;
+
+  :deep(.locale-select) {
+    border-radius: 20px;
   }
 
-  .left-side {
+  li {
     display: flex;
     align-items: center;
-    padding-left: 20px;
+    padding: 0 10px;
   }
 
-  .center-side {
-    flex: 1;
+  a {
+    color: var(--color-text-1);
+    text-decoration: none;
   }
 
-  .right-side {
-    display: flex;
-    padding-right: 20px;
-    list-style: none;
-    :deep(.locale-select) {
-      border-radius: 20px;
-    }
-    li {
-      display: flex;
-      align-items: center;
-      padding: 0 10px;
-    }
-
-    a {
-      color: var(--color-text-1);
-      text-decoration: none;
-    }
-    .nav-btn {
-      border-color: rgb(var(--gray-2));
-      color: rgb(var(--gray-8));
-      font-size: 16px;
-    }
-    .trigger-btn,
-    .ref-btn {
-      position: absolute;
-      bottom: 14px;
-    }
-    .trigger-btn {
-      margin-left: 14px;
-    }
+  .nav-btn {
+    border-color: rgb(var(--gray-2));
+    color: rgb(var(--gray-8));
+    font-size: 16px;
   }
+
+  .trigger-btn,
+  .ref-btn {
+    position: absolute;
+    bottom: 14px;
+  }
+
+  .trigger-btn {
+    margin-left: 14px;
+  }
+}
 </style>
 
 <style lang="less">
-  .message-popover {
-    .arco-popover-content {
-      margin-top: 0;
-    }
+.message-popover {
+  .arco-popover-content {
+    margin-top: 0;
   }
+}
 </style>

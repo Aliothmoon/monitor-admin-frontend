@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <Breadcrumb :items="['考试管理']" direct />
-    <a-card class="general-card" :title="'考试管理'">
+    <a-card :title="'考试管理'">
       <a-row>
         <a-col :flex="1">
           <a-form
@@ -103,12 +103,22 @@
             修改
           </a-button>
           <a-button
+            v-if="record.status !== 1"
             @click="handleRemove(record)"
             type="primary"
             status="danger"
             size="small"
           >
             删除
+          </a-button>
+          <a-button
+            v-else
+            @click="handleProctoring(record)"
+            type="primary"
+            status="success"
+            size="small"
+          >
+            监考
           </a-button>
         </template>
       </a-table>
@@ -176,6 +186,7 @@ import type { TableColumnData } from "@arco-design/web-vue/es/table/interface";
 import axios from "axios";
 import { Message } from "@arco-design/web-vue";
 import dayjs from "dayjs";
+import { useRouter } from "vue-router";
 
 // 导入考试相关API和类型
 import { Exam, getExamList, createExam, updateExam, deleteExam } from "./index";
@@ -360,6 +371,15 @@ const handleRemove = async (record: Exam) => {
     Message.error("删除失败");
   }
 };
+
+// 添加进入监考的处理函数
+const handleProctoring = (record: Exam) => {
+  console.log(`进入考试 ${record.id} (${record.name}) 的监考...`);
+  router.push({ path: "/proctoring-view", query: { examId: record.id } });
+  Message.info(`准备进入考试 ${record.name} 的监考页面`);
+};
+
+const router = useRouter();
 
 onMounted(() => {
   fetchData(1);

@@ -58,13 +58,49 @@ const mockExams: Exam[] = [
     duration: 120,
     status: 0,
   },
+  {
+    id: 5,
+    name: "网络安全基础知识",
+    description: "网络协议和常见安全威胁防范",
+    startTime: new Date("2024-02-15 13:00:00"),
+    endTime: new Date("2024-02-15 15:00:00"),
+    duration: 120,
+    status: 0,
+  },
+  {
+    id: 5,
+    name: "网络安全基础知识",
+    description: "网络协议和常见安全威胁防范",
+    startTime: new Date("2024-02-15 13:00:00"),
+    endTime: new Date("2024-02-15 15:00:00"),
+    duration: 120,
+    status: 0,
+  },
+  {
+    id: 5,
+    name: "网络安全基础知识",
+    description: "网络协议和常见安全威胁防范",
+    startTime: new Date("2024-02-15 13:00:00"),
+    endTime: new Date("2024-02-15 15:00:00"),
+    duration: 120,
+    status: 0,
+  },
+  {
+    id: 5,
+    name: "网络安全基础知识",
+    description: "网络协议和常见安全威胁防范",
+    startTime: new Date("2024-02-15 13:00:00"),
+    endTime: new Date("2024-02-15 15:00:00"),
+    duration: 120,
+    status: 0,
+  },
 ];
 
 // 获取考试列表
 export const getExamList = async (
-  current = 1, 
-  pageSize = 10, 
-  keyword = "", 
+  current = 1,
+  pageSize = 10,
+  keyword = "",
   status?: number,
   startDate?: Date,
   endDate?: Date
@@ -75,34 +111,39 @@ export const getExamList = async (
 
     // 筛选数据
     let filteredData = [...mockExams];
-    
+
     // 关键词搜索（名称和描述）
     if (keyword) {
-      filteredData = filteredData.filter(item => 
-        item.name.includes(keyword) || 
-        (item.description && item.description.includes(keyword))
+      filteredData = filteredData.filter(
+        (item) =>
+          item.name.includes(keyword) ||
+          (item.description && item.description.includes(keyword))
       );
     }
-    
+
     // 状态筛选
     if (status !== undefined) {
-      filteredData = filteredData.filter(item => item.status === status);
+      filteredData = filteredData.filter((item) => item.status === status);
     }
-    
+
     // 时间范围筛选
     if (startDate) {
-      filteredData = filteredData.filter(item => new Date(item.startTime) >= new Date(startDate));
+      filteredData = filteredData.filter(
+        (item) => new Date(item.startTime) >= new Date(startDate)
+      );
     }
-    
+
     if (endDate) {
-      filteredData = filteredData.filter(item => new Date(item.endTime) <= new Date(endDate));
+      filteredData = filteredData.filter(
+        (item) => new Date(item.endTime) <= new Date(endDate)
+      );
     }
 
     // 模拟分页数据
     const start = (current - 1) * pageSize;
     const end = start + pageSize;
     const data = filteredData.slice(start, end);
-    
+
     return {
       data,
       total: filteredData.length,
