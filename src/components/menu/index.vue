@@ -120,7 +120,7 @@ export default defineComponent({
                       icon,
                       title: () => {
                         if (element?.meta?.menuName) {
-                          return element?.meta?.menuName;
+                          return h(compile(element?.meta?.menuName));
                         }
                         return h(compile(t(element?.meta?.locale || "")));
                       },
