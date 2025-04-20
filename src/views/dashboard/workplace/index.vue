@@ -4,37 +4,49 @@
       <div class="panel">
         <Banner />
         <DataPanel />
-        <ContentChart />
+<!--        <ContentChart />-->
       </div>
-      <a-grid :cols="24" :col-gap="16" :row-gap="16" style="margin-top: 16px">
-        <a-grid-item
-          :span="{ xs: 24, sm: 24, md: 24, lg: 12, xl: 12, xxl: 12 }"
-        >
-          <PopularContent />
-        </a-grid-item>
-        <a-grid-item
-          :span="{ xs: 24, sm: 24, md: 24, lg: 12, xl: 12, xxl: 12 }"
-        >
-          <CategoriesPercent />
-        </a-grid-item>
+      <a-row :gutter="24" class="monitor-stats">
+          <a-col :span="6">
+            <a-statistic
+              title="当前考试场次"
+              :value="stats.activeExams"
+              value-style="color: #0D6EFD"
+            />
+          </a-col>
+          <a-col :span="6">
+            <a-statistic
+              title="异常事件"
+              :value="stats.anomalies"
+              value-style="color: #DC3545"
+            />
+          </a-col>
+          <a-col :span="6">
+            <a-statistic
+              title="监考员在线"
+              :value="`${stats.onlineProctors}/${stats.totalProctors}`"
+              value-style="color: #198754"
+            />
+          </a-col>
+          <a-col :span="6">
+            <a-statistic
+              title="考生在线"
+              :value="stats.onlineCandidates"
+              value-style="color: #FFC107"
+            />
+          </a-col>
+        </a-row>
+        <a-grid :cols="24" :col-gap="16" :row-gap="16" style="margin-top: 16px">
+        
       </a-grid>
     </div>
     <div class="right-side">
       <a-grid :cols="24" :row-gap="16">
         <a-grid-item :span="24">
-          <div class="panel moduler-wrap">
-            <QuickOperation />
-            <RecentlyVisited />
-          </div>
+          <ExamMonitoring :stats="stats" />
         </a-grid-item>
-        <a-grid-item class="panel" :span="24">
-          <Carousel />
-        </a-grid-item>
-        <a-grid-item class="panel" :span="24">
-          <Announcement />
-        </a-grid-item>
-        <a-grid-item class="panel" :span="24">
-          <Docs />
+        <a-grid-item :span="24">
+          <AnomalyTrack :anomalies="stats.recentAnomalies" />
         </a-grid-item>
       </a-grid>
     </div>
@@ -42,22 +54,63 @@
 </template>
 
 <script lang="ts" setup>
+import { ref } from 'vue';
+import { getMonitorStats } from './index';
   import Banner from './components/banner.vue';
   import DataPanel from './components/data-panel.vue';
   import ContentChart from './components/content-chart.vue';
-  import PopularContent from './components/popular-content.vue';
-  import CategoriesPercent from './components/categories-percent.vue';
-  import RecentlyVisited from './components/recently-visited.vue';
-  import QuickOperation from './components/quick-operation.vue';
-  import Announcement from './components/announcement.vue';
-  import Carousel from './components/carousel.vue';
-  import Docs from './components/docs.vue';
+  import ExamMonitoring from './components/exam-monitoring.vue';
+  import AnomalyTrack from './components/anomaly-track.vue';
+
+
+const loading = ref(true);
+
+const stats = ref({
+  activeExams: 0,
+  anomalies: 0,
+  onlineProctors: 0,
+  totalProctors: 0,
+  onlineCandidates: 0
+});
+
+const fetchStats = async () => {
+  try {
+    const { data } = await getMonitorStats();
+    stats.value = data;
+  } finally {
+    loading.value = false;
+  }
+};
+
+fetchStats();
 </script>
 
 <script lang="ts">
   export default {
     name: 'Dashboard', // If you want the include property of keep-alive to take effect, you must name the component
   };
+
+
+const loading = ref(true);
+
+const stats = ref({
+  activeExams: 0,
+  anomalies: 0,
+  onlineProctors: 0,
+  totalProctors: 0,
+  onlineCandidates: 0
+});
+
+const fetchStats = async () => {
+  try {
+    const { data } = await getMonitorStats();
+    stats.value = data;
+  } finally {
+    loading.value = false;
+  }
+};
+
+fetchStats();
 </script>
 
 <style lang="less" scoped>

@@ -1,7 +1,6 @@
 <template>
   <div class="login-form-wrapper">
-    <div class="login-form-title">{{ $t('login.form.title') }}</div>
-    <div class="login-form-sub-title">{{ $t('login.form.title') }}</div>
+    <div class="login-form-title">在线考试监考系统管理后台</div>
     <div class="login-form-error-msg">{{ errorMessage }}</div>
     <a-form
       ref="loginForm"
@@ -18,7 +17,7 @@
       >
         <a-input
           v-model="userInfo.username"
-          :placeholder="$t('login.form.userName.placeholder')"
+          :placeholder="'请输入用户名'"
         >
           <template #prefix>
             <icon-user />
@@ -33,7 +32,7 @@
       >
         <a-input-password
           v-model="userInfo.password"
-          :placeholder="$t('login.form.password.placeholder')"
+          :placeholder="'请输入密码'"
           allow-clear
         >
           <template #prefix>
@@ -50,13 +49,9 @@
           >
             {{ $t('login.form.rememberPassword') }}
           </a-checkbox>
-          <a-link>{{ $t('login.form.forgetPassword') }}</a-link>
         </div>
         <a-button type="primary" html-type="submit" long :loading="loading">
-          {{ $t('login.form.login') }}
-        </a-button>
-        <a-button type="text" long class="login-form-register-btn">
-          {{ $t('login.form.register') }}
+          {{ '登录' }}
         </a-button>
       </a-space>
     </a-form>

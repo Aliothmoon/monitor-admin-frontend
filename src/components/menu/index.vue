@@ -97,34 +97,51 @@ export default defineComponent({
             const icon = element?.meta?.icon
               ? () => h(compile(`<${element?.meta?.icon}/>`))
               : null;
-            const node =
-              element?.children && element?.children.length !== 0 ? (
-                <a-sub-menu
-                  key={element?.name}
-                  v-slots={{
-                    icon,
-                    title: () => {
-                      if (element?.meta?.menuName) {
-                        return element?.meta?.menuName;
-                      }
-                      return h(compile(t(element?.meta?.locale || "")));
-                    },
-                  }}
-                >
-                  {travel(element?.children)}
-                </a-sub-menu>
-              ) : (
-                <a-menu-item
-                  key={element?.name}
-                  v-slots={{ icon }}
-                  onClick={() => goto(element)}
-                >
-                  { element?.meta?.menuName || t(element?.meta?.locale || "")  }
-                </a-menu-item>
-              );
-            nodes.push(node as never);
+
+            if (element.meta?.single) {
+              const single = element.children!.at(0)
+              nodes.push((
+                  <a-menu-item
+                      key={single.name}
+                      v-slots={{ icon }}
+                      onClick={() => goto(single)}
+                  >
+                    <div>
+                      {element?.meta?.menuName || t(element?.meta?.locale || "")}
+                    </div>
+                  </a-menu-item>
+              ) as never);
+            } else {
+              const node =
+                element?.children && element?.children.length !== 0 ? (
+                  <a-sub-menu
+                    key={element?.name}
+                    v-slots={{
+                      icon,
+                      title: () => {
+                        if (element?.meta?.menuName) {
+                          return element?.meta?.menuName;
+                        }
+                        return h(compile(t(element?.meta?.locale || "")));
+                      },
+                    }}
+                  >
+                    {travel(element?.children)}
+                  </a-sub-menu>
+                ) : (
+                  <a-menu-item
+                    key={element?.name}
+                    v-slots={{ icon }}
+                    onClick={() => goto(element)}
+                  >
+                    {element?.meta?.menuName || t(element?.meta?.locale || "")}
+                  </a-menu-item>
+                );
+              nodes.push(node as never);
+            }
           });
         }
+
         return nodes;
       }
 
@@ -136,7 +153,7 @@ export default defineComponent({
         mode={topMenu.value ? "horizontal" : "vertical"}
         v-model:collapsed={collapsed.value}
         v-model:open-keys={openKeys.value}
-        show-collapse-button={appStore.device !== "mobile"}
+        show-collapse-button={true}
         auto-open={false}
         selected-keys={selectedKey.value}
         auto-open-selected={true}

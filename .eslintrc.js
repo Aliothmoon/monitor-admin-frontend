@@ -61,7 +61,7 @@ module.exports = {
       {
         js: 'never',
         jsx: 'never',
-        ts: 'api/code/**',
+        ts: 'never',
         tsx: 'never',
       },
     ],

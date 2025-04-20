@@ -17,7 +17,7 @@ const USERS: AppRouteRecordRaw = {
       name: "manage",
       component: () => import("@/views/users/manager/index.vue"),
       meta: {
-        locale: "manager.candidates",
+        menuName: "监考员管理",
         requiresAuth: true,
         roles: ["*"],
       },
@@ -27,7 +27,7 @@ const USERS: AppRouteRecordRaw = {
       name: "candidate",
       component: () => import("@/views/users/candidate/index.vue"),
       meta: {
-        locale: "menu.user.setting",
+        menuName: "考生管理",
         requiresAuth: true,
         roles: ["*"],
       },

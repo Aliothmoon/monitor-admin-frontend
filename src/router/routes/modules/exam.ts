@@ -7,18 +7,17 @@ const EXAMS: AppRouteRecordRaw = {
   component: DEFAULT_LAYOUT,
   meta: {
     menuName: "考试管理",
-    icon: "icon-user",
-    requiresAuth: true,
+    icon: "icon-user-group",
     order: 1,
+    single: true,
   },
   children: [
     {
       path: "manage",
       name: "exam-manage",
-      component: () => import("@/views/users/manager/index.vue"),
+      component: () => import("@/views/exam/index.vue"),
       meta: {
-        locale: "manager.candidates",
-        requiresAuth: true,
+        menuName:"考试管理",
         roles: ["*"],
       },
     },

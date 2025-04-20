@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <Breadcrumb :items="['监考员管理', '考生管理']" direct />
+    <Breadcrumb :items="['监考员管理', '监考员管理']" direct />
     <a-card class="general-card" :title="'查询表格'">
       <a-row>
         <a-col :flex="1">
@@ -12,7 +12,12 @@
           >
             <a-row :gutter="16">
               <a-col :span="12">
-                <a-form-item field="number" :label="'用户名'">
+                <a-form-item field="account" :label="'账户'">
+                  <a-input v-model="formModel.account" />
+                </a-form-item>
+              </a-col>
+              <a-col :span="12">
+                <a-form-item field="username" :label="'用户名'">
                   <a-input v-model="formModel.username" />
                 </a-form-item>
               </a-col>
@@ -142,19 +147,20 @@ import useLoading from "@/hooks/loading";
 import { Pagination } from "@/types/global";
 import type { TableColumnData } from "@arco-design/web-vue/es/table/interface";
 import { MonitorUser } from "@/api/code/models/monitor-user";
-import axios from "axios";
+import { getMonitorUserPageData, saveMonitorUser, updateMonitorUser, removeMonitorUser } from "@/views/users/manager/index";
 import { TableDataInfo } from "@/api/types";
 import { useTrigger } from "@/utils/trigger";
 import { Message } from "@arco-design/web-vue";
 import dayjs from "dayjs";
 
+
 const generateFormModel = () => {
   return {
     username: "",
+    account: "",
   };
 };
 const { loading, setLoading } = useLoading(true);
-const { t } = useI18n();
 const renderData = ref<Array<MonitorUser>>([]);
 const formModel = ref(generateFormModel());
 
@@ -201,12 +207,14 @@ const columns = computed<TableColumnData[]>(() => [
 const fetchData = async () => {
   setLoading(true);
   try {
-    const data = (await axios.post("/api/monitorUser/getPageData", {
-      pageNum: pagination.current,
-      pageSize: pagination.pageSize,
-    })) as TableDataInfo<MonitorUser>;
+    const data = await getMonitorUserPageData(
+      pagination.current,
+      pagination.pageSize,
+      formModel.value.username || undefined,
+      formModel.value.account || undefined
+    );
 
-    renderData.value = data!.rows!;
+    renderData.value = data.rows;
     pagination.total = data.total;
   } finally {
     setLoading(false);
@@ -240,8 +248,8 @@ const handleCompete = async () => {
     return false;
   }
   const data = await (upsertType.value === "c"
-    ? axios.post("/api/monitorUser/save", upsertForm.value)
-    : axios.put("/api/monitorUser/update", upsertForm.value));
+    ? saveMonitorUser(upsertForm.value)
+    : updateMonitorUser(upsertForm.value));
 
   console.log(data);
   Message.success(upsertType.value === "c" ? "创建成功" : "更新成功");
@@ -265,7 +273,7 @@ const handleUpdate = (record: MonitorUser) => {
   upsertType.value = "u";
 };
 const handleRemove = async (record: MonitorUser) => {
-  const data = await axios.delete(`/api/monitorUser/remove/${record.userId}`);
+  const data = await removeMonitorUser(record.userId!);
   await fetchData();
   console.log(data);
 };
