@@ -13,7 +13,7 @@ const formModel = ref({
 // 分页参数
 const pagination = reactive<Pagination>({
   current: 1,
-  pageSize: 6,
+  pageSize: 24,
   total: 0,
 });
 
@@ -96,7 +96,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="container-form">
+  <div class="container-form" id="many-monitor-container">
     <Breadcrumb :items="['考场监控', '多人监控']" direct />
     <a-card class="general-card" :title="'多人考场监控'">
       <a-row>
@@ -150,7 +150,7 @@ onMounted(() => {
             </a-button>
             <a-button status="warning">
               <template #icon>
-                <icon-alert />
+                <icon-exclamation-circle-fill />
               </template>
               查看异常
             </a-button>
@@ -164,104 +164,108 @@ onMounted(() => {
         </a-col>
       </a-row>
 
-      <a-spin :loading="loading">
-        <div class="monitor-cards-wrapper">
-          <div
-            v-for="candidate in monitoringCards"
-            :key="candidate.id"
-            class="monitor-card"
-          >
-            <div class="monitor-card-video">
-              <div class="video-container">
-                <img
-                  v-if="!playingVideos.has(candidate.id)"
-                  :src="candidate.screenshot"
-                  alt="监控画面"
-                  class="video-screenshot"
-                />
-                <div v-else class="live-video">
-                  <img
-                    :src="candidate.screenshot"
-                    alt="实时监控"
-                    class="live-stream"
-                  />
-                  <div class="live-indicator">直播中</div>
-                </div>
+      <div class="flex w-full justify-center">
+        <a-spin :loading="loading">
+            <div class="monitor-cards-wrapper w-full" >
+                  <div
+                      v-for="candidate in monitoringCards"
+                      :key="candidate.id"
+                      class="monitor-card"
+                  >
+                    <div class="monitor-card-video">
+                      <div class="video-container">
+                        <img
+                            v-if="!playingVideos.has(candidate.id)"
+                            :src="candidate.screenshot"
+                            alt="监控画面"
+                            class="video-screenshot"
+                        />
+                        <div v-else class="live-video">
+                          <img
+                              :src="candidate.screenshot"
+                              alt="实时监控"
+                              class="live-stream"
+                          />
+                          <div class="live-indicator">直播中</div>
+                        </div>
 
-                <div class="video-controls">
-                  <a-button
-                    :type="
+                        <div class="video-controls">
+                          <a-button
+                              :type="
                       playingVideos.has(candidate.id) ? 'primary' : 'outline'
                     "
-                    shape="circle"
-                    @click="toggleVideoPlay(candidate)"
-                  >
-                    <template #icon>
-                      <icon-pause v-if="playingVideos.has(candidate.id)" />
-                      <icon-play-arrow v-else />
-                    </template>
-                  </a-button>
-                </div>
-              </div>
+                              shape="circle"
+                              @click="toggleVideoPlay(candidate)"
+                          >
+                            <template #icon>
+                              <icon-pause v-if="playingVideos.has(candidate.id)" />
+                              <icon-play-arrow v-else />
+                            </template>
+                          </a-button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="monitor-card-info">
+                      <div class="candidate-info">
+                        <a-space direction="vertical" fill>
+                          <a-row justify="space-between">
+                            <a-col :span="16">
+                              <a-space>
+                                <a-avatar :size="24">{{
+                                    candidate.name.charAt(0)
+                                  }}</a-avatar>
+                                <span class="candidate-name">{{ candidate.name }}</span>
+                              </a-space>
+                            </a-col>
+                            <a-col :span="8" class="text-right">
+                              <a-tag :color="getStatusColor(candidate.status)">
+                                {{ getStatusText(candidate.status) }}
+                              </a-tag>
+                            </a-col>
+                          </a-row>
+
+                          <a-row justify="space-between">
+                            <a-col :span="14">考号: {{ candidate.examId }}</a-col>
+                            <a-col :span="10" class="text-right">
+                              <a-tag
+                                  v-if="candidate.riskLevel !== 'none'"
+                                  :color="getRiskLevelColor(candidate.riskLevel)"
+                              >
+                                {{ getRiskLevelText(candidate.riskLevel) }}
+                              </a-tag>
+                            </a-col>
+                          </a-row>
+
+                          <a-row v-if="candidate.riskDescription">
+                            <a-col :span="24" class="risk-description">
+                              <icon-exclamation-circle-fill
+                                  style="color: #f53f3f; margin-right: 4px"
+                              />
+                              {{ candidate.riskDescription }}
+                            </a-col>
+                          </a-row>
+                        </a-space>
+                      </div>
+                    </div>
+                  </div>
             </div>
 
-            <div class="monitor-card-info">
-              <div class="candidate-info">
-                <a-space direction="vertical" fill>
-                  <a-row justify="space-between">
-                    <a-col :span="16">
-                      <a-space>
-                        <a-avatar :size="24">{{
-                          candidate.name.charAt(0)
-                        }}</a-avatar>
-                        <span class="candidate-name">{{ candidate.name }}</span>
-                      </a-space>
-                    </a-col>
-                    <a-col :span="8" class="text-right">
-                      <a-tag :color="getStatusColor(candidate.status)">
-                        {{ getStatusText(candidate.status) }}
-                      </a-tag>
-                    </a-col>
-                  </a-row>
-
-                  <a-row justify="space-between">
-                    <a-col :span="14">考号: {{ candidate.examId }}</a-col>
-                    <a-col :span="10" class="text-right">
-                      <a-tag
-                        v-if="candidate.riskLevel !== 'none'"
-                        :color="getRiskLevelColor(candidate.riskLevel)"
-                      >
-                        {{ getRiskLevelText(candidate.riskLevel) }}
-                      </a-tag>
-                    </a-col>
-                  </a-row>
-
-                  <a-row v-if="candidate.riskDescription">
-                    <a-col :span="24" class="risk-description">
-                      <icon-exclamation-circle-fill
-                        style="color: #f53f3f; margin-right: 4px"
-                      />
-                      {{ candidate.riskDescription }}
-                    </a-col>
-                  </a-row>
-                </a-space>
-              </div>
+            <div class="pagination-container">
+              <a-pagination
+                  v-model:current="pagination.current"
+                  v-model:page-size="pagination.pageSize"
+                  :total="pagination.total"
+                  show-total
+                  :page-size-options="[6, 12, 18]"
+                  @change="handlePageChange"
+              />
             </div>
-          </div>
-        </div>
-
-        <div class="pagination-container">
-          <a-pagination
-            v-model:current="pagination.current"
-            v-model:page-size="pagination.pageSize"
-            :total="pagination.total"
-            show-total
-            :page-size-options="[6, 12, 18]"
-            @change="handlePageChange"
-          />
-        </div>
-      </a-spin>
+        </a-spin>
+      </div>
     </a-card>
+
+    <a-back-top target-container="#many-monitor-container" :style="{position:'absolute'}" />
   </div>
 </template>
 
@@ -275,12 +279,13 @@ onMounted(() => {
   flex-wrap: wrap;
   gap: 16px;
   margin-bottom: 16px;
-  justify-content: flex-start;
+  justify-content: start;
 }
 
 .monitor-card {
-  width: calc((100% - 64px) / 5);
-  height: 300px;
+  flex-basis: calc(25% - 12px);
+  min-width: 180px;
+  min-height: 60px;
   border-radius: 4px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   overflow: hidden;
@@ -288,22 +293,12 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   margin-bottom: 0;
-  flex-grow: 0;
-  flex-shrink: 0;
-}
-
-/* 创建空白占位元素，用于填充最后一行 */
-.monitor-cards-wrapper::after {
-  content: "";
-  flex: 0 0 calc((100% - 64px) / 5);
-  height: 0;
-  visibility: hidden;
 }
 
 .monitor-card-video {
   position: relative;
   width: 100%;
-  height: 160px;
+  height: 180px;
   overflow: hidden;
 }
 
@@ -366,53 +361,23 @@ onMounted(() => {
   margin-top: 16px;
 }
 
-@media screen and (max-width: 1600px) {
-  .monitor-card {
-    width: calc((100% - 48px) / 4);
-    height: 310px;
-  }
-  
-  .monitor-card-video {
-    height: 170px;
-  }
-  
-  .monitor-cards-wrapper::after {
-    flex: 0 0 calc((100% - 48px) / 4);
-  }
-}
-
 @media screen and (max-width: 1400px) {
   .monitor-card {
-    width: calc((100% - 32px) / 3);
-    height: 320px;
-  }
-  
-  .monitor-card-video {
-    height: 180px;
-  }
-  
-  .monitor-cards-wrapper::after {
-    flex: 0 0 calc((100% - 32px) / 3);
+    flex-basis: calc(33.333% - 11px);
+    min-height: 320px;
   }
 }
   
 @media screen and (max-width: 1100px) {
   .monitor-card {
-    width: calc((100% - 16px) / 2);
-  }
-  
-  .monitor-cards-wrapper::after {
-    flex: 0 0 calc((100% - 16px) / 2);
+    flex-basis: calc(50% - 8px);
   }
 }
   
 @media screen and (max-width: 768px) {
   .monitor-card {
-    width: 100%;
-  }
-  
-  .monitor-cards-wrapper::after {
-    display: none;
+    flex-basis: 100%;
+    min-width: unset;
   }
 }
 </style>
