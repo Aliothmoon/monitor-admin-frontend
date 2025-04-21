@@ -4,6 +4,7 @@ import { Pagination } from "@/types/global";
 import { Candidate, getCandidateList, getStatusColor, getStatusText, getRiskLevelColor, getRiskLevelText } from "./index";
 import useLoading from "@/hooks/loading";
 import { Message } from "@arco-design/web-vue";
+import router from "@/router";
 
 // 搜索表单
 const formModel = ref({
@@ -206,7 +207,7 @@ onMounted(() => {
                       </div>
                     </div>
 
-                    <div class="monitor-card-info">
+                    <div class="monitor-card-info" @click="router.push({name: 'online-monitor-watch'})">
                       <div class="candidate-info">
                         <a-space direction="vertical" fill>
                           <a-row justify="space-between">

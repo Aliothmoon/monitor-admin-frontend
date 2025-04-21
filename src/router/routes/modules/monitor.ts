@@ -17,6 +17,7 @@ const EXAM_ROOM: AppRouteRecordRaw = {
       name: "online-monitor-watch",
       component: () => import("@/views/monitor/single/index.vue"),
       meta: {
+        hideInMenu: true,
         menuName: "单人监控",
         roles: ["*"],
       },
