@@ -1,6 +1,6 @@
 <template>
   <div class="container-form">
-    <Breadcrumb :items="['个人中心', '监考员设置']" />
+    <Breadcrumb :items="['个人中心', '监考员设置']"  />
     <a-row style="margin-bottom: 16px">
       <a-col :span="24">
         <UserPanel />

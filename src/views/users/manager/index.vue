@@ -1,6 +1,6 @@
 <template>
   <div class="container-form">
-    <Breadcrumb :items="['监考员管理', '监考员管理']" direct />
+    <Breadcrumb :items="['监考员管理', '监考员管理']" />
     <a-card class="general-card" :title="'查询表格'">
       <a-row>
         <a-col :flex="1">

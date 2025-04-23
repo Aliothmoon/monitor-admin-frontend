@@ -26,7 +26,7 @@ import locale500 from '@/views/exception/500/locale/zh-CN';
 import localeUserInfo from '@/views/user/info/locale/zh-CN';
 import localeUserSetting from '@/views/user/setting/locale/zh-CN';
 
-import localeSettings from './zh-CN/settings';
+import localeSettings from './settings';
 
 export default {
   'menu.dashboard': '仪表盘',

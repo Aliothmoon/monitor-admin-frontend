@@ -72,7 +72,7 @@
   } from '@arco-design/web-vue/es/upload/interfaces';
   import { useUserStore } from '@/store';
   import { userUploadApi } from '@/api/user-center';
-  import type { DescData } from '@arco-design/web-vue/es/descriptions/interface';
+  import { createProctorPanelData } from '../columns';
 
   const userStore = useUserStore();
   const file = {
@@ -81,41 +81,8 @@
     url: userStore.avatar,
   };
   
-  // 更新渲染数据，显示更多监考员相关信息
-  const renderData = [
-    {
-      label: '用户名',
-      value: userStore.name,
-    },
-    {
-      label: '角色',
-      value: '监考员',
-    },
-    {
-      label: '账号ID',
-      value: userStore.accountId,
-    },
-    {
-      label: '状态',
-      value: '在线',
-    },
-    {
-      label: '实名认证',
-      value: userStore.certification,
-    },
-    {
-      label: '手机号码',
-      value: userStore.phone,
-    },
-    {
-      label: '所在学院',
-      value: '计算机学院',
-    },
-    {
-      label: '注册时间',
-      value: userStore.registrationDate,
-    },
-  ] as DescData[];
+  // 从columns.ts文件获取监考员信息面板数据
+  const renderData = createProctorPanelData(userStore);
   
   const fileList = ref<FileItem[]>([file]);
   const uploadChange = (fileItemList: FileItem[], fileItem: FileItem) => {
