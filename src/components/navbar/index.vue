@@ -3,30 +3,30 @@
     <div class="left-side">
       <a-space>
         <!--        LOGO -->
-        <img :width="30" :src="'/src/assets/logo.svg'"></img>
-<!--        <icon-computer size="" />-->
+        <img :src="'/src/assets/logo.svg'" :width="30"></img>
+        <!--        <icon-computer size="" />-->
         <a-typography-title
-          :style="{ margin: 0, fontSize: '18px' }"
-          :heading="5"
+            :heading="5"
+            :style="{ margin: 0, fontSize: '18px' }"
         >
           在线考试监考系统
         </a-typography-title>
         <icon-menu-fold
-          v-if="!topMenu && appStore.device === 'mobile'"
-          style="font-size: 22px; cursor: pointer"
-          @click="toggleDrawerMenu"
+            v-if="!topMenu && appStore.device === 'mobile'"
+            style="font-size: 22px; cursor: pointer"
+            @click="toggleDrawerMenu"
         />
       </a-space>
     </div>
     <div class="center-side">
-      <Menu v-if="topMenu" />
+      <Menu v-if="topMenu"/>
     </div>
     <ul class="right-side">
       <li>
         <a-tooltip :content="$t('settings.search')">
-          <a-button class="nav-btn" type="outline" :shape="'circle'">
+          <a-button :shape="'circle'" class="nav-btn" type="outline">
             <template #icon>
-              <icon-search />
+              <icon-search/>
             </template>
           </a-button>
         </a-tooltip>
@@ -37,45 +37,45 @@
           <div class="message-box-trigger">
             <a-badge :count="9" dot>
               <a-button
-                class="nav-btn"
-                type="outline"
-                :shape="'circle'"
-                @click="setPopoverVisible"
+                  :shape="'circle'"
+                  class="nav-btn"
+                  type="outline"
+                  @click="setPopoverVisible"
               >
-                <icon-notification />
+                <icon-notification/>
               </a-button>
             </a-badge>
           </div>
         </a-tooltip>
         <a-popover
-          trigger="click"
-          :arrow-style="{ display: 'none' }"
-          :content-style="{ padding: 0, minWidth: '400px' }"
-          content-class="message-popover"
+            :arrow-style="{ display: 'none' }"
+            :content-style="{ padding: 0, minWidth: '400px' }"
+            content-class="message-popover"
+            trigger="click"
         >
           <div ref="refBtn" class="ref-btn"></div>
           <template #content>
-            <message-box />
+            <message-box/>
           </template>
         </a-popover>
       </li>
       <li>
         <a-tooltip
-          :content="
+            :content="
             isFullscreen
               ? $t('settings.navbar.screen.toExit')
               : $t('settings.navbar.screen.toFull')
           "
         >
           <a-button
-            class="nav-btn"
-            type="outline"
-            :shape="'circle'"
-            @click="toggleFullScreen"
+              :shape="'circle'"
+              class="nav-btn"
+              type="outline"
+              @click="toggleFullScreen"
           >
             <template #icon>
-              <icon-fullscreen-exit v-if="isFullscreen" />
-              <icon-fullscreen v-else />
+              <icon-fullscreen-exit v-if="isFullscreen"/>
+              <icon-fullscreen v-else/>
             </template>
           </a-button>
         </a-tooltip>
@@ -83,13 +83,13 @@
       <li>
         <a-tooltip :content="$t('settings.title')">
           <a-button
-            class="nav-btn"
-            type="outline"
-            :shape="'circle'"
-            @click="setVisible"
+              :shape="'circle'"
+              class="nav-btn"
+              type="outline"
+              @click="setVisible"
           >
             <template #icon>
-              <icon-settings />
+              <icon-settings/>
             </template>
           </a-button>
         </a-tooltip>
@@ -97,8 +97,8 @@
       <li>
         <a-dropdown trigger="click">
           <a-avatar
-            :size="32"
-            :style="{
+              :size="32"
+              :style="{
               marginRight: '8px',
               cursor: 'pointer',
               backgroundColor: avatarColor,
@@ -109,7 +109,7 @@
           <template #content>
             <a-doption>
               <a-space @click="switchRoles">
-                <icon-tag />
+                <icon-tag/>
                 <span>
                   {{ $t("messageBox.switchRoles") }}
                 </span>
@@ -117,7 +117,7 @@
             </a-doption>
             <a-doption>
               <a-space @click="$router.push({ name: 'Info' })">
-                <icon-user />
+                <icon-user/>
                 <span>
                   {{ $t("messageBox.userCenter") }}
                 </span>
@@ -125,7 +125,7 @@
             </a-doption>
             <a-doption>
               <a-space @click="$router.push({ name: 'Setting' })">
-                <icon-settings />
+                <icon-settings/>
                 <span>
                   {{ $t("messageBox.userSettings") }}
                 </span>
@@ -133,7 +133,7 @@
             </a-doption>
             <a-doption>
               <a-space @click="handleLogout">
-                <icon-export />
+                <icon-export/>
                 <span>
                   {{ $t("messageBox.logout") }}
                 </span>
@@ -147,11 +147,11 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, inject } from "vue";
-import { Message } from "@arco-design/web-vue";
-import { useDark, useToggle, useFullscreen } from "@vueuse/core";
-import { useAppStore, useUserStore } from "@/store";
-import { LOCALE_OPTIONS } from "@/locale";
+import {computed, ref, inject} from "vue";
+import {Message} from "@arco-design/web-vue";
+import {useDark, useToggle, useFullscreen} from "@vueuse/core";
+import {useAppStore, useUserStore} from "@/store";
+import {LOCALE_OPTIONS} from "@/locale";
 import useLocale from "@/hooks/locale";
 import useUser from "@/hooks/user";
 import Menu from "@/components/menu/index.vue";
@@ -176,15 +176,15 @@ const userInitial = computed(() => {
 const avatarColor = computed(() => {
   return getColorHash(userStore.name || 'user');
 });
-const { logout } = useUser();
-const { changeLocale, currentLocale } = useLocale();
-const { isFullscreen, toggle: toggleFullScreen } = useFullscreen();
+const {logout} = useUser();
+const {changeLocale, currentLocale} = useLocale();
+const {isFullscreen, toggle: toggleFullScreen} = useFullscreen();
 const locales = [...LOCALE_OPTIONS];
 
 const topMenu = computed(() => appStore.topMenu && appStore.menu);
 
 const setVisible = () => {
-  appStore.updateSettings({ globalSettings: true });
+  appStore.updateSettings({globalSettings: true});
 };
 const refBtn = ref();
 const triggerBtn = ref();
@@ -214,7 +214,7 @@ const switchRoles = async () => {
 const toggleDrawerMenu = inject("toggleDrawerMenu") as () => void;
 </script>
 
-<style scoped lang="less">
+<style lang="less" scoped>
 .navbar {
   display: flex;
   justify-content: space-between;

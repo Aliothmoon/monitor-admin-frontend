@@ -5,14 +5,14 @@
       <a-row>
         <a-col :flex="1">
           <a-form
-            :model="formModel"
             :label-col-props="{ span: 6 }"
+            :model="formModel"
             :wrapper-col-props="{ span: 18 }"
             label-align="left"
           >
             <a-row :gutter="16">
               <a-col :span="8">
-                <a-form-item field="keyword" :label="'关键词搜索'">
+                <a-form-item :label="'关键词搜索'" field="keyword">
                   <a-input
                     v-model="formModel.keyword"
                     placeholder="搜索考试名称、学生姓名或备注"
@@ -20,8 +20,12 @@
                 </a-form-item>
               </a-col>
               <a-col :span="8">
-                <a-form-item field="riskLevel" :label="'风险等级'">
-                  <a-select v-model="formModel.riskLevel" placeholder="请选择风险等级" allow-clear>
+                <a-form-item :label="'风险等级'" field="riskLevel">
+                  <a-select
+                    v-model="formModel.riskLevel"
+                    allow-clear
+                    placeholder="请选择风险等级"
+                  >
                     <a-option :value="0" label="低风险" />
                     <a-option :value="1" label="中风险" />
                     <a-option :value="2" label="高风险" />
@@ -29,21 +33,21 @@
                 </a-form-item>
               </a-col>
               <a-col :span="8">
-                <a-form-item field="timeRange" :label="'截图时间'">
+                <a-form-item :label="'截图时间'" field="timeRange">
                   <a-range-picker
                     v-model="formModel.timeRange"
-                    style="width: 100%"
-                    show-time
                     format="YYYY-MM-DD HH:mm:ss"
+                    show-time
+                    style="width: 100%"
                   />
                 </a-form-item>
               </a-col>
             </a-row>
           </a-form>
         </a-col>
-        <a-divider style="height: 84px" direction="vertical" />
+        <a-divider direction="vertical" style="height: 84px" />
         <a-col :flex="'86px'" style="text-align: right">
-          <a-space direction="vertical" :size="18">
+          <a-space :size="18" direction="vertical">
             <a-button type="primary" @click="search">
               <template #icon>
                 <icon-search />
@@ -61,13 +65,13 @@
       </a-row>
       <a-divider style="margin-top: 0" />
       <a-table
-        row-key="id"
-        :loading="loading"
-        :pagination="pagination"
+        :bordered="false"
         :columns="columns"
         :data="renderData"
-        :bordered="false"
+        :loading="loading"
+        :pagination="pagination"
         :size="'medium'"
+        row-key="id"
         @page-change="fetchData"
       >
         <template #index="{ rowIndex }">
@@ -76,7 +80,11 @@
 
         <template #imageUrl="{ record }">
           <div class="image-preview">
-            <img :src="record.imageUrl" alt="截图" style="max-width: 100px; max-height: 60px;" />
+            <img
+              :src="record.imageUrl"
+              alt="截图"
+              style="max-width: 100px; max-height: 60px"
+            />
             <a-button type="text" @click="previewImage(record)">
               <icon-eye />
             </a-button>
@@ -95,53 +103,57 @@
 
         <template #operation="{ record }">
           <a-button
-            @click="handleEdit(record)"
-            type="primary"
-            style="margin-right: 10px"
             size="small"
+            style="margin-right: 10px"
+            type="primary"
+            @click="handleEdit(record)"
           >
             编辑
           </a-button>
           <a-button
-            @click="handleRemove(record)"
-            type="primary"
-            status="danger"
             size="small"
+            status="danger"
+            type="primary"
+            @click="handleRemove(record)"
           >
             删除
           </a-button>
         </template>
       </a-table>
     </a-card>
-    
+
     <!-- 图片预览 -->
     <a-modal
       v-model:visible="previewVisible"
-      title="截图预览"
       :footer="false"
       :mask-closable="true"
+      title="截图预览"
     >
       <div class="image-preview-container">
-        <img :src="previewImageUrl" alt="截图预览" style="max-width: 100%; max-height: 500px;" />
+        <img
+          :src="previewImageUrl"
+          alt="截图预览"
+          style="max-width: 100%; max-height: 500px"
+        />
       </div>
     </a-modal>
 
     <!-- 编辑弹窗 -->
     <a-modal
       v-model:visible="editVisible"
-      title="编辑截图信息"
       :on-before-ok="handleSave"
+      title="编辑截图信息"
     >
       <a-form
+        ref="editFormRef"
         :auto-label-width="true"
         :model="editForm"
         :size="'large'"
-        ref="editFormRef"
       >
         <a-form-item
+          :rules="[{ required: true, message: '不能为空' }]"
           field="riskLevel"
           label="风险等级"
-          :rules="[{ required: true, message: '不能为空' }]"
         >
           <a-select v-model="editForm.riskLevel" placeholder="请选择风险等级">
             <a-option :value="0" label="低风险" />
@@ -150,7 +162,10 @@
           </a-select>
         </a-form-item>
         <a-form-item field="remark" label="备注">
-          <a-textarea v-model="editForm.remark" placeholder="请输入备注信息"></a-textarea>
+          <a-textarea
+            v-model="editForm.remark"
+            placeholder="请输入备注信息"
+          ></a-textarea>
         </a-form-item>
       </a-form>
     </a-modal>
@@ -291,8 +306,10 @@ const fetchData = async (current: number = 1) => {
   setLoading(true);
   try {
     const { keyword, riskLevel, timeRange } = formModel;
-    const startDate = timeRange && timeRange.length > 0 ? timeRange[0] : undefined;
-    const endDate = timeRange && timeRange.length > 0 ? timeRange[1] : undefined;
+    const startDate =
+      timeRange && timeRange.length > 0 ? timeRange[0] : undefined;
+    const endDate =
+      timeRange && timeRange.length > 0 ? timeRange[1] : undefined;
 
     const { data, total } = await getScreenshotList(
       current,
@@ -390,14 +407,16 @@ onMounted(() => {
 .container-form {
   padding: 20px;
 }
+
 .image-preview {
   display: flex;
   align-items: center;
   gap: 8px;
 }
+
 .image-preview-container {
   display: flex;
   justify-content: center;
   align-items: center;
 }
-</style> 
+</style>

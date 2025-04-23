@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import { ref, onMounted, onUnmounted } from "vue";
 
 // 创建随机屏幕截图路径 (使用picsum.photos服务提供随机图片)
@@ -200,12 +200,12 @@ onUnmounted(() => {
       </template>
       <a-space size="medium">
         <a-descriptions
+          :column="3"
           :data="[
             { label: '考生', value: studentInfo.name },
             { label: '学号', value: studentInfo.id },
             { label: '考试', value: studentInfo.examName },
           ]"
-          :column="3"
           layout="inline-horizontal"
         />
         <a-tag :color="getStatusColor(studentInfo.status)" size="medium">
@@ -228,8 +228,8 @@ onUnmounted(() => {
             <div>考生屏幕</div>
           </template>
           <template #extra>
-            <a-space size="medium" class="mt-2">
-              <a-button type="outline" status="warning" @click="sendWarning">
+            <a-space class="mt-2" size="medium">
+              <a-button status="warning" type="outline" @click="sendWarning">
                 <template #icon>
                   <icon-align-left />
                 </template>
@@ -250,16 +250,16 @@ onUnmounted(() => {
             </a-space>
           </template>
           <div
-            class="screen-container"
             :class="{ offline: studentInfo.status === 'offline' }"
+            class="screen-container"
           >
             <a-image
               v-if="studentInfo.status === 'online'"
+              :preview="false"
               :src="studentInfo.screenCapture"
               alt="考生屏幕"
-              :preview="false"
-              width="100%"
               height="100%"
+              width="100%"
             />
             <a-empty v-else description="考生已离线">
               <template #image>
@@ -277,12 +277,12 @@ onUnmounted(() => {
       <a-card class="info-section">
         <a-tabs type="card">
           <a-tab-pane key="2" title="访问网站">
-            <a-card class="info-card" :bordered="false">
+            <a-card :bordered="false" class="info-card">
               <a-list :data="visitedWebsites">
                 <template #item="{ item }">
                   <a-list-item>
                     <a-space direction="vertical" style="width: 100%">
-                      <a-space justify="space-between" fill>
+                      <a-space fill justify="space-between">
                         <a-typography-text>{{ item.time }}</a-typography-text>
                         <a-tag :color="getRiskColor(item.risk)">
                           {{ item.risk === "warning" ? "风险" : "正常" }}
@@ -304,11 +304,11 @@ onUnmounted(() => {
           </a-tab-pane>
 
           <a-tab-pane key="3" title="后台进程">
-            <a-card class="info-card" :bordered="false">
+            <a-card :bordered="false" class="info-card">
               <a-list :data="backgroundProcesses">
                 <template #item="{ item }">
                   <a-list-item>
-                    <a-space justify="space-between" fill>
+                    <a-space fill justify="space-between">
                       <a-space direction="vertical">
                         <a-typography-text bold
                           >{{ item.name }}
@@ -330,10 +330,10 @@ onUnmounted(() => {
           </a-tab-pane>
 
           <a-tab-pane key="4" title="自动截图">
-            <a-card class="info-card" :bordered="false">
+            <a-card :bordered="false" class="info-card">
               <a-grid
-                :cols="{ xs: 1, sm: 2, md: 2, lg: 2, xl: 2, xxl: 2 }"
                 :col-gap="12"
+                :cols="{ xs: 1, sm: 2, md: 2, lg: 2, xl: 2, xxl: 2 }"
                 :row-gap="12"
               >
                 <a-grid-item
@@ -346,21 +346,21 @@ onUnmounted(() => {
                     class="screenshot-card"
                   >
                     <a-image
+                      :preview="true"
                       :src="screenshot.url"
                       alt="截图"
-                      :preview="true"
-                      width="100%"
                       height="100px"
+                      width="100%"
                     />
                     <div class="screenshot-info">
                       <a-space
-                        justify="space-between"
                         fill
+                        justify="space-between"
                         style="margin-top: 4px"
                       >
                         <a-typography-text
-                          type="secondary"
                           style="font-size: 12px"
+                          type="secondary"
                           >{{ screenshot.time }}
                         </a-typography-text>
                         <a-tag
@@ -372,7 +372,6 @@ onUnmounted(() => {
                       </a-space>
                       <a-tooltip :content="screenshot.analysis">
                         <a-typography-text
-                          type="secondary"
                           style="
                             font-size: 12px;
                             display: block;
@@ -381,6 +380,7 @@ onUnmounted(() => {
                             overflow: hidden;
                             text-overflow: ellipsis;
                           "
+                          type="secondary"
                         >
                           {{ screenshot.analysis }}
                         </a-typography-text>
@@ -393,23 +393,23 @@ onUnmounted(() => {
           </a-tab-pane>
 
           <a-tab-pane key="5" title="行为分析">
-            <a-card class="info-card" :bordered="false">
+            <a-card :bordered="false" class="info-card">
               <div class="timeline-container">
                 <a-timeline>
                   <a-timeline-item
                     v-for="record in analysisRecords"
                     :key="record.id"
+                    :line-color="getAnalysisColor(record.level)"
                     :line-type="
                       record.level === 'warning' || record.level === 'danger'
                         ? 'dashed'
                         : 'solid'
                     "
-                    :line-color="getAnalysisColor(record.level)"
                   >
                     <a-space>
                       <a-typography-text
-                        type="secondary"
                         style="font-size: 12px"
+                        type="secondary"
                         >{{ record.time }}
                       </a-typography-text>
                       <a-typography-text style="font-size: 13px"
@@ -423,11 +423,11 @@ onUnmounted(() => {
           </a-tab-pane>
 
           <a-tab-pane key="8" title="切屏次数">
-            <a-card class="info-card" :bordered="false">
+            <a-card :bordered="false" class="info-card">
               <div style="text-align: center">
                 <a-statistic
-                  :value="studentInfo.switchCount"
                   :title="studentInfo.switchCount > 3 ? '异常' : '正常'"
+                  :value="studentInfo.switchCount"
                   :value-style="{
                     color: studentInfo.switchCount > 3 ? '#f5222d' : '#52c41a',
                     fontSize: '32px',
@@ -442,7 +442,7 @@ onUnmounted(() => {
   </div>
 </template>
 
-<style scoped lang="less">
+<style lang="less" scoped>
 .monitor-single {
   padding: 16px;
   height: 70%;

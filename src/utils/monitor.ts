@@ -1,5 +1,5 @@
-import { App, ComponentPublicInstance } from 'vue';
-import axios from 'axios';
+import { App, ComponentPublicInstance } from "vue";
+import axios from "axios";
 
 export default function handleError(Vue: App, baseUrl: string) {
   if (!baseUrl) {

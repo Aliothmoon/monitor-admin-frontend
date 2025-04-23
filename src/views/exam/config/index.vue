@@ -5,14 +5,14 @@
       <a-row>
         <a-col :flex="1">
           <a-form
-            :model="formModel"
             :label-col-props="{ span: 6 }"
+            :model="formModel"
             :wrapper-col-props="{ span: 18 }"
             label-align="left"
           >
             <a-row :gutter="16">
               <a-col :span="12">
-                <a-form-item field="keyword" :label="'关键词搜索'">
+                <a-form-item :label="'关键词搜索'" field="keyword">
                   <a-input
                     v-model="formModel.keyword"
                     placeholder="搜索名称、描述或进程名"
@@ -22,9 +22,9 @@
             </a-row>
           </a-form>
         </a-col>
-        <a-divider style="height: 84px" direction="vertical" />
+        <a-divider direction="vertical" style="height: 84px" />
         <a-col :flex="'86px'" style="text-align: right">
-          <a-space direction="vertical" :size="18">
+          <a-space :size="18" direction="vertical">
             <a-button type="primary" @click="search">
               <template #icon>
                 <icon-search />
@@ -54,13 +54,13 @@
         </a-col>
       </a-row>
       <a-table
-        row-key="id"
-        :loading="loading"
-        :pagination="pagination"
+        :bordered="false"
         :columns="columns"
         :data="renderData"
-        :bordered="false"
+        :loading="loading"
+        :pagination="pagination"
         :size="'medium'"
+        row-key="id"
         @page-change="fetchData"
       >
         <template #index="{ rowIndex }">
@@ -77,18 +77,18 @@
 
         <template #operation="{ record }">
           <a-button
-            @click="handleUpdate(record)"
-            type="primary"
-            style="margin-right: 10px"
             size="small"
+            style="margin-right: 10px"
+            type="primary"
+            @click="handleUpdate(record)"
           >
             修改
           </a-button>
           <a-button
-            @click="handleRemove(record)"
-            type="primary"
-            status="danger"
             size="small"
+            status="danger"
+            type="primary"
+            @click="handleRemove(record)"
           >
             删除
           </a-button>
@@ -97,19 +97,19 @@
     </a-card>
     <a-modal
       v-model:visible="visible"
-      :title="upsertType == 'c' ? '新增' : '修改'"
       :on-before-ok="handleCompete"
+      :title="upsertType == 'c' ? '新增' : '修改'"
     >
       <a-form
+        ref="upsertFormRef"
         :auto-label-width="true"
         :model="upsertForm"
         :size="'large'"
-        ref="upsertFormRef"
       >
         <a-form-item
+          :rules="[{ required: true, message: '不能为空' }]"
           field="name"
           label="名称"
-          :rules="[{ required: true, message: '不能为空' }]"
         >
           <a-input v-model="upsertForm.name"></a-input>
         </a-form-item>
@@ -117,14 +117,20 @@
           <a-textarea v-model="upsertForm.description"></a-textarea>
         </a-form-item>
         <a-form-item
+          :rules="[{ required: true, message: '不能为空' }]"
           field="processName"
           label="进程名称"
-          :rules="[{ required: true, message: '不能为空' }]"
         >
-          <a-input v-model="upsertForm.processName" placeholder="例如: chrome.exe"></a-input>
+          <a-input
+            v-model="upsertForm.processName"
+            placeholder="例如: chrome.exe"
+          ></a-input>
         </a-form-item>
         <a-form-item field="processPath" label="进程路径">
-          <a-input v-model="upsertForm.processPath" placeholder="例如: C:\Program Files\Google\Chrome\Application\chrome.exe"></a-input>
+          <a-input
+            v-model="upsertForm.processPath"
+            placeholder="例如: C:\Program Files\Google\Chrome\Application\chrome.exe"
+          ></a-input>
         </a-form-item>
       </a-form>
     </a-modal>
@@ -181,13 +187,13 @@ const columns = computed<TableColumnData[]>(() => [
     title: "名称",
     dataIndex: "name",
     ellipsis: true,
-    tooltip:true
+    tooltip: true,
   },
   {
     title: "描述",
     dataIndex: "description",
     ellipsis: true,
-    tooltip:true
+    tooltip: true,
   },
   {
     title: "进程名称",
@@ -197,7 +203,7 @@ const columns = computed<TableColumnData[]>(() => [
     title: "进程路径",
     dataIndex: "processPath",
     ellipsis: true,
-    tooltip:true
+    tooltip: true,
   },
   {
     title: "创建时间",
@@ -315,10 +321,12 @@ const handleCompete = async () => {
       let result = false;
       if (upsertType.value === "c") {
         // 新增
-        result = await createSuspiciousProcess(upsertForm.value as Omit<
-          SuspiciousProcess,
-          "id" | "createdAt" | "updatedAt"
-        >);
+        result = await createSuspiciousProcess(
+          upsertForm.value as Omit<
+            SuspiciousProcess,
+            "id" | "createdAt" | "updatedAt"
+          >
+        );
       } else {
         // 修改
         result = await updateSuspiciousProcess(
@@ -345,4 +353,4 @@ onMounted(() => {
 .container-form {
   padding: 20px;
 }
-</style> 
+</style>

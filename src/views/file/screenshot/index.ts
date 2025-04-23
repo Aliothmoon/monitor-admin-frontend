@@ -24,7 +24,7 @@ const mockScreenshots: Screenshot[] = [
     captureTime: new Date("2024-01-10 10:15:30"),
     imageUrl: "https://picsum.photos/seed/screenshot1/800/600",
     riskLevel: 2,
-    remark: "发现使用搜索引擎搜索答案"
+    remark: "发现使用搜索引擎搜索答案",
   },
   {
     id: 2,
@@ -35,7 +35,7 @@ const mockScreenshots: Screenshot[] = [
     captureTime: new Date("2024-01-10 10:20:45"),
     imageUrl: "https://picsum.photos/seed/screenshot2/800/600",
     riskLevel: 1,
-    remark: "可能在查看参考资料"
+    remark: "可能在查看参考资料",
   },
   {
     id: 3,
@@ -46,7 +46,7 @@ const mockScreenshots: Screenshot[] = [
     captureTime: new Date("2024-01-10 10:30:20"),
     imageUrl: "https://picsum.photos/seed/screenshot3/800/600",
     riskLevel: 0,
-    remark: "正常"
+    remark: "正常",
   },
   {
     id: 4,
@@ -57,7 +57,7 @@ const mockScreenshots: Screenshot[] = [
     captureTime: new Date("2023-12-15 14:25:12"),
     imageUrl: "https://picsum.photos/seed/screenshot4/800/600",
     riskLevel: 2,
-    remark: "使用ChatGPT生成答案"
+    remark: "使用ChatGPT生成答案",
   },
   {
     id: 5,
@@ -68,8 +68,8 @@ const mockScreenshots: Screenshot[] = [
     captureTime: new Date("2023-12-15 14:40:37"),
     imageUrl: "https://picsum.photos/seed/screenshot5/800/600",
     riskLevel: 0,
-    remark: "正常"
-  }
+    remark: "正常",
+  },
 ];
 
 // 获取截图列表
@@ -97,7 +97,9 @@ export const getScreenshotList = async (
 
     // 按学生ID筛选
     if (studentId !== undefined) {
-      filteredData = filteredData.filter((item) => item.studentId === studentId);
+      filteredData = filteredData.filter(
+        (item) => item.studentId === studentId
+      );
     }
 
     // 关键词搜索（考试名称、学生姓名、备注）
@@ -112,7 +114,9 @@ export const getScreenshotList = async (
 
     // 按风险等级筛选
     if (riskLevel !== undefined) {
-      filteredData = filteredData.filter((item) => item.riskLevel === riskLevel);
+      filteredData = filteredData.filter(
+        (item) => item.riskLevel === riskLevel
+      );
     }
 
     // 按时间范围筛选
@@ -130,7 +134,9 @@ export const getScreenshotList = async (
 
     // 按捕获时间倒序排序
     filteredData.sort((a, b) => {
-      return new Date(b.captureTime).getTime() - new Date(a.captureTime).getTime();
+      return (
+        new Date(b.captureTime).getTime() - new Date(a.captureTime).getTime()
+      );
     });
 
     // 模拟分页数据
@@ -161,7 +167,9 @@ export const updateScreenshot = async (
     await new Promise((resolve) => setTimeout(resolve, 300));
 
     // 模拟修改
-    const index = mockScreenshots.findIndex((item) => item.id === screenshotData.id);
+    const index = mockScreenshots.findIndex(
+      (item) => item.id === screenshotData.id
+    );
     if (index !== -1) {
       mockScreenshots[index] = {
         ...mockScreenshots[index],
@@ -197,4 +205,4 @@ export const deleteScreenshot = async (id: number) => {
     Message.error("删除失败");
     return false;
   }
-}; 
+};

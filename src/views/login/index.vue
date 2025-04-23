@@ -12,54 +12,53 @@
 </template>
 
 <script lang="ts" setup>
-  import Footer from '@/components/footer/index.vue';
-  import LoginForm from './components/login-form.vue';
+import Footer from "@/components/footer/index.vue";
+import LoginForm from "./components/login-form.vue";
 </script>
 
 <style lang="less" scoped>
-  .container-login {
+.container-login {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  align-items: center;
+  justify-content: center;
+
+  .banner {
+    width: 550px;
+    background: linear-gradient(163.85deg, #1d2129 0%, #00308f 100%);
+  }
+
+  .content {
     display: flex;
-    height: 100vh;
-    width: 100vw;
+    flex: 1;
+    width: 100%;
     align-items: center;
     justify-content: center;
-
-    .banner {
-      width: 550px;
-      background: linear-gradient(163.85deg, #1d2129 0%, #00308f 100%);
-    }
-
-    .content {
-      display: flex;
-      flex: 1;
-      width: 100%;
-      align-items: center;
-      justify-content: center;
-      padding-bottom: 40px;
-    }
-
-    .footer {
-      position: absolute;
-      right: 0;
-      bottom: 0;
-      width: 100%;
-    }
+    padding-bottom: 40px;
   }
 
-  .logo {
-    position: fixed;
-    top: 24px;
-    left: 22px;
-    z-index: 1;
-    display: inline-flex;
-    align-items: center;
-
-    &-text {
-      margin-right: 4px;
-      margin-left: 4px;
-      color: var(--color-fill-1);
-      font-size: 20px;
-    }
+  .footer {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 100%;
   }
+}
+
+.logo {
+  position: fixed;
+  top: 24px;
+  left: 22px;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+
+  &-text {
+    margin-right: 4px;
+    margin-left: 4px;
+    color: var(--color-fill-1);
+    font-size: 20px;
+  }
+}
 </style>
-

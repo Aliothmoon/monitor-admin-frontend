@@ -1,27 +1,27 @@
 <template>
   <div class="container-form">
     <Breadcrumb :items="['监考员管理', '考生管理']" direct />
-    <a-card class="general-card" :title="'查询表格'">
+    <a-card :title="'查询表格'" class="general-card">
       <a-row>
         <a-col :flex="1">
           <a-form
-              :model="formModel"
-              :label-col-props="{ span: 6 }"
-              :wrapper-col-props="{ span: 18 }"
-              label-align="left"
+            :label-col-props="{ span: 6 }"
+            :model="formModel"
+            :wrapper-col-props="{ span: 18 }"
+            label-align="left"
           >
             <a-row :gutter="16">
               <a-col :span="12">
-                <a-form-item field="number" :label="'用户名'">
+                <a-form-item :label="'用户名'" field="number">
                   <a-input v-model="formModel.username" />
                 </a-form-item>
               </a-col>
             </a-row>
           </a-form>
         </a-col>
-        <a-divider style="height: 84px" direction="vertical" />
+        <a-divider direction="vertical" style="height: 84px" />
         <a-col :flex="'86px'" style="text-align: right">
-          <a-space direction="vertical" :size="18">
+          <a-space :size="18" direction="vertical">
             <a-button type="primary" @click="search">
               <template #icon>
                 <icon-search />
@@ -56,14 +56,14 @@
         </a-col>
       </a-row>
       <a-table
-          row-key="id"
-          :loading="loading"
-          :pagination="pagination"
-          :columns="columns"
-          :data="renderData"
-          :bordered="false"
-          :size="'medium'"
-          @page-change="fetchData"
+        :bordered="false"
+        :columns="columns"
+        :data="renderData"
+        :loading="loading"
+        :pagination="pagination"
+        :size="'medium'"
+        row-key="id"
+        @page-change="fetchData"
       >
         <template #index="{ rowIndex }">
           {{ rowIndex + 1 + (pagination.current - 1) * pagination.pageSize }}
@@ -79,18 +79,18 @@
 
         <template #operation="{ rowIndex, record }">
           <a-button
-              @click="handleUpdate(record)"
-              type="primary"
-              style="margin-right: 10px"
-              size="small"
+            size="small"
+            style="margin-right: 10px"
+            type="primary"
+            @click="handleUpdate(record)"
           >
             修改
           </a-button>
           <a-button
-              @click="handleRemove(record)"
-              type="primary"
-              status="danger"
-              size="small"
+            size="small"
+            status="danger"
+            type="primary"
+            @click="handleRemove(record)"
           >
             删除
           </a-button>
@@ -98,35 +98,35 @@
       </a-table>
     </a-card>
     <a-modal
-        v-model:visible="visible"
-        :title="upsertType == 'c' ? '新增' : '修改'"
-        :on-before-ok="handleCompete"
+      v-model:visible="visible"
+      :on-before-ok="handleCompete"
+      :title="upsertType == 'c' ? '新增' : '修改'"
     >
       <a-form
-          :auto-label-width="true"
-          :model="upsertForm"
-          :size="'large'"
-          ref="upsertFormRef"
+        ref="upsertFormRef"
+        :auto-label-width="true"
+        :model="upsertForm"
+        :size="'large'"
       >
         <a-form-item
-            field="account"
-            label="账号"
-            :rules="[{ required: true, message: '不能为空' }]"
+          :rules="[{ required: true, message: '不能为空' }]"
+          field="account"
+          label="账号"
         >
           <a-input v-model="upsertForm.account"></a-input>
         </a-form-item>
         <a-form-item
-            field="username"
-            label="用户名"
-            :rules="[{ required: true, message: '不能为空' }]"
+          :rules="[{ required: true, message: '不能为空' }]"
+          field="username"
+          label="用户名"
         >
           <a-input v-model="upsertForm.username"></a-input>
         </a-form-item>
         <a-form-item
-            v-if="upsertType !== 'u'"
-            field="password"
-            label="密码"
-            :rules="[{ required: true, message: '不能为空' }]"
+          v-if="upsertType !== 'u'"
+          :rules="[{ required: true, message: '不能为空' }]"
+          field="password"
+          label="密码"
         >
           <a-input-password v-model="upsertForm.password"></a-input-password>
         </a-form-item>
@@ -239,8 +239,8 @@ const handleCompete = async () => {
     return false;
   }
   const data = await (upsertType.value === "c"
-      ? axios.post("/api/monitorUser/save", upsertForm.value)
-      : axios.put("/api/monitorUser/update", upsertForm.value));
+    ? axios.post("/api/monitorUser/save", upsertForm.value)
+    : axios.put("/api/monitorUser/update", upsertForm.value));
 
   console.log(data);
   Message.success(upsertType.value === "c" ? "创建成功" : "更新成功");
@@ -270,8 +270,7 @@ const handleRemove = async (record: MonitorUser) => {
 };
 </script>
 
-
-<style scoped lang="less">
+<style lang="less" scoped>
 .container-form {
   padding: 0 20px 20px 20px;
 }

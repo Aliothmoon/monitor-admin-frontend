@@ -99,18 +99,21 @@ export default defineComponent({
               : null;
 
             if (element.meta?.single) {
-              const single = element.children!.at(0)
-              nodes.push((
+              const single = element.children!.at(0);
+              nodes.push(
+                (
                   <a-menu-item
-                      key={single.name}
-                      v-slots={{ icon }}
-                      onClick={() => goto(single)}
+                    key={single.name}
+                    v-slots={{ icon }}
+                    onClick={() => goto(single)}
                   >
                     <div>
-                      {element?.meta?.menuName || t(element?.meta?.locale || "")}
+                      {element?.meta?.menuName ||
+                        t(element?.meta?.locale || "")}
                     </div>
                   </a-menu-item>
-              ) as never);
+                ) as never
+              );
             } else {
               const node =
                 element?.children && element?.children.length !== 0 ? (

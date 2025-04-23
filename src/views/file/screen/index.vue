@@ -5,14 +5,14 @@
       <a-row>
         <a-col :flex="1">
           <a-form
-            :model="formModel"
             :label-col-props="{ span: 6 }"
+            :model="formModel"
             :wrapper-col-props="{ span: 18 }"
             label-align="left"
           >
             <a-row :gutter="16">
               <a-col :span="8">
-                <a-form-item field="keyword" :label="'关键词搜索'">
+                <a-form-item :label="'关键词搜索'" field="keyword">
                   <a-input
                     v-model="formModel.keyword"
                     placeholder="搜索考试名称、学生姓名或备注"
@@ -20,11 +20,11 @@
                 </a-form-item>
               </a-col>
               <a-col :span="8">
-                <a-form-item field="riskLevel" :label="'风险等级'">
+                <a-form-item :label="'风险等级'" field="riskLevel">
                   <a-select
                     v-model="formModel.riskLevel"
-                    placeholder="请选择风险等级"
                     allow-clear
+                    placeholder="请选择风险等级"
                   >
                     <a-option :value="0" label="低风险" />
                     <a-option :value="1" label="中风险" />
@@ -33,21 +33,21 @@
                 </a-form-item>
               </a-col>
               <a-col :span="8">
-                <a-form-item field="timeRange" :label="'录屏时间'">
+                <a-form-item :label="'录屏时间'" field="timeRange">
                   <a-range-picker
                     v-model="formModel.timeRange"
-                    style="width: 100%"
-                    show-time
                     format="YYYY-MM-DD HH:mm:ss"
+                    show-time
+                    style="width: 100%"
                   />
                 </a-form-item>
               </a-col>
             </a-row>
           </a-form>
         </a-col>
-        <a-divider style="height: 84px" direction="vertical" />
+        <a-divider direction="vertical" style="height: 84px" />
         <a-col :flex="'86px'" style="text-align: right">
-          <a-space direction="vertical" :size="18">
+          <a-space :size="18" direction="vertical">
             <a-button type="primary" @click="search">
               <template #icon>
                 <icon-search />
@@ -65,13 +65,13 @@
       </a-row>
       <a-divider style="margin-top: 0" />
       <a-table
-        row-key="id"
-        :loading="loading"
-        :pagination="pagination"
+        :bordered="false"
         :columns="columns"
         :data="renderData"
-        :bordered="false"
+        :loading="loading"
+        :pagination="pagination"
         :size="'medium'"
+        row-key="id"
         @page-change="fetchData"
       >
         <template #index="{ rowIndex }">
@@ -100,26 +100,26 @@
 
         <template #operation="{ record }">
           <a-button
-            @click="handlePlay(record)"
-            type="primary"
-            style="margin-right: 10px"
             size="small"
+            style="margin-right: 10px"
+            type="primary"
+            @click="handlePlay(record)"
           >
             播放
           </a-button>
           <a-button
-            @click="handleEdit(record)"
-            type="primary"
-            style="margin-right: 10px"
             size="small"
+            style="margin-right: 10px"
+            type="primary"
+            @click="handleEdit(record)"
           >
             编辑
           </a-button>
           <a-button
-            @click="handleRemove(record)"
-            type="primary"
-            status="danger"
             size="small"
+            status="danger"
+            type="primary"
+            @click="handleRemove(record)"
           >
             删除
           </a-button>
@@ -130,10 +130,10 @@
     <!-- 播放弹窗 -->
     <a-modal
       v-model:visible="playVisible"
-      title="录屏播放"
       :footer="false"
       :mask-closable="true"
       :modal-style="{ maxWidth: '900px', width: '90%' }"
+      title="录屏播放"
     >
       <div class="video-container">
         <video
@@ -165,19 +165,19 @@
     <!-- 编辑弹窗 -->
     <a-modal
       v-model:visible="editVisible"
-      title="编辑录屏信息"
       :on-before-ok="handleSave"
+      title="编辑录屏信息"
     >
       <a-form
+        ref="editFormRef"
         :auto-label-width="true"
         :model="editForm"
         :size="'large'"
-        ref="editFormRef"
       >
         <a-form-item
+          :rules="[{ required: true, message: '不能为空' }]"
           field="riskLevel"
           label="风险等级"
-          :rules="[{ required: true, message: '不能为空' }]"
         >
           <a-select v-model="editForm.riskLevel" placeholder="请选择风险等级">
             <a-option :value="0" label="低风险" />
@@ -336,7 +336,6 @@ const columns = computed<TableColumnData[]>(() => [
     dataIndex: "riskLevel",
     slotName: "riskLevel",
     width: 100,
-
   },
   {
     title: "备注",

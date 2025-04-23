@@ -5,14 +5,14 @@
       <a-row>
         <a-col :flex="1">
           <a-form
-            :model="formModel"
             :label-col-props="{ span: 6 }"
+            :model="formModel"
             :wrapper-col-props="{ span: 18 }"
             label-align="left"
           >
             <a-row :gutter="16">
               <a-col :span="12">
-                <a-form-item field="keyword" :label="'关键词搜索'">
+                <a-form-item :label="'关键词搜索'" field="keyword">
                   <a-input
                     v-model="formModel.keyword"
                     placeholder="搜索域名或描述"
@@ -20,21 +20,25 @@
                 </a-form-item>
               </a-col>
               <a-col :span="12">
-                <a-form-item field="category" :label="'分类'">
-                  <a-select v-model="formModel.category" placeholder="请选择分类" allow-clear>
-                    <a-option value="社交媒体" label="社交媒体" />
-                    <a-option value="视频网站" label="视频网站" />
-                    <a-option value="搜索引擎" label="搜索引擎" />
-                    <a-option value="其他" label="其他" />
+                <a-form-item :label="'分类'" field="category">
+                  <a-select
+                    v-model="formModel.category"
+                    allow-clear
+                    placeholder="请选择分类"
+                  >
+                    <a-option label="社交媒体" value="社交媒体" />
+                    <a-option label="视频网站" value="视频网站" />
+                    <a-option label="搜索引擎" value="搜索引擎" />
+                    <a-option label="其他" value="其他" />
                   </a-select>
                 </a-form-item>
               </a-col>
             </a-row>
           </a-form>
         </a-col>
-        <a-divider style="height: 84px" direction="vertical" />
+        <a-divider direction="vertical" style="height: 84px" />
         <a-col :flex="'86px'" style="text-align: right">
-          <a-space direction="vertical" :size="18">
+          <a-space :size="18" direction="vertical">
             <a-button type="primary" @click="search">
               <template #icon>
                 <icon-search />
@@ -64,13 +68,13 @@
         </a-col>
       </a-row>
       <a-table
-        row-key="id"
-        :loading="loading"
-        :pagination="pagination"
+        :bordered="false"
         :columns="columns"
         :data="renderData"
-        :bordered="false"
+        :loading="loading"
+        :pagination="pagination"
         :size="'medium'"
+        row-key="id"
         @page-change="fetchData"
       >
         <template #index="{ rowIndex }">
@@ -87,18 +91,18 @@
 
         <template #operation="{ record }">
           <a-button
-            @click="handleUpdate(record)"
-            type="primary"
-            style="margin-right: 10px"
             size="small"
+            style="margin-right: 10px"
+            type="primary"
+            @click="handleUpdate(record)"
           >
             修改
           </a-button>
           <a-button
-            @click="handleRemove(record)"
-            type="primary"
-            status="danger"
             size="small"
+            status="danger"
+            type="primary"
+            @click="handleRemove(record)"
           >
             删除
           </a-button>
@@ -107,35 +111,38 @@
     </a-card>
     <a-modal
       v-model:visible="visible"
-      :title="upsertType == 'c' ? '新增' : '修改'"
       :on-before-ok="handleCompete"
+      :title="upsertType == 'c' ? '新增' : '修改'"
     >
       <a-form
+        ref="upsertFormRef"
         :auto-label-width="true"
         :model="upsertForm"
         :size="'large'"
-        ref="upsertFormRef"
       >
         <a-form-item
+          :rules="[{ required: true, message: '不能为空' }]"
           field="domain"
           label="域名"
-          :rules="[{ required: true, message: '不能为空' }]"
         >
-          <a-input v-model="upsertForm.domain" placeholder="例如: *.example.com"></a-input>
+          <a-input
+            v-model="upsertForm.domain"
+            placeholder="例如: *.example.com"
+          ></a-input>
         </a-form-item>
         <a-form-item field="description" label="描述">
           <a-textarea v-model="upsertForm.description"></a-textarea>
         </a-form-item>
         <a-form-item
+          :rules="[{ required: true, message: '不能为空' }]"
           field="category"
           label="分类"
-          :rules="[{ required: true, message: '不能为空' }]"
         >
           <a-select v-model="upsertForm.category" placeholder="请选择分类">
-            <a-option value="社交媒体" label="社交媒体" />
-            <a-option value="视频网站" label="视频网站" />
-            <a-option value="搜索引擎" label="搜索引擎" />
-            <a-option value="其他" label="其他" />
+            <a-option label="社交媒体" value="社交媒体" />
+            <a-option label="视频网站" value="视频网站" />
+            <a-option label="搜索引擎" value="搜索引擎" />
+            <a-option label="其他" value="其他" />
           </a-select>
         </a-form-item>
       </a-form>
@@ -321,10 +328,12 @@ const handleCompete = async () => {
       let result = false;
       if (upsertType.value === "c") {
         // 新增
-        result = await createDomainBlacklist(upsertForm.value as Omit<
-          DomainBlacklist,
-          "id" | "createdAt" | "updatedAt"
-        >);
+        result = await createDomainBlacklist(
+          upsertForm.value as Omit<
+            DomainBlacklist,
+            "id" | "createdAt" | "updatedAt"
+          >
+        );
       } else {
         // 修改
         result = await updateDomainBlacklist(
@@ -351,4 +360,4 @@ onMounted(() => {
 .container-form {
   padding: 20px;
 }
-</style> 
+</style>

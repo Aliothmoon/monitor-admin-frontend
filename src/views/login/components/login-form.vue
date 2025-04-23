@@ -15,15 +15,15 @@
       @submit="handleSubmit"
     >
       <a-form-item
-        field="username"
         :rules="[{ required: true, message: $t('login.form.userName.errMsg') }]"
         :validate-trigger="['change', 'blur']"
+        field="username"
         hide-label
       >
         <a-input
-          :size="'large'"
           v-model="userInfo.username"
           :placeholder="'请输入用户名'"
+          :size="'large'"
         >
           <template #prefix>
             <icon-user />
@@ -31,15 +31,15 @@
         </a-input>
       </a-form-item>
       <a-form-item
-        field="password"
         :rules="[{ required: true, message: $t('login.form.password.errMsg') }]"
         :validate-trigger="['change', 'blur']"
+        field="password"
         hide-label
       >
         <a-input-password
-          :size="'large'"
           v-model="userInfo.password"
           :placeholder="'请输入密码'"
+          :size="'large'"
           allow-clear
         >
           <template #prefix>
@@ -50,14 +50,21 @@
       <a-space :size="16" direction="vertical">
         <div class="login-form-password-actions">
           <a-checkbox
-            checked="rememberPassword"
             :model-value="loginConfig.rememberPassword"
+            checked="rememberPassword"
             @change="setRememberPassword as any"
           >
             {{ $t("login.form.rememberPassword") }}
           </a-checkbox>
         </div>
-        <a-button style="margin-top: 10px" type="primary" html-type="submit" long :loading="loading" :size="'large'">
+        <a-button
+          :loading="loading"
+          :size="'large'"
+          html-type="submit"
+          long
+          style="margin-top: 10px"
+          type="primary"
+        >
           {{ "登录" }}
         </a-button>
       </a-space>

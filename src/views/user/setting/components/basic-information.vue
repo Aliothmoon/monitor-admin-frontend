@@ -1,13 +1,12 @@
 <template>
   <a-form
     ref="formRef"
-    :model="formData"
-    class="form"
     :label-col-props="{ span: 8 }"
+    :model="formData"
     :wrapper-col-props="{ span: 16 }"
+    class="form"
   >
     <a-form-item
-      field="email"
       :label="formFields.email.label"
       :rules="[
         {
@@ -15,6 +14,7 @@
           message: formFields.email.errorMessage,
         },
       ]"
+      field="email"
     >
       <a-input
         v-model="formData.email"
@@ -22,7 +22,6 @@
       />
     </a-form-item>
     <a-form-item
-      field="nickname"
       :label="formFields.nickname.label"
       :rules="[
         {
@@ -30,11 +29,14 @@
           message: formFields.nickname.errorMessage,
         },
       ]"
+      field="nickname"
     >
-      <a-input v-model="formData.nickname" :placeholder="formFields.nickname.placeholder" />
+      <a-input
+        v-model="formData.nickname"
+        :placeholder="formFields.nickname.placeholder"
+      />
     </a-form-item>
     <a-form-item
-      field="college"
       :label="formFields.college.label"
       :rules="[
         {
@@ -42,25 +44,42 @@
           message: formFields.college.errorMessage,
         },
       ]"
+      field="college"
     >
-      <a-select v-model="formData.college" :placeholder="formFields.college.placeholder">
-        <a-option v-for="option in collegeOptions" :key="option.value" :value="option.value">
+      <a-select
+        v-model="formData.college"
+        :placeholder="formFields.college.placeholder"
+      >
+        <a-option
+          v-for="option in collegeOptions"
+          :key="option.value"
+          :value="option.value"
+        >
           {{ option.label }}
         </a-option>
       </a-select>
     </a-form-item>
-    <a-form-item field="department" :label="formFields.department.label">
-      <a-input v-model="formData.department" :placeholder="formFields.department.placeholder" />
+    <a-form-item :label="formFields.department.label" field="department">
+      <a-input
+        v-model="formData.department"
+        :placeholder="formFields.department.placeholder"
+      />
     </a-form-item>
-    <a-form-item field="title" :label="formFields.title.label">
-      <a-select v-model="formData.title" :placeholder="formFields.title.placeholder">
-        <a-option v-for="option in titleOptions" :key="option.value" :value="option.value">
+    <a-form-item :label="formFields.title.label" field="title">
+      <a-select
+        v-model="formData.title"
+        :placeholder="formFields.title.placeholder"
+      >
+        <a-option
+          v-for="option in titleOptions"
+          :key="option.value"
+          :value="option.value"
+        >
           {{ option.label }}
         </a-option>
       </a-select>
     </a-form-item>
     <a-form-item
-      field="phone"
       :label="formFields.phone.label"
       :rules="[
         {
@@ -68,6 +87,7 @@
           message: formFields.phone.errorMessage,
         },
       ]"
+      field="phone"
     >
       <a-input
         v-model="formData.phone"
@@ -75,7 +95,6 @@
       />
     </a-form-item>
     <a-form-item
-      field="employeeId"
       :label="formFields.employeeId.label"
       :rules="[
         {
@@ -83,23 +102,28 @@
           message: formFields.employeeId.errorMessage,
         },
       ]"
+      field="employeeId"
     >
       <a-input
         v-model="formData.employeeId"
         :placeholder="formFields.employeeId.placeholder"
       />
     </a-form-item>
-    <a-form-item field="notifications" :label="formFields.notifications.label">
+    <a-form-item :label="formFields.notifications.label" field="notifications">
       <a-checkbox-group v-model="formData.notifications">
-        <a-checkbox v-for="option in notificationOptions" :key="option.value" :value="option.value">
+        <a-checkbox
+          v-for="option in notificationOptions"
+          :key="option.value"
+          :value="option.value"
+        >
           {{ option.label }}
         </a-checkbox>
       </a-checkbox-group>
     </a-form-item>
     <a-form-item>
       <a-space>
-        <a-button type="primary" @click="validate"> 保存 </a-button>
-        <a-button type="secondary" @click="reset"> 重置 </a-button>
+        <a-button type="primary" @click="validate"> 保存</a-button>
+        <a-button type="secondary" @click="reset"> 重置</a-button>
       </a-space>
     </a-form-item>
   </a-form>
@@ -109,13 +133,13 @@
 import { ref } from "vue";
 import { useUserStore } from "@/store";
 import { FormInstance } from "@arco-design/web-vue";
-import { 
-  ProctorInfoModel, 
-  formFields, 
-  collegeOptions, 
-  titleOptions, 
-  notificationOptions 
-} from '../columns';
+import {
+  ProctorInfoModel,
+  formFields,
+  collegeOptions,
+  titleOptions,
+  notificationOptions,
+} from "../columns";
 
 const formRef = ref<FormInstance>();
 const userStore = useUserStore();

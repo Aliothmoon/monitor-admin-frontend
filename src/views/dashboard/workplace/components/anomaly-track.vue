@@ -2,7 +2,7 @@
   <div class="anomaly-track-panel">
     <a-typography-title :heading="6">实时异常追踪</a-typography-title>
     <a-timeline class="anomaly-list">
-      <a-timeline-item 
+      <a-timeline-item
         v-for="(event, index) in anomalies"
         :key="index"
         :dot-color="getEventColor(event.type)"
@@ -19,12 +19,12 @@
               <span class="time-text">{{ event.time }}</span>
             </a-col>
           </a-row>
-          <a-button 
+          <a-button
             v-if="!event.resolved"
-            size="mini" 
-            type="outline" 
-            status="danger"
             class="action-btn"
+            size="mini"
+            status="danger"
+            type="outline"
           >
             处理异常
           </a-button>
@@ -35,31 +35,37 @@
 </template>
 
 <script lang="ts" setup>
-import { PropType } from 'vue';
+import { PropType } from "vue";
 
 defineProps({
   anomalies: {
-    type: Array as PropType<Array<{
-      time: string;
-      type: string;
-      description: string;
-      resolved: boolean;
-    }>>,
-    required: true
-  }
+    type: Array as PropType<
+      Array<{
+        time: string;
+        type: string;
+        description: string;
+        resolved: boolean;
+      }>
+    >,
+    required: true,
+  },
 });
 
 const getEventColor = (type: string) => {
-  switch(type) {
-    case '作弊行为': return '#dc3545';
-    case '网络中断': return '#ffc107';
-    case '设备异常': return '#0dcaf0';
-    default: return '#6c757d';
+  switch (type) {
+    case "作弊行为":
+      return "#dc3545";
+    case "网络中断":
+      return "#ffc107";
+    case "设备异常":
+      return "#0dcaf0";
+    default:
+      return "#6c757d";
   }
 };
 </script>
 
-<style scoped lang="less">
+<style lang="less" scoped>
 .anomaly-track-panel {
   padding: 16px;
   background: var(--color-bg-2);

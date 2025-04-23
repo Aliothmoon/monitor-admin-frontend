@@ -33,4 +33,4 @@ const FILES: AppRouteRecordRaw = {
   ],
 };
 
-export default FILES; 
+export default FILES;

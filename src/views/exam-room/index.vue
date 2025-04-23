@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import { computed, ref, reactive, onMounted } from "vue";
 import useLoading from "@/hooks/loading";
 import { Pagination } from "@/types/global";
@@ -234,20 +234,20 @@ const handleRemove = async (record) => {
 </script>
 
 <template>
-  <div class="container-form"  >
+  <div class="container-form">
     <Breadcrumb :items="['考场管理']" direct />
     <a-card :title="'考场管理'">
       <a-row>
         <a-col :flex="1">
           <a-form
-            :model="formModel"
             :label-col-props="{ span: 6 }"
+            :model="formModel"
             :wrapper-col-props="{ span: 18 }"
             label-align="left"
           >
             <a-row :gutter="16">
               <a-col :span="12">
-                <a-form-item field="keyword" :label="'关键词搜索'">
+                <a-form-item :label="'关键词搜索'" field="keyword">
                   <a-input
                     v-model="formModel.keyword"
                     placeholder="搜索考场名称或关联考试"
@@ -257,9 +257,9 @@ const handleRemove = async (record) => {
             </a-row>
           </a-form>
         </a-col>
-        <a-divider style="height: 42px" direction="vertical" />
+        <a-divider direction="vertical" style="height: 42px" />
         <a-col :flex="'86px'" style="text-align: right">
-          <a-space direction="vertical" :size="18">
+          <a-space :size="18" direction="vertical">
             <a-button type="primary" @click="search">
               <template #icon>
                 <icon-search />
@@ -277,13 +277,13 @@ const handleRemove = async (record) => {
       </a-row>
       <a-divider style="margin-top: 0" />
       <a-table
-        row-key="id"
-        :loading="loading"
-        :pagination="pagination"
+        :bordered="false"
         :columns="columns"
         :data="renderData"
-        :bordered="false"
+        :loading="loading"
+        :pagination="pagination"
         :size="'medium'"
+        row-key="id"
         @page-change="loadData"
       >
         <template #index="{ rowIndex }">
@@ -292,20 +292,20 @@ const handleRemove = async (record) => {
 
         <template #operation="{ record }">
           <a-button
-            @click="handleProctoring(record)"
-            type="primary"
+            :disabled="record.status !== 1"
+            size="small"
             status="success"
             style="margin-right: 10px"
-            size="small"
-            :disabled="record.status !== 1"
+            type="primary"
+            @click="handleProctoring(record)"
           >
             进入监考
           </a-button>
           <a-button
-            @click="handleRemove(record)"
-            type="primary"
-            status="danger"
             size="small"
+            status="danger"
+            type="primary"
+            @click="handleRemove(record)"
           >
             删除
           </a-button>
@@ -314,54 +314,54 @@ const handleRemove = async (record) => {
     </a-card>
     <a-modal
       v-model:visible="visible"
-      :title="upsertType == 'c' ? '新增考场' : '修改考场'"
       :on-before-ok="handleCompete"
+      :title="upsertType == 'c' ? '新增考场' : '修改考场'"
     >
       <a-form
+        ref="upsertFormRef"
         :auto-label-width="true"
         :model="upsertForm"
         :size="'large'"
-        ref="upsertFormRef"
       >
         <a-form-item
+          :rules="[{ required: true, message: '不能为空' }]"
           field="roomName"
           label="考场名称"
-          :rules="[{ required: true, message: '不能为空' }]"
         >
           <a-input v-model="upsertForm.roomName"></a-input>
         </a-form-item>
         <a-form-item
+          :rules="[{ required: true, message: '不能为空' }]"
           field="examId"
           label="关联考试"
-          :rules="[{ required: true, message: '不能为空' }]"
         >
           <a-select v-model="upsertForm.examId" placeholder="请选择关联考试">
             <a-option
               v-for="exam in examList"
               :key="exam.id"
-              :value="exam.id"
               :label="exam.name"
+              :value="exam.id"
             ></a-option>
           </a-select>
         </a-form-item>
         <a-form-item
+          :rules="[{ required: true, message: '不能为空' }]"
           field="proctorId"
           label="监考老师"
-          :rules="[{ required: true, message: '不能为空' }]"
         >
           <a-select v-model="upsertForm.proctorId" placeholder="请选择监考老师">
             <a-option
               v-for="proctor in proctorList"
               :key="proctor.id"
-              :value="proctor.id"
               :label="proctor.name"
+              :value="proctor.id"
             ></a-option>
           </a-select>
         </a-form-item>
         <a-form-item
+          :rules="[{ required: true, message: '不能为空' }]"
           field="capacity"
           label="容纳人数"
-          :rules="[{ required: true, message: '不能为空' }]"
         >
           <a-input-number v-model="upsertForm.capacity" :min="1" />
         </a-form-item>
@@ -369,25 +369,25 @@ const handleRemove = async (record) => {
           <a-input v-model="upsertForm.location"></a-input>
         </a-form-item>
         <a-form-item
+          :rules="[{ required: true, message: '不能为空' }]"
           field="startTime"
           label="开始时间"
-          :rules="[{ required: true, message: '不能为空' }]"
         >
           <a-date-picker
             v-model="upsertForm.startTime"
-            show-time
             format="YYYY-MM-DD HH:mm:ss"
+            show-time
           />
         </a-form-item>
         <a-form-item
+          :rules="[{ required: true, message: '不能为空' }]"
           field="endTime"
           label="结束时间"
-          :rules="[{ required: true, message: '不能为空' }]"
         >
           <a-date-picker
             v-model="upsertForm.endTime"
-            show-time
             format="YYYY-MM-DD HH:mm:ss"
+            show-time
           />
         </a-form-item>
       </a-form>
@@ -395,7 +395,7 @@ const handleRemove = async (record) => {
   </div>
 </template>
 
-<style scoped lang="less">
+<style lang="less" scoped>
 .container-form {
   padding: 0 20px 20px 20px;
 }

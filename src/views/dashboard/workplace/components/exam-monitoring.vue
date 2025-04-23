@@ -1,7 +1,7 @@
 <template>
   <div class="exam-monitoring-panel">
     <a-typography-title :heading="6">实时考生监控</a-typography-title>
-    <a-list class="monitoring-list" :bordered="false">
+    <a-list :bordered="false" class="monitoring-list">
       <a-list-item v-for="(candidate, index) in candidates" :key="index">
         <a-space direction="vertical" fill>
           <a-row align="center" justify="space-between">
@@ -23,7 +23,12 @@
               </a-space>
             </a-col>
             <a-col :span="12" class="text-right">
-              <a-button v-if="candidate.hasAnomaly" size="mini" type="outline" status="danger">
+              <a-button
+                v-if="candidate.hasAnomaly"
+                size="mini"
+                status="danger"
+                type="outline"
+              >
                 查看异常
               </a-button>
             </a-col>
@@ -35,7 +40,7 @@
 </template>
 
 <script lang="ts" setup>
-import { PropType } from 'vue';
+import { PropType } from "vue";
 
 defineProps({
   stats: {
@@ -47,28 +52,32 @@ defineProps({
         status: string;
       }>;
     }>,
-    required: true
-  }
+    required: true,
+  },
 });
 
 const getStatusColor = (status: string) => {
-  switch(status) {
-    case '正常': return 'green';
-    case '可疑': return 'orange';
-    case '异常': return 'red';
-    default: return 'gray';
+  switch (status) {
+    case "正常":
+      return "green";
+    case "可疑":
+      return "orange";
+    case "异常":
+      return "red";
+    default:
+      return "gray";
   }
 };
 
 // 模拟数据
 const candidates = [
-  { name: '张三', status: '正常', cameraStatus: '正常', hasAnomaly: false },
-  { name: '李四', status: '可疑', cameraStatus: '断线', hasAnomaly: true },
-  { name: '王五', status: '正常', cameraStatus: '正常', hasAnomaly: false },
+  { name: "张三", status: "正常", cameraStatus: "正常", hasAnomaly: false },
+  { name: "李四", status: "可疑", cameraStatus: "断线", hasAnomaly: true },
+  { name: "王五", status: "正常", cameraStatus: "正常", hasAnomaly: false },
 ];
 </script>
 
-<style scoped lang="less">
+<style lang="less" scoped>
 .exam-monitoring-panel {
   padding: 16px;
   background: var(--color-bg-2);

@@ -5,7 +5,7 @@ export interface DomainBlacklist {
   id: number;
   domain: string;
   description?: string;
-  category: string;  // 分类：社交媒体、视频网站、搜索引擎等
+  category: string; // 分类：社交媒体、视频网站、搜索引擎等
   createdAt: Date;
   updatedAt: Date;
 }
@@ -18,7 +18,7 @@ const mockDomainBlacklist: DomainBlacklist[] = [
     description: "Facebook社交媒体网站",
     category: "社交媒体",
     createdAt: new Date("2023-10-10"),
-    updatedAt: new Date("2023-10-10")
+    updatedAt: new Date("2023-10-10"),
   },
   {
     id: 2,
@@ -26,7 +26,7 @@ const mockDomainBlacklist: DomainBlacklist[] = [
     description: "YouTube视频网站",
     category: "视频网站",
     createdAt: new Date("2023-10-12"),
-    updatedAt: new Date("2023-10-12")
+    updatedAt: new Date("2023-10-12"),
   },
   {
     id: 3,
@@ -34,7 +34,7 @@ const mockDomainBlacklist: DomainBlacklist[] = [
     description: "百度搜索引擎",
     category: "搜索引擎",
     createdAt: new Date("2023-10-15"),
-    updatedAt: new Date("2023-10-20")
+    updatedAt: new Date("2023-10-20"),
   },
   {
     id: 4,
@@ -42,7 +42,7 @@ const mockDomainBlacklist: DomainBlacklist[] = [
     description: "腾讯QQ相关网站",
     category: "社交媒体",
     createdAt: new Date("2023-11-01"),
-    updatedAt: new Date("2023-11-01")
+    updatedAt: new Date("2023-11-01"),
   },
   {
     id: 5,
@@ -50,8 +50,8 @@ const mockDomainBlacklist: DomainBlacklist[] = [
     description: "哔哩哔哩视频网站",
     category: "视频网站",
     createdAt: new Date("2023-11-10"),
-    updatedAt: new Date("2023-11-10")
-  }
+    updatedAt: new Date("2023-11-10"),
+  },
 ];
 
 // 获取域名黑名单列表
@@ -136,7 +136,9 @@ export const updateDomainBlacklist = async (
     await new Promise((resolve) => setTimeout(resolve, 300));
 
     // 模拟修改
-    const index = mockDomainBlacklist.findIndex((item) => item.id === domainData.id);
+    const index = mockDomainBlacklist.findIndex(
+      (item) => item.id === domainData.id
+    );
     if (index !== -1) {
       mockDomainBlacklist[index] = {
         ...mockDomainBlacklist[index],
@@ -173,4 +175,4 @@ export const deleteDomainBlacklist = async (id: number) => {
     Message.error("删除失败");
     return false;
   }
-}; 
+};

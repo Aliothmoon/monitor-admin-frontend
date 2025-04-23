@@ -1,36 +1,36 @@
-import { DEFAULT_LAYOUT } from '../base';
-import { AppRouteRecordRaw } from '../types';
+import { DEFAULT_LAYOUT } from "../base";
+import { AppRouteRecordRaw } from "../types";
 
 const VISUALIZATION: AppRouteRecordRaw = {
-  path: '/visualization',
-  name: 'visualization',
+  path: "/visualization",
+  name: "visualization",
   component: DEFAULT_LAYOUT,
   meta: {
-    locale: 'menu.visualization',
+    locale: "menu.visualization",
     requiresAuth: true,
-    icon: 'icon-apps',
+    icon: "icon-apps",
     order: 1,
   },
   children: [
     {
-      path: 'data-analysis',
-      name: 'DataAnalysis',
-      component: () => import('@/views/visualization/data-analysis/index.vue'),
+      path: "data-analysis",
+      name: "DataAnalysis",
+      component: () => import("@/views/visualization/data-analysis/index.vue"),
       meta: {
-        locale: 'menu.visualization.dataAnalysis',
+        locale: "menu.visualization.dataAnalysis",
         requiresAuth: true,
-        roles: ['admin'],
+        roles: ["admin"],
       },
     },
     {
-      path: 'multi-dimension-data-analysis',
-      name: 'MultiDimensionDataAnalysis',
+      path: "multi-dimension-data-analysis",
+      name: "MultiDimensionDataAnalysis",
       component: () =>
-        import('@/views/visualization/multi-dimension-data-analysis/index.vue'),
+        import("@/views/visualization/multi-dimension-data-analysis/index.vue"),
       meta: {
-        locale: 'menu.visualization.multiDimensionDataAnalysis',
+        locale: "menu.visualization.multiDimensionDataAnalysis",
         requiresAuth: true,
-        roles: ['admin'],
+        roles: ["admin"],
       },
     },
   ],

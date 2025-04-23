@@ -1,9 +1,9 @@
 <template>
   <a-card
-    class="general-card"
-    :title="$t('workplace.recently.visited')"
-    :header-style="{ paddingBottom: '0' }"
     :body-style="{ paddingTop: '26px' }"
+    :header-style="{ paddingBottom: '0' }"
+    :title="$t('workplace.recently.visited')"
+    class="general-card"
   >
     <div style="margin-bottom: -1rem">
       <a-row :gutter="8">
@@ -21,24 +21,24 @@
 </template>
 
 <script lang="ts" setup>
-  const links = [
-    {
-      text: 'workplace.contentManagement',
-      icon: 'icon-storage',
-    },
-    {
-      text: 'workplace.contentStatistical',
-      icon: 'icon-file',
-    },
-    {
-      text: 'workplace.advanced',
-      icon: 'icon-settings',
-    },
-  ];
+const links = [
+  {
+    text: "workplace.contentManagement",
+    icon: "icon-storage",
+  },
+  {
+    text: "workplace.contentStatistical",
+    icon: "icon-file",
+  },
+  {
+    text: "workplace.advanced",
+    icon: "icon-settings",
+  },
+];
 </script>
 
 <style lang="less" scoped>
-  :deep(.arco-card-header-title) {
-    line-height: inherit;
-  }
+:deep(.arco-card-header-title) {
+  line-height: inherit;
+}
 </style>

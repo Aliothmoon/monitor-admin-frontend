@@ -1,5 +1,6 @@
 import { AppRouteRecordRaw } from "@/router/routes/types";
 import { DEFAULT_LAYOUT } from "@/router/routes/base";
+
 const EXAM_ROOM: AppRouteRecordRaw = {
   path: "/exam-room",
   name: "exam-room",
@@ -9,7 +10,7 @@ const EXAM_ROOM: AppRouteRecordRaw = {
     icon: "icon-computer",
     order: 1,
     single: true,
-    requiresAuth: false
+    requiresAuth: false,
   },
   children: [
     {
@@ -17,7 +18,7 @@ const EXAM_ROOM: AppRouteRecordRaw = {
       name: "exam-room-manage",
       component: () => import("@/views/exam-room/index.vue"),
       meta: {
-        menuName:"考场管理",
+        menuName: "考场管理",
         roles: ["*"],
       },
     },

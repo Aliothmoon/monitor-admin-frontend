@@ -5,7 +5,7 @@ export interface RiskImageTemplate {
   id: number;
   name: string;
   description?: string;
-  category: string;  // 分类：答案、小抄、公式等
+  category: string; // 分类：答案、小抄、公式等
   imageUrl: string;
   similarity: number; // 相似度阈值，0-100
   createdAt: Date;
@@ -22,7 +22,7 @@ const mockRiskImageTemplates: RiskImageTemplate[] = [
     imageUrl: "https://picsum.photos/seed/math123/500/300",
     similarity: 85,
     createdAt: new Date("2023-09-15"),
-    updatedAt: new Date("2023-09-15")
+    updatedAt: new Date("2023-09-15"),
   },
   {
     id: 2,
@@ -32,7 +32,7 @@ const mockRiskImageTemplates: RiskImageTemplate[] = [
     imageUrl: "https://picsum.photos/seed/physics456/500/300",
     similarity: 90,
     createdAt: new Date("2023-09-20"),
-    updatedAt: new Date("2023-09-20")
+    updatedAt: new Date("2023-09-20"),
   },
   {
     id: 3,
@@ -42,7 +42,7 @@ const mockRiskImageTemplates: RiskImageTemplate[] = [
     imageUrl: "https://picsum.photos/seed/english789/500/300",
     similarity: 75,
     createdAt: new Date("2023-10-05"),
-    updatedAt: new Date("2023-10-10")
+    updatedAt: new Date("2023-10-10"),
   },
   {
     id: 4,
@@ -52,7 +52,7 @@ const mockRiskImageTemplates: RiskImageTemplate[] = [
     imageUrl: "https://picsum.photos/seed/chemistry101/500/300",
     similarity: 95,
     createdAt: new Date("2023-10-15"),
-    updatedAt: new Date("2023-10-15")
+    updatedAt: new Date("2023-10-15"),
   },
   {
     id: 5,
@@ -62,8 +62,8 @@ const mockRiskImageTemplates: RiskImageTemplate[] = [
     imageUrl: "https://picsum.photos/seed/algorithm202/500/300",
     similarity: 80,
     createdAt: new Date("2023-11-01"),
-    updatedAt: new Date("2023-11-01")
-  }
+    updatedAt: new Date("2023-11-01"),
+  },
 ];
 
 // 获取风险图片模板列表
@@ -148,7 +148,9 @@ export const updateRiskImageTemplate = async (
     await new Promise((resolve) => setTimeout(resolve, 300));
 
     // 模拟修改
-    const index = mockRiskImageTemplates.findIndex((item) => item.id === templateData.id);
+    const index = mockRiskImageTemplates.findIndex(
+      (item) => item.id === templateData.id
+    );
     if (index !== -1) {
       mockRiskImageTemplates[index] = {
         ...mockRiskImageTemplates[index],
@@ -185,4 +187,4 @@ export const deleteRiskImageTemplate = async (id: number) => {
     Message.error("删除失败");
     return false;
   }
-}; 
+};

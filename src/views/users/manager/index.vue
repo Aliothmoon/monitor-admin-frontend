@@ -1,32 +1,32 @@
 <template>
   <div class="container-form">
     <Breadcrumb :items="['监考员管理', '监考员管理']" />
-    <a-card class="general-card" :title="'查询表格'">
+    <a-card :title="'查询表格'" class="general-card">
       <a-row>
         <a-col :flex="1">
           <a-form
-            :model="formModel"
             :label-col-props="{ span: 6 }"
+            :model="formModel"
             :wrapper-col-props="{ span: 18 }"
             label-align="left"
           >
             <a-row :gutter="16">
               <a-col :span="12">
-                <a-form-item field="account" :label="'账户'">
+                <a-form-item :label="'账户'" field="account">
                   <a-input v-model="formModel.account" />
                 </a-form-item>
               </a-col>
               <a-col :span="12">
-                <a-form-item field="username" :label="'用户名'">
+                <a-form-item :label="'用户名'" field="username">
                   <a-input v-model="formModel.username" />
                 </a-form-item>
               </a-col>
             </a-row>
           </a-form>
         </a-col>
-        <a-divider style="height: 84px" direction="vertical" />
+        <a-divider direction="vertical" style="height: 84px" />
         <a-col :flex="'86px'" style="text-align: right">
-          <a-space direction="vertical" :size="18">
+          <a-space :size="18" direction="vertical">
             <a-button type="primary" @click="search">
               <template #icon>
                 <icon-search />
@@ -61,13 +61,13 @@
         </a-col>
       </a-row>
       <a-table
-        row-key="id"
-        :loading="loading"
-        :pagination="pagination"
+        :bordered="false"
         :columns="columns"
         :data="renderData"
-        :bordered="false"
+        :loading="loading"
+        :pagination="pagination"
         :size="'medium'"
+        row-key="id"
         @page-change="fetchData"
       >
         <template #index="{ rowIndex }">
@@ -84,18 +84,18 @@
 
         <template #operation="{ rowIndex, record }">
           <a-button
-            @click="handleUpdate(record)"
-            type="primary"
-            style="margin-right: 10px"
             size="small"
+            style="margin-right: 10px"
+            type="primary"
+            @click="handleUpdate(record)"
           >
             修改
           </a-button>
           <a-button
-            @click="handleRemove(record)"
-            type="primary"
-            status="danger"
             size="small"
+            status="danger"
+            type="primary"
+            @click="handleRemove(record)"
           >
             删除
           </a-button>
@@ -104,34 +104,34 @@
     </a-card>
     <a-modal
       v-model:visible="visible"
-      :title="upsertType == 'c' ? '新增' : '修改'"
       :on-before-ok="handleCompete"
+      :title="upsertType == 'c' ? '新增' : '修改'"
     >
       <a-form
+        ref="upsertFormRef"
         :auto-label-width="true"
         :model="upsertForm"
         :size="'large'"
-        ref="upsertFormRef"
       >
         <a-form-item
+          :rules="[{ required: true, message: '不能为空' }]"
           field="account"
           label="账号"
-          :rules="[{ required: true, message: '不能为空' }]"
         >
           <a-input v-model="upsertForm.account"></a-input>
         </a-form-item>
         <a-form-item
+          :rules="[{ required: true, message: '不能为空' }]"
           field="username"
           label="用户名"
-          :rules="[{ required: true, message: '不能为空' }]"
         >
           <a-input v-model="upsertForm.username"></a-input>
         </a-form-item>
         <a-form-item
           v-if="upsertType !== 'u'"
+          :rules="[{ required: true, message: '不能为空' }]"
           field="password"
           label="密码"
-          :rules="[{ required: true, message: '不能为空' }]"
         >
           <a-input-password v-model="upsertForm.password"></a-input-password>
         </a-form-item>
@@ -147,12 +147,16 @@ import useLoading from "@/hooks/loading";
 import { Pagination } from "@/types/global";
 import type { TableColumnData } from "@arco-design/web-vue/es/table/interface";
 import { MonitorUser } from "@/api/code/models/monitor-user";
-import { getMonitorUserPageData, saveMonitorUser, updateMonitorUser, removeMonitorUser } from "@/views/users/manager/index";
+import {
+  getMonitorUserPageData,
+  saveMonitorUser,
+  updateMonitorUser,
+  removeMonitorUser,
+} from "@/views/users/manager/index";
 import { TableDataInfo } from "@/api/types";
 import { useTrigger } from "@/utils/trigger";
 import { Message } from "@arco-design/web-vue";
 import dayjs from "dayjs";
-
 
 const generateFormModel = () => {
   return {
@@ -285,7 +289,7 @@ export default {
 };
 </script>
 
-<style scoped lang="less">
+<style lang="less" scoped>
 .container-form {
   padding: 0 20px 20px 20px;
 }

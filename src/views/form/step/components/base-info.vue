@@ -1,13 +1,12 @@
 <template>
   <a-form
     ref="formRef"
-    :model="formData"
-    class="form"
     :label-col-props="{ span: 6 }"
+    :model="formData"
     :wrapper-col-props="{ span: 18 }"
+    class="form"
   >
     <a-form-item
-      field="activityName"
       :label="$t('stepForm.form.label.activityName')"
       :rules="[
         {
@@ -19,6 +18,7 @@
           message: $t('stepForm.form.error.activityName.pattern'),
         },
       ]"
+      field="activityName"
     >
       <a-input
         v-model="formData.activityName"
@@ -26,7 +26,6 @@
       />
     </a-form-item>
     <a-form-item
-      field="channelType"
       :label="$t('stepForm.form.label.channelType')"
       :rules="[
         {
@@ -34,6 +33,7 @@
           message: $t('stepForm.form.error.channelType.required'),
         },
       ]"
+      field="channelType"
     >
       <a-select
         v-model="formData.channelType"
@@ -43,7 +43,6 @@
       </a-select>
     </a-form-item>
     <a-form-item
-      field="promotionTime"
       :label="$t('stepForm.form.label.promotionTime')"
       :rules="[
         {
@@ -51,11 +50,11 @@
           message: $t('stepForm.form.error.promotionTime.required'),
         },
       ]"
+      field="promotionTime"
     >
       <a-range-picker v-model="formData.promotionTime" />
     </a-form-item>
     <a-form-item
-      field="promoteLink"
       :label="$t('stepForm.form.label.promoteLink')"
       :rules="[
         {
@@ -67,6 +66,7 @@
           message: $t('stepForm.form.error.promoteLink.pattern'),
         },
       ]"
+      field="promoteLink"
       row-class="keep-margin"
     >
       <a-input
@@ -74,64 +74,65 @@
         :placeholder="$t('stepForm.placeholder.promoteLink')"
       />
       <template #help>
-        <span>{{ $t('stepForm.form.tip.promoteLink') }}</span>
+        <span>{{ $t("stepForm.form.tip.promoteLink") }}</span>
       </template>
     </a-form-item>
     <a-form-item>
       <a-button type="primary" @click="onNextClick">
-        {{ $t('stepForm.button.next') }}
+        {{ $t("stepForm.button.next") }}
       </a-button>
     </a-form-item>
   </a-form>
 </template>
 
 <script lang="ts" setup>
-  import { ref } from 'vue';
-  import { FormInstance } from '@arco-design/web-vue/es/form';
-  import { BaseInfoModel } from '@/api/form';
+import { ref } from "vue";
+import { FormInstance } from "@arco-design/web-vue/es/form";
+import { BaseInfoModel } from "@/api/form";
 
-  const emits = defineEmits(['changeStep']);
-  const formRef = ref<FormInstance>();
-  const formData = ref<BaseInfoModel>({
-    activityName: '',
-    channelType: '',
-    promotionTime: [],
-    promoteLink: 'https://arco.design',
-  });
+const emits = defineEmits(["changeStep"]);
+const formRef = ref<FormInstance>();
+const formData = ref<BaseInfoModel>({
+  activityName: "",
+  channelType: "",
+  promotionTime: [],
+  promoteLink: "https://arco.design",
+});
 
-  const onNextClick = async () => {
-    const res = await formRef.value?.validate();
-    if (!res) {
-      emits('changeStep', 'forward', { ...formData.value });
-    }
-  };
+const onNextClick = async () => {
+  const res = await formRef.value?.validate();
+  if (!res) {
+    emits("changeStep", "forward", { ...formData.value });
+  }
+};
 </script>
 
-<style scoped lang="less">
-  .container-form {
-    padding: 20px;
-    .keep-margin {
-      margin-bottom: 20px;
-    }
-  }
+<style lang="less" scoped>
+.container-form {
+  padding: 20px;
 
-  .wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 64px 0;
-    background-color: var(--color-bg-2);
+  .keep-margin {
+    margin-bottom: 20px;
   }
+}
 
-  .steps {
-    margin-bottom: 36px;
-  }
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 64px 0;
+  background-color: var(--color-bg-2);
+}
 
-  .form {
-    width: 500px;
-  }
+.steps {
+  margin-bottom: 36px;
+}
 
-  .form-content {
-    padding: 8px 50px 0 30px;
-  }
+.form {
+  width: 500px;
+}
+
+.form-content {
+  padding: 8px 50px 0 30px;
+}
 </style>

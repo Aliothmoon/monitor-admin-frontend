@@ -1,12 +1,12 @@
 <template>
-  <a-card class="general-card" :title="$t('monitor.title.studioPreview')">
+  <a-card :title="$t('monitor.title.studioPreview')" class="general-card">
     <template #extra>
       <icon-more />
     </template>
     <div class="studio-wrapper">
       <img
-        src="http://p1-arco.byteimg.com/tos-cn-i-uwbnlip3yd/c788fc704d32cf3b1136c7d45afc2669.png~tplv-uwbnlip3yd-webp.webp"
         class="studio-preview"
+        src="http://p1-arco.byteimg.com/tos-cn-i-uwbnlip3yd/c788fc704d32cf3b1136c7d45afc2669.png~tplv-uwbnlip3yd-webp.webp"
       />
       <div class="studio-bar">
         <div v-if="userInfo">
@@ -15,12 +15,12 @@
               <img :src="userInfo.avatar" />
             </a-avatar>
             <a-typography-text>
-              {{ userInfo.name }} {{ $t('monitor.studioPreview.studio') }}
+              {{ userInfo.name }} {{ $t("monitor.studioPreview.studio") }}
             </a-typography-text>
           </a-space>
         </div>
         <a-typography-text type="secondary">
-          36,000 {{ $t('monitor.studioPreview.watching') }}
+          36,000 {{ $t("monitor.studioPreview.watching") }}
         </a-typography-text>
       </div>
     </div>
@@ -28,24 +28,24 @@
 </template>
 
 <script lang="ts" setup>
-  import { useUserStore } from '@/store';
+import { useUserStore } from "@/store";
 
-  const userInfo = useUserStore();
+const userInfo = useUserStore();
 </script>
 
-<style scoped lang="less">
-  .studio {
-    &-preview {
-      display: block;
-      max-width: 600px;
-      margin: 0 auto;
-      width: 100%;
-    }
-
-    &-bar {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 16px;
-    }
+<style lang="less" scoped>
+.studio {
+  &-preview {
+    display: block;
+    max-width: 600px;
+    margin: 0 auto;
+    width: 100%;
   }
+
+  &-bar {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 16px;
+  }
+}
 </style>

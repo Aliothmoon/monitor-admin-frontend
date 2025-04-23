@@ -1,26 +1,26 @@
 <template>
-  <a-card class="general-card" :title="$t('monitor.title.quickOperation')">
-    <a-space direction="vertical" fill :size="10">
+  <a-card :title="$t('monitor.title.quickOperation')" class="general-card">
+    <a-space :size="10" direction="vertical" fill>
       <a-button long>
-        {{ $t('monitor.quickOperation.changeClarity') }}
+        {{ $t("monitor.quickOperation.changeClarity") }}
         <template #icon>
           <IconTags />
         </template>
       </a-button>
       <a-button long>
-        {{ $t('monitor.quickOperation.switchStream') }}
+        {{ $t("monitor.quickOperation.switchStream") }}
         <template #icon>
           <IconSwap />
         </template>
       </a-button>
       <a-button long>
-        {{ $t('monitor.quickOperation.removeClarity') }}
+        {{ $t("monitor.quickOperation.removeClarity") }}
         <template #icon>
           <IconStop />
         </template>
       </a-button>
       <a-button long>
-        {{ $t('monitor.quickOperation.pushFlowGasket') }}
+        {{ $t("monitor.quickOperation.pushFlowGasket") }}
         <template #icon>
           <IconArrowRight />
         </template>

@@ -30,7 +30,7 @@ const mockScreenRecords: ScreenRecord[] = [
     videoUrl: "https://example.com/videos/record_1.mp4",
     fileSize: 25600,
     riskLevel: 2,
-    remark: "多次切换窗口，疑似查看参考资料"
+    remark: "多次切换窗口，疑似查看参考资料",
   },
   {
     id: 2,
@@ -44,7 +44,7 @@ const mockScreenRecords: ScreenRecord[] = [
     videoUrl: "https://example.com/videos/record_2.mp4",
     fileSize: 24800,
     riskLevel: 0,
-    remark: "考试期间表现正常"
+    remark: "考试期间表现正常",
   },
   {
     id: 3,
@@ -58,7 +58,7 @@ const mockScreenRecords: ScreenRecord[] = [
     videoUrl: "https://example.com/videos/record_3.mp4",
     fileSize: 26200,
     riskLevel: 1,
-    remark: "偶尔低头，可能在查看纸质资料"
+    remark: "偶尔低头，可能在查看纸质资料",
   },
   {
     id: 4,
@@ -72,7 +72,7 @@ const mockScreenRecords: ScreenRecord[] = [
     videoUrl: "https://example.com/videos/record_4.mp4",
     fileSize: 102400,
     riskLevel: 0,
-    remark: "考试期间表现正常"
+    remark: "考试期间表现正常",
   },
   {
     id: 5,
@@ -86,8 +86,8 @@ const mockScreenRecords: ScreenRecord[] = [
     videoUrl: "https://example.com/videos/record_5.mp4",
     fileSize: 98560,
     riskLevel: 2,
-    remark: "发现使用第二台电脑搜索答案"
-  }
+    remark: "发现使用第二台电脑搜索答案",
+  },
 ];
 
 // 获取录屏列表
@@ -115,7 +115,9 @@ export const getScreenRecordList = async (
 
     // 按学生ID筛选
     if (studentId !== undefined) {
-      filteredData = filteredData.filter((item) => item.studentId === studentId);
+      filteredData = filteredData.filter(
+        (item) => item.studentId === studentId
+      );
     }
 
     // 关键词搜索（考试名称、学生姓名、备注）
@@ -130,7 +132,9 @@ export const getScreenRecordList = async (
 
     // 按风险等级筛选
     if (riskLevel !== undefined) {
-      filteredData = filteredData.filter((item) => item.riskLevel === riskLevel);
+      filteredData = filteredData.filter(
+        (item) => item.riskLevel === riskLevel
+      );
     }
 
     // 按时间范围筛选
@@ -179,7 +183,9 @@ export const updateScreenRecord = async (
     await new Promise((resolve) => setTimeout(resolve, 300));
 
     // 模拟修改
-    const index = mockScreenRecords.findIndex((item) => item.id === recordData.id);
+    const index = mockScreenRecords.findIndex(
+      (item) => item.id === recordData.id
+    );
     if (index !== -1) {
       mockScreenRecords[index] = {
         ...mockScreenRecords[index],
@@ -215,4 +221,4 @@ export const deleteScreenRecord = async (id: number) => {
     Message.error("删除失败");
     return false;
   }
-}; 
+};

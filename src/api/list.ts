@@ -1,15 +1,15 @@
-import axios from 'axios';
-import qs from 'query-string';
-import type { DescData } from '@arco-design/web-vue/es/descriptions/interface';
+import axios from "axios";
+import qs from "query-string";
+import type { DescData } from "@arco-design/web-vue/es/descriptions/interface";
 
 export interface PolicyRecord {
   id: string;
   number: number;
   name: string;
-  contentType: 'img' | 'horizontalVideo' | 'verticalVideo';
-  filterType: 'artificial' | 'rules';
+  contentType: "img" | "horizontalVideo" | "verticalVideo";
+  filterType: "artificial" | "rules";
   count: number;
-  status: 'online' | 'offline';
+  status: "online" | "offline";
   createdTime: string;
 }
 
@@ -24,7 +24,7 @@ export interface PolicyListRes {
 }
 
 export function queryPolicyList(params: PolicyParams) {
-  return axios.get<PolicyListRes>('/api/list/policy', {
+  return axios.get<PolicyListRes>("/api/list/policy", {
     params,
     paramsSerializer: (obj) => {
       return qs.stringify(obj);
@@ -43,14 +43,15 @@ export interface ServiceRecord {
   enable?: boolean;
   expires?: boolean;
 }
+
 export function queryInspectionList() {
-  return axios.get('/api/list/quality-inspection');
+  return axios.get("/api/list/quality-inspection");
 }
 
 export function queryTheServiceList() {
-  return axios.get('/api/list/the-service');
+  return axios.get("/api/list/the-service");
 }
 
 export function queryRulesPresetList() {
-  return axios.get('/api/list/rules-preset');
+  return axios.get("/api/list/rules-preset");
 }

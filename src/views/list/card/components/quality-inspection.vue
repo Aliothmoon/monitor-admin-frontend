@@ -1,15 +1,15 @@
 <template>
   <div class="list-wrap">
-    <a-typography-title class="block-title" :heading="6">
-      {{ $t('cardList.tab.title.content') }}
+    <a-typography-title :heading="6" class="block-title">
+      {{ $t("cardList.tab.title.content") }}
     </a-typography-title>
-    <a-row class="list-row" :gutter="24">
+    <a-row :gutter="24" class="list-row">
       <a-col
-        :xs="12"
-        :sm="12"
-        :md="12"
         :lg="6"
+        :md="12"
+        :sm="12"
         :xl="6"
+        :xs="12"
         :xxl="6"
         class="list-col"
       >
@@ -26,38 +26,38 @@
       <a-col
         v-for="item in renderData"
         :key="item.id"
-        class="list-col"
-        :xs="12"
-        :sm="12"
-        :md="12"
         :lg="6"
+        :md="12"
+        :sm="12"
         :xl="6"
+        :xs="12"
         :xxl="6"
+        class="list-col"
       >
         <CardWrap
-          :loading="loading"
-          :title="item.title"
-          :description="item.description"
-          :default-value="item.enable"
           :action-type="item.actionType"
-          :icon="item.icon"
-          :open-txt="$t('cardList.content.inspection')"
           :close-txt="$t('cardList.content.delete')"
+          :default-value="item.enable"
+          :description="item.description"
+          :icon="item.icon"
+          :loading="loading"
+          :open-txt="$t('cardList.content.inspection')"
           :show-tag="false"
+          :title="item.title"
         >
           <a-descriptions
-            style="margin-top: 16px"
+            :column="2"
             :data="item.data"
             layout="inline-horizontal"
-            :column="2"
+            style="margin-top: 16px"
           />
           <template #skeleton>
             <a-skeleton :animation="true">
               <a-skeleton-line
-                :widths="['50%', '50%', '100%', '40%']"
                 :rows="4"
+                :widths="['50%', '50%', '100%', '40%']"
               />
-              <a-skeleton-line :widths="['40%']" :rows="1" />
+              <a-skeleton-line :rows="1" :widths="['40%']" />
             </a-skeleton>
           </template>
         </CardWrap>
@@ -67,49 +67,56 @@
 </template>
 
 <script lang="ts" setup>
-  import { queryInspectionList, ServiceRecord } from '@/api/list';
-  import useRequest from '@/hooks/request';
-  import CardWrap from './card-wrap.vue';
+import { queryInspectionList, ServiceRecord } from "@/api/list";
+import useRequest from "@/hooks/request";
+import CardWrap from "./card-wrap.vue";
 
-  const defaultValue: ServiceRecord[] = new Array(3).fill({});
-  const { loading, response: renderData } = useRequest<ServiceRecord[]>(
-    queryInspectionList,
-    defaultValue
-  );
+const defaultValue: ServiceRecord[] = new Array(3).fill({});
+const { loading, response: renderData } = useRequest<ServiceRecord[]>(
+  queryInspectionList,
+  defaultValue
+);
 </script>
 
-<style scoped lang="less">
-  .card-wrap {
-    height: 100%;
-    transition: all 0.3s;
-    border: 1px solid var(--color-neutral-3);
-    &:hover {
-      transform: translateY(-4px);
-    }
-    :deep(.arco-card-meta-description) {
+<style lang="less" scoped>
+.card-wrap {
+  height: 100%;
+  transition: all 0.3s;
+  border: 1px solid var(--color-neutral-3);
+
+  &:hover {
+    transform: translateY(-4px);
+  }
+
+  :deep(.arco-card-meta-description) {
+    color: rgb(var(--gray-6));
+
+    .arco-descriptions-item-label-inline {
+      font-weight: normal;
+      font-size: 12px;
       color: rgb(var(--gray-6));
-      .arco-descriptions-item-label-inline {
-        font-weight: normal;
-        font-size: 12px;
-        color: rgb(var(--gray-6));
-      }
-      .arco-descriptions-item-value-inline {
-        color: rgb(var(--gray-8));
-      }
+    }
+
+    .arco-descriptions-item-value-inline {
+      color: rgb(var(--gray-8));
     }
   }
-  .empty-wrap {
-    height: 200px;
+}
+
+.empty-wrap {
+  height: 200px;
+  border-radius: 4px;
+
+  :deep(.arco-card) {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border-radius: 4px;
-    :deep(.arco-card) {
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 4px;
-      .arco-result-title {
-        color: rgb(var(--gray-6));
-      }
+
+    .arco-result-title {
+      color: rgb(var(--gray-6));
     }
   }
+}
 </style>

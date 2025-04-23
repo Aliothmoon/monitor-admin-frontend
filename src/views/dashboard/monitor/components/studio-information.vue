@@ -1,5 +1,5 @@
 <template>
-  <a-card class="general-card" :title="$t('monitor.title.studioInfo')">
+  <a-card :title="$t('monitor.title.studioInfo')" class="general-card">
     <a-form :model="{}" layout="vertical">
       <a-form-item :label="$t('monitor.studioInfo.label.studioTitle')" required>
         <a-input
@@ -27,7 +27,7 @@
         <a-input-search />
       </a-form-item>
     </a-form>
-    <a-button type="primary">{{ $t('monitor.studioInfo.btn.fresh') }}</a-button>
+    <a-button type="primary">{{ $t("monitor.studioInfo.btn.fresh") }}</a-button>
   </a-card>
 </template>
 

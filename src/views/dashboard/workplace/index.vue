@@ -14,7 +14,7 @@
             </a-typography-paragraph>
           </a-col>
           <a-col :span="8" class="text-right">
-            <a-button type="primary" status="success">
+            <a-button status="success" type="primary">
               <template #icon>
                 <icon-video-camera />
               </template>
@@ -28,9 +28,9 @@
           <a-col :span="6">
             <a-card class="stat-card">
               <a-statistic
-                title="当前考试场次"
                 :value="stats.activeExams"
                 animation
+                title="当前考试场次"
               >
                 <template #prefix>
                   <icon-calendar class="stat-icon blue-icon" />
@@ -43,26 +43,26 @@
           </a-col>
           <a-col :span="6">
             <a-card class="stat-card warning-card">
-              <a-statistic title="异常事件" :value="stats.anomalies" animation>
+              <a-statistic :value="stats.anomalies" animation title="异常事件">
                 <template #prefix>
                   <icon-exclamation-circle class="stat-icon red-icon" />
                 </template>
               </a-statistic>
               <div class="stat-footer">
                 <a-tag color="red" size="small"
-                  >需要处理: {{ stats.pendingAnomalies }}</a-tag
-                >
+                  >需要处理: {{ stats.pendingAnomalies }}
+                </a-tag>
               </div>
             </a-card>
           </a-col>
           <a-col :span="6">
             <a-card class="stat-card">
               <a-statistic
-                title="监考员在线"
                 :value="stats.onlineProctors"
                 animation
+                title="监考员在线"
               >
-                <template #suffix> / {{ stats.totalProctors }} </template>
+                <template #suffix> / {{ stats.totalProctors }}</template>
                 <template #prefix>
                   <icon-user class="stat-icon green-icon" />
                 </template>
@@ -82,9 +82,9 @@
           <a-col :span="6">
             <a-card class="stat-card">
               <a-statistic
-                title="考生在线"
                 :value="stats.onlineCandidates"
                 animation
+                title="考生在线"
               >
                 <template #prefix>
                   <icon-user-group class="stat-icon yellow-icon" />
@@ -115,9 +115,9 @@
                     <a-row justify="space-between">
                       <a-col>
                         <a-space>
-                          <a-tag :color="getStatusColor(exam.status)">{{
-                            exam.status
-                          }}</a-tag>
+                          <a-tag :color="getStatusColor(exam.status)"
+                            >{{ exam.status }}
+                          </a-tag>
                           <span>{{ exam.name }}</span>
                         </a-space>
                       </a-col>
@@ -141,8 +141,8 @@
                           {{ exam.candidateCount }} 名考生
                           <a-button
                             v-if="exam.status === '进行中'"
-                            type="text"
                             size="mini"
+                            type="text"
                           >
                             监控
                           </a-button>
@@ -169,10 +169,10 @@
                 <div
                   v-for="candidate in candidateLiveData"
                   :key="candidate.id"
-                  class="camera-cell"
                   :class="{ warning: candidate.hasAnomaly }"
+                  class="camera-cell"
                 >
-                  <div class="camera-overlay" v-if="candidate.hasAnomaly">
+                  <div v-if="candidate.hasAnomaly" class="camera-overlay">
                     <icon-exclamation-circle />
                     <span>{{ candidate.anomalyType }}</span>
                   </div>

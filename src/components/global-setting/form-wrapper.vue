@@ -1,9 +1,9 @@
 <template>
   <a-input-number
     v-if="type === 'number'"
+    :default-value="(defaultValue as number)"
     :style="{ width: '80px' }"
     size="small"
-    :default-value="(defaultValue as number)"
     @change="handleChange"
   />
   <a-switch
@@ -15,25 +15,25 @@
 </template>
 
 <script lang="ts" setup>
-  const props = defineProps({
-    type: {
-      type: String,
-      default: '',
-    },
-    name: {
-      type: String,
-      default: '',
-    },
-    defaultValue: {
-      type: [String, Boolean, Number],
-      default: '',
-    },
+const props = defineProps({
+  type: {
+    type: String,
+    default: "",
+  },
+  name: {
+    type: String,
+    default: "",
+  },
+  defaultValue: {
+    type: [String, Boolean, Number],
+    default: "",
+  },
+});
+const emit = defineEmits(["inputChange"]);
+const handleChange = (value: unknown) => {
+  emit("inputChange", {
+    value,
+    key: props.name,
   });
-  const emit = defineEmits(['inputChange']);
-  const handleChange = (value: unknown) => {
-    emit('inputChange', {
-      value,
-      key: props.name,
-    });
-  };
+};
 </script>

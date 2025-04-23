@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from "axios";
 
 export interface BaseInfoModel {
   activityName: string;
@@ -6,6 +6,7 @@ export interface BaseInfoModel {
   promotionTime: string[];
   promoteLink: string;
 }
+
 export interface ChannelInfoModel {
   advertisingSource: string;
   advertisingMedia: string;
@@ -17,5 +18,5 @@ export interface ChannelInfoModel {
 export type UnitChannelModel = BaseInfoModel & ChannelInfoModel;
 
 export function submitChannelForm(data: UnitChannelModel) {
-  return axios.post('/api/channel-form/submit', { data });
+  return axios.post("/api/channel-form/submit", { data });
 }

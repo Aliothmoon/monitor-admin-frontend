@@ -5,20 +5,27 @@
       <a-row>
         <a-col :flex="1">
           <a-form
-            :model="formModel"
             :label-col-props="{ span: 6 }"
+            :model="formModel"
             :wrapper-col-props="{ span: 18 }"
             label-align="left"
           >
             <a-row :gutter="16">
               <a-col :span="12">
-                <a-form-item field="keyword" :label="'关键词搜索'">
-                  <a-input v-model="formModel.keyword" placeholder="搜索名称或描述" />
+                <a-form-item :label="'关键词搜索'" field="keyword">
+                  <a-input
+                    v-model="formModel.keyword"
+                    placeholder="搜索名称或描述"
+                  />
                 </a-form-item>
               </a-col>
               <a-col :span="12">
-                <a-form-item field="status" :label="'考试状态'">
-                  <a-select v-model="formModel.status" placeholder="请选择考试状态" allow-clear>
+                <a-form-item :label="'考试状态'" field="status">
+                  <a-select
+                    v-model="formModel.status"
+                    allow-clear
+                    placeholder="请选择考试状态"
+                  >
                     <a-option :value="0" label="未开始" />
                     <a-option :value="1" label="进行中" />
                     <a-option :value="2" label="已结束" />
@@ -28,21 +35,21 @@
             </a-row>
             <a-row :gutter="16">
               <a-col :span="12">
-                <a-form-item field="timeRange" :label="'考试时间范围'">
+                <a-form-item :label="'考试时间范围'" field="timeRange">
                   <a-range-picker
                     v-model="formModel.timeRange"
-                    style="width: 100%"
-                    show-time
                     format="YYYY-MM-DD HH:mm:ss"
+                    show-time
+                    style="width: 100%"
                   />
                 </a-form-item>
               </a-col>
             </a-row>
           </a-form>
         </a-col>
-        <a-divider style="height: 84px" direction="vertical" />
+        <a-divider direction="vertical" style="height: 84px" />
         <a-col :flex="'86px'" style="text-align: right">
-          <a-space direction="vertical" :size="18">
+          <a-space :size="18" direction="vertical">
             <a-button type="primary" @click="search">
               <template #icon>
                 <icon-search />
@@ -72,13 +79,13 @@
         </a-col>
       </a-row>
       <a-table
-        row-key="id"
-        :loading="loading"
-        :pagination="pagination"
+        :bordered="false"
         :columns="columns"
         :data="renderData"
-        :bordered="false"
+        :loading="loading"
+        :pagination="pagination"
         :size="'medium'"
+        row-key="id"
         @page-change="fetchData"
       >
         <template #index="{ rowIndex }">
@@ -95,28 +102,28 @@
 
         <template #operation="{ record }">
           <a-button
-            @click="handleUpdate(record)"
-            type="primary"
-            style="margin-right: 10px"
             size="small"
+            style="margin-right: 10px"
+            type="primary"
+            @click="handleUpdate(record)"
           >
             修改
           </a-button>
           <a-button
             v-if="record.status !== 1"
-            @click="handleRemove(record)"
-            type="primary"
-            status="danger"
             size="small"
+            status="danger"
+            type="primary"
+            @click="handleRemove(record)"
           >
             删除
           </a-button>
           <a-button
             v-else
-            @click="handleProctoring(record)"
-            type="primary"
-            status="success"
             size="small"
+            status="success"
+            type="primary"
+            @click="handleProctoring(record)"
           >
             监考
           </a-button>
@@ -125,19 +132,19 @@
     </a-card>
     <a-modal
       v-model:visible="visible"
-      :title="upsertType == 'c' ? '新增' : '修改'"
       :on-before-ok="handleCompete"
+      :title="upsertType == 'c' ? '新增' : '修改'"
     >
       <a-form
+        ref="upsertFormRef"
         :auto-label-width="true"
         :model="upsertForm"
         :size="'large'"
-        ref="upsertFormRef"
       >
         <a-form-item
+          :rules="[{ required: true, message: '不能为空' }]"
           field="name"
           label="考试名称"
-          :rules="[{ required: true, message: '不能为空' }]"
         >
           <a-input v-model="upsertForm.name"></a-input>
         </a-form-item>
@@ -145,33 +152,33 @@
           <a-textarea v-model="upsertForm.description"></a-textarea>
         </a-form-item>
         <a-form-item
+          :rules="[{ required: true, message: '不能为空' }]"
           field="startTime"
           label="开始时间"
-          :rules="[{ required: true, message: '不能为空' }]"
         >
           <a-date-picker
             v-model="upsertForm.startTime"
-            show-time
             format="YYYY-MM-DD HH:mm:ss"
+            show-time
           />
         </a-form-item>
         <a-form-item
+          :rules="[{ required: true, message: '不能为空' }]"
           field="endTime"
           label="结束时间"
-          :rules="[{ required: true, message: '不能为空' }]"
         >
           <a-date-picker
             v-model="upsertForm.endTime"
-            show-time
             format="YYYY-MM-DD HH:mm:ss"
+            show-time
           />
         </a-form-item>
         <a-form-item
+          :rules="[{ required: true, message: '不能为空' }]"
           field="duration"
           label="考试时长(分钟)"
-          :rules="[{ required: true, message: '不能为空' }]"
         >
-          <a-input-number v-model="upsertForm.duration" :min="1" :max="300" />
+          <a-input-number v-model="upsertForm.duration" :max="300" :min="1" />
         </a-form-item>
       </a-form>
     </a-modal>
@@ -266,8 +273,8 @@ const fetchData = async (current = 1) => {
 
   try {
     const { data, total } = await getExamList(
-      current, 
-      pagination.pageSize, 
+      current,
+      pagination.pageSize,
       formModel.value.keyword,
       formModel.value.status,
       formModel.value.timeRange?.[0] ? formModel.value.timeRange[0] : undefined,
@@ -346,7 +353,7 @@ const handleCompete = async () => {
       // 修改考试
       result = await updateExam(upsertForm.value as Exam);
     }
-    
+
     if (result) {
       fetchData(pagination.current);
       return true;
@@ -386,7 +393,7 @@ onMounted(() => {
 });
 </script>
 
-<style scoped lang="less">
+<style lang="less" scoped>
 .container-form {
   padding: 0 20px 20px 20px;
 }

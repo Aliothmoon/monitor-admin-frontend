@@ -1,13 +1,12 @@
 <template>
   <a-form
     ref="formRef"
-    :model="formData"
-    class="form"
     :label-col-props="{ span: 6 }"
+    :model="formData"
     :wrapper-col-props="{ span: 18 }"
+    class="form"
   >
     <a-form-item
-      field="advertisingSource"
       :label="$t('stepForm.form.label.advertisingSource')"
       :rules="[
         {
@@ -15,6 +14,7 @@
           message: $t('stepForm.form.error.advertisingSource.required'),
         },
       ]"
+      field="advertisingSource"
     >
       <a-input
         v-model="formData.advertisingSource"
@@ -22,7 +22,6 @@
       />
     </a-form-item>
     <a-form-item
-      field="advertisingMedia"
       :label="$t('stepForm.form.label.advertisingMedia')"
       :rules="[
         {
@@ -30,6 +29,7 @@
           message: $t('stepForm.form.error.advertisingMedia.required'),
         },
       ]"
+      field="advertisingMedia"
     >
       <a-input
         v-model="formData.advertisingMedia"
@@ -37,11 +37,11 @@
       />
     </a-form-item>
     <a-form-item
-      field="keyword"
       :label="$t('stepForm.form.label.keyword')"
       :rules="[
         { required: true, message: $t('stepForm.form.error.keyword.required') },
       ]"
+      field="keyword"
     >
       <a-select
         v-model="formData.keyword"
@@ -53,14 +53,13 @@
       </a-select>
     </a-form-item>
     <a-form-item
-      field="pushNotify"
       :label="$t('stepForm.form.label.pushNotify')"
       :rules="[{ required: true }]"
+      field="pushNotify"
     >
       <a-switch v-model="formData.pushNotify" />
     </a-form-item>
     <a-form-item
-      field="advertisingContent"
       :label="$t('stepForm.form.label.advertisingContent')"
       :rules="[
         {
@@ -72,6 +71,7 @@
           message: $t('stepForm.form.error.advertisingContent.maxLength'),
         },
       ]"
+      field="advertisingContent"
       row-class="keep-margin"
     >
       <a-textarea
@@ -85,10 +85,10 @@
       </a-button> -->
       <a-space>
         <a-button type="secondary" @click="goPrev">
-          {{ $t('stepForm.button.prev') }}
+          {{ $t("stepForm.button.prev") }}
         </a-button>
         <a-button type="primary" @click="onNextClick">
-          {{ $t('stepForm.button.next') }}
+          {{ $t("stepForm.button.next") }}
         </a-button>
       </a-space>
     </a-form-item>
@@ -96,56 +96,56 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref } from 'vue';
-  import { FormInstance } from '@arco-design/web-vue/es/form';
-  import { ChannelInfoModel } from '@/api/form';
+import { ref } from "vue";
+import { FormInstance } from "@arco-design/web-vue/es/form";
+import { ChannelInfoModel } from "@/api/form";
 
-  const emits = defineEmits(['changeStep']);
+const emits = defineEmits(["changeStep"]);
 
-  const formRef = ref<FormInstance>();
-  const formData = ref<ChannelInfoModel>({
-    advertisingSource: '',
-    advertisingMedia: '',
-    keyword: [],
-    pushNotify: true,
-    advertisingContent: '',
-  });
+const formRef = ref<FormInstance>();
+const formData = ref<ChannelInfoModel>({
+  advertisingSource: "",
+  advertisingMedia: "",
+  keyword: [],
+  pushNotify: true,
+  advertisingContent: "",
+});
 
-  const onNextClick = async () => {
-    const res = await formRef.value?.validate();
-    if (!res) {
-      emits('changeStep', 'submit', { ...formData.value });
-    }
-  };
-  const goPrev = () => {
-    emits('changeStep', 'backward');
-  };
+const onNextClick = async () => {
+  const res = await formRef.value?.validate();
+  if (!res) {
+    emits("changeStep", "submit", { ...formData.value });
+  }
+};
+const goPrev = () => {
+  emits("changeStep", "backward");
+};
 </script>
 
-<style scoped lang="less">
-  .container-form {
-    .keep-margin {
-      margin-bottom: 20px;
-    }
+<style lang="less" scoped>
+.container-form {
+  .keep-margin {
+    margin-bottom: 20px;
   }
+}
 
-  .wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 64px 0;
-    background-color: var(--color-bg-2);
-  }
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 64px 0;
+  background-color: var(--color-bg-2);
+}
 
-  .steps {
-    margin-bottom: 36px;
-  }
+.steps {
+  margin-bottom: 36px;
+}
 
-  .form {
-    width: 540px;
-  }
+.form {
+  width: 540px;
+}
 
-  .form-content {
-    padding: 8px 50px 0 30px;
-  }
+.form-content {
+  padding: 8px 50px 0 30px;
+}
 </style>

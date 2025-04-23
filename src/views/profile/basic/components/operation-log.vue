@@ -1,7 +1,7 @@
 <template>
   <a-card class="general-card">
     <template #title>
-      {{ $t('basicProfile.title.operationLog') }}
+      {{ $t("basicProfile.title.operationLog") }}
     </template>
     <a-spin :loading="loading" style="width: 100%">
       <a-table :data="renderData">
@@ -21,11 +21,11 @@
             <template #cell="{ record }">
               <p v-if="record.status === 0">
                 <span class="circle"></span>
-                <span>{{ $t('basicProfile.cell.auditing') }}</span>
+                <span>{{ $t("basicProfile.cell.auditing") }}</span>
               </p>
               <p v-if="record.status === 1">
                 <span class="circle pass"></span>
-                <span>{{ $t('basicProfile.cell.pass') }}</span>
+                <span>{{ $t("basicProfile.cell.pass") }}</span>
               </p>
             </template>
           </a-table-column>
@@ -35,9 +35,9 @@
           />
           <a-table-column :title="$t('basicProfile.column.operation')">
             <template #cell>
-              <a-button type="text">{{
-                $t('basicProfile.cell.view')
-              }}</a-button>
+              <a-button type="text"
+                >{{ $t("basicProfile.cell.view") }}
+              </a-button>
             </template>
           </a-table-column>
         </template>
@@ -47,31 +47,31 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref } from 'vue';
-  import { queryOperationLog, operationLogRes } from '@/api/profile';
-  import useLoading from '@/hooks/loading';
+import { ref } from "vue";
+import { queryOperationLog, operationLogRes } from "@/api/profile";
+import useLoading from "@/hooks/loading";
 
-  const { loading, setLoading } = useLoading(true);
-  const renderData = ref<operationLogRes>([]);
-  const fetchData = async () => {
-    try {
-      const { data } = await queryOperationLog();
-      renderData.value = data;
-    } catch (err) {
-      // you can report use errorHandler or other
-    } finally {
-      setLoading(false);
-    }
-  };
-  fetchData();
+const { loading, setLoading } = useLoading(true);
+const renderData = ref<operationLogRes>([]);
+const fetchData = async () => {
+  try {
+    const { data } = await queryOperationLog();
+    renderData.value = data;
+  } catch (err) {
+    // you can report use errorHandler or other
+  } finally {
+    setLoading(false);
+  }
+};
+fetchData();
 </script>
 
-<style scoped lang="less">
-  :deep(.arco-table-th) {
-    &:last-child {
-      .arco-table-th-item-title {
-        margin-left: 16px;
-      }
+<style lang="less" scoped>
+:deep(.arco-table-th) {
+  &:last-child {
+    .arco-table-th-item-title {
+      margin-left: 16px;
     }
   }
+}
 </style>

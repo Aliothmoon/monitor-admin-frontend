@@ -17,7 +17,7 @@ const EXAMS: AppRouteRecordRaw = {
       name: "exam-manage",
       component: () => import("@/views/exam/index.vue"),
       meta: {
-        menuName:"考试管理",
+        menuName: "考试管理",
         roles: ["*"],
       },
     },
@@ -26,7 +26,7 @@ const EXAMS: AppRouteRecordRaw = {
       name: "exam-config",
       component: () => import("@/views/exam/config/index.vue"),
       meta: {
-        menuName:"可疑进程黑名单",
+        menuName: "可疑进程黑名单",
         roles: ["*"],
       },
     },
@@ -35,7 +35,7 @@ const EXAMS: AppRouteRecordRaw = {
       name: "exam-domain",
       component: () => import("@/views/exam/config/domain.vue"),
       meta: {
-        menuName:"访问域名黑名单",
+        menuName: "访问域名黑名单",
         roles: ["*"],
       },
     },
@@ -44,7 +44,7 @@ const EXAMS: AppRouteRecordRaw = {
       name: "exam-image",
       component: () => import("@/views/exam/config/image.vue"),
       meta: {
-        menuName:"风险图片模板",
+        menuName: "风险图片模板",
         roles: ["*"],
       },
     },

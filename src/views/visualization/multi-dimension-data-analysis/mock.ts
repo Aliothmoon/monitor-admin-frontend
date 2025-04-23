@@ -1,10 +1,10 @@
-import Mock from 'mockjs';
-import setupMock, { successResponseWrap } from '@/utils/setup-mock';
-import { PostData } from '@/types/global';
+import Mock from "mockjs";
+import setupMock, { successResponseWrap } from "@/utils/setup-mock";
+import { PostData } from "@/types/global";
 
 setupMock({
   setup() {
-    Mock.mock(new RegExp('/api/data-chain-growth'), (params: PostData) => {
+    Mock.mock(new RegExp("/api/data-chain-growth"), (params: PostData) => {
       const { quota } = JSON.parse(params.body);
       const getLineData = () => {
         return {
@@ -24,7 +24,7 @@ setupMock({
       });
     });
     // v2
-    Mock.mock(new RegExp('/api/data-overview'), () => {
+    Mock.mock(new RegExp("/api/data-overview"), () => {
       const generateLineData = (name: string) => {
         return {
           name,
@@ -38,10 +38,10 @@ setupMock({
       return successResponseWrap({
         xAxis,
         data: [
-          generateLineData('内容生产量'),
-          generateLineData('内容点击量'),
-          generateLineData('内容曝光量'),
-          generateLineData('活跃用户数'),
+          generateLineData("内容生产量"),
+          generateLineData("内容点击量"),
+          generateLineData("内容曝光量"),
+          generateLineData("活跃用户数"),
         ],
       });
     });

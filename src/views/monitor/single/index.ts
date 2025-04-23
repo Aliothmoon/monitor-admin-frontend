@@ -1,3 +1,3 @@
-import SingleMonitor from './index.vue';
+import SingleMonitor from "./index.vue";
 
-export default SingleMonitor; 
+export default SingleMonitor;

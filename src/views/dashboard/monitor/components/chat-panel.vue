@@ -1,20 +1,20 @@
 <template>
   <a-card
-    class="general-card chat-panel"
-    :title="$t('monitor.title.chatPanel')"
-    :bordered="false"
-    :header-style="{ paddingBottom: '0' }"
     :body-style="{
       height: '100%',
       paddingTop: '16px',
       display: 'flex',
       flexFlow: 'column',
     }"
+    :bordered="false"
+    :header-style="{ paddingBottom: '0' }"
+    :title="$t('monitor.title.chatPanel')"
+    class="general-card chat-panel"
   >
     <a-space :size="8">
-      <a-select style="width: 86px" default-value="all">
+      <a-select default-value="all" style="width: 86px">
         <a-option value="all">
-          {{ $t('monitor.chat.options.all') }}
+          {{ $t("monitor.chat.options.all") }}
         </a-option>
       </a-select>
       <a-input-search
@@ -36,44 +36,44 @@
             <icon-face-smile-fill />
           </template>
         </a-Input>
-        <a-button type="primary">{{ $t('monitor.chat.update') }}</a-button>
+        <a-button type="primary">{{ $t("monitor.chat.update") }}</a-button>
       </a-space>
     </div>
   </a-card>
 </template>
 
 <script lang="ts" setup>
-  import { ref } from 'vue';
-  import { queryChatList, ChatRecord } from '@/api/message';
-  import useLoading from '@/hooks/loading';
-  import ChatList from './chat-list.vue';
+import { ref } from "vue";
+import { queryChatList, ChatRecord } from "@/api/message";
+import useLoading from "@/hooks/loading";
+import ChatList from "./chat-list.vue";
 
-  const { loading, setLoading } = useLoading(true);
-  const chatData = ref<ChatRecord[]>([]);
-  const fetchData = async () => {
-    try {
-      const { data } = await queryChatList();
-      chatData.value = data;
-    } catch (err) {
-      // you can report use errorHandler or other
-    } finally {
-      setLoading(false);
-    }
-  };
-  fetchData();
+const { loading, setLoading } = useLoading(true);
+const chatData = ref<ChatRecord[]>([]);
+const fetchData = async () => {
+  try {
+    const { data } = await queryChatList();
+    chatData.value = data;
+  } catch (err) {
+    // you can report use errorHandler or other
+  } finally {
+    setLoading(false);
+  }
+};
+fetchData();
 </script>
 
-<style scoped lang="less">
-  .chat-panel {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    // padding: 20px;
-    background-color: var(--color-bg-2);
+<style lang="less" scoped>
+.chat-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  // padding: 20px;
+  background-color: var(--color-bg-2);
 
-    &-content {
-      flex: 1;
-      margin: 20px 0;
-    }
+  &-content {
+    flex: 1;
+    margin: 20px 0;
   }
+}
 </style>

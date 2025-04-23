@@ -1,7 +1,14 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import { ref, reactive, onMounted } from "vue";
 import { Pagination } from "@/types/global";
-import { Candidate, getCandidateList, getStatusColor, getStatusText, getRiskLevelColor, getRiskLevelText } from "./index";
+import {
+  Candidate,
+  getCandidateList,
+  getStatusColor,
+  getStatusText,
+  getRiskLevelColor,
+  getRiskLevelText,
+} from "./index";
 import useLoading from "@/hooks/loading";
 import { Message } from "@arco-design/web-vue";
 import router from "@/router";
@@ -32,11 +39,11 @@ const fetchCandidateData = async (page = 1) => {
   setLoading(true);
   try {
     const { data, total } = await getCandidateList(
-      page, 
-      pagination.pageSize, 
+      page,
+      pagination.pageSize,
       formModel.value.keyword
     );
-    
+
     monitoringCards.value = data;
     pagination.total = total;
   } catch (error) {
@@ -97,20 +104,20 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="container-form" id="many-monitor-container">
+  <div id="many-monitor-container" class="container-form">
     <Breadcrumb :items="['考场监控', '多人监控']" direct />
-    <a-card class="general-card" :title="'多人考场监控'">
+    <a-card :title="'多人考场监控'" class="general-card">
       <a-row>
         <a-col :flex="1">
           <a-form
-            :model="formModel"
             :label-col-props="{ span: 6 }"
+            :model="formModel"
             :wrapper-col-props="{ span: 18 }"
             label-align="left"
           >
             <a-row :gutter="16">
               <a-col :span="12">
-                <a-form-item field="keyword" :label="'关键词搜索'">
+                <a-form-item :label="'关键词搜索'" field="keyword">
                   <a-input
                     v-model="formModel.keyword"
                     placeholder="搜索考生姓名或考号"
@@ -120,9 +127,9 @@ onMounted(() => {
             </a-row>
           </a-form>
         </a-col>
-        <a-divider style="height: 42px" direction="vertical" />
+        <a-divider direction="vertical" style="height: 42px" />
         <a-col :flex="'86px'" style="text-align: right">
-          <a-space direction="vertical" :size="18">
+          <a-space :size="18" direction="vertical">
             <a-button type="primary" @click="search">
               <template #icon>
                 <icon-search />
@@ -139,7 +146,7 @@ onMounted(() => {
         </a-col>
       </a-row>
       <a-divider style="margin-top: 0" />
-      
+
       <a-row style="margin-bottom: 16px">
         <a-col :span="24">
           <a-space>
@@ -167,110 +174,118 @@ onMounted(() => {
 
       <div class="flex w-full justify-center">
         <a-spin :loading="loading">
-            <div class="monitor-cards-wrapper w-full" >
-                  <div
-                      v-for="candidate in monitoringCards"
-                      :key="candidate.id"
-                      class="monitor-card"
-                  >
-                    <div class="monitor-card-video">
-                      <div class="video-container">
-                        <img
-                            v-if="!playingVideos.has(candidate.id)"
-                            :src="candidate.screenshot"
-                            alt="监控画面"
-                            class="video-screenshot"
-                        />
-                        <div v-else class="live-video">
-                          <img
-                              :src="candidate.screenshot"
-                              alt="实时监控"
-                              class="live-stream"
-                          />
-                          <div class="live-indicator">直播中</div>
-                        </div>
-
-                        <div class="video-controls">
-                          <a-button
-                              :type="
-                      playingVideos.has(candidate.id) ? 'primary' : 'outline'
-                    "
-                              shape="circle"
-                              @click="toggleVideoPlay(candidate)"
-                          >
-                            <template #icon>
-                              <icon-pause v-if="playingVideos.has(candidate.id)" />
-                              <icon-play-arrow v-else />
-                            </template>
-                          </a-button>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="monitor-card-info" @click="router.push({name: 'online-monitor-watch'})">
-                      <div class="candidate-info">
-                        <a-space direction="vertical" fill>
-                          <a-row justify="space-between">
-                            <a-col :span="16">
-                              <a-space>
-                                <a-avatar :size="24">{{
-                                    candidate.name.charAt(0)
-                                  }}</a-avatar>
-                                <span class="candidate-name">{{ candidate.name }}</span>
-                              </a-space>
-                            </a-col>
-                            <a-col :span="8" class="text-right">
-                              <a-tag :color="getStatusColor(candidate.status)">
-                                {{ getStatusText(candidate.status) }}
-                              </a-tag>
-                            </a-col>
-                          </a-row>
-
-                          <a-row justify="space-between">
-                            <a-col :span="14">考号: {{ candidate.examId }}</a-col>
-                            <a-col :span="10" class="text-right">
-                              <a-tag
-                                  v-if="candidate.riskLevel !== 'none'"
-                                  :color="getRiskLevelColor(candidate.riskLevel)"
-                              >
-                                {{ getRiskLevelText(candidate.riskLevel) }}
-                              </a-tag>
-                            </a-col>
-                          </a-row>
-
-                          <a-row v-if="candidate.riskDescription">
-                            <a-col :span="24" class="risk-description">
-                              <icon-exclamation-circle-fill
-                                  style="color: #f53f3f; margin-right: 4px"
-                              />
-                              {{ candidate.riskDescription }}
-                            </a-col>
-                          </a-row>
-                        </a-space>
-                      </div>
-                    </div>
+          <div class="monitor-cards-wrapper w-full">
+            <div
+              v-for="candidate in monitoringCards"
+              :key="candidate.id"
+              class="monitor-card"
+            >
+              <div class="monitor-card-video">
+                <div class="video-container">
+                  <img
+                    v-if="!playingVideos.has(candidate.id)"
+                    :src="candidate.screenshot"
+                    alt="监控画面"
+                    class="video-screenshot"
+                  />
+                  <div v-else class="live-video">
+                    <img
+                      :src="candidate.screenshot"
+                      alt="实时监控"
+                      class="live-stream"
+                    />
+                    <div class="live-indicator">直播中</div>
                   </div>
-            </div>
 
-            <div class="pagination-container">
-              <a-pagination
-                  v-model:current="pagination.current"
-                  v-model:page-size="pagination.pageSize"
-                  :total="pagination.total"
-                  show-total
-                  :page-size-options="[6, 12, 18]"
-                  @change="handlePageChange"
-              />
+                  <div class="video-controls">
+                    <a-button
+                      :type="
+                        playingVideos.has(candidate.id) ? 'primary' : 'outline'
+                      "
+                      shape="circle"
+                      @click="toggleVideoPlay(candidate)"
+                    >
+                      <template #icon>
+                        <icon-pause v-if="playingVideos.has(candidate.id)" />
+                        <icon-play-arrow v-else />
+                      </template>
+                    </a-button>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                class="monitor-card-info"
+                @click="router.push({ name: 'online-monitor-watch' })"
+              >
+                <div class="candidate-info">
+                  <a-space direction="vertical" fill>
+                    <a-row justify="space-between">
+                      <a-col :span="16">
+                        <a-space>
+                          <a-avatar :size="24"
+                            >{{ candidate.name.charAt(0) }}
+                          </a-avatar>
+                          <span class="candidate-name">{{
+                            candidate.name
+                          }}</span>
+                        </a-space>
+                      </a-col>
+                      <a-col :span="8" class="text-right">
+                        <a-tag :color="getStatusColor(candidate.status)">
+                          {{ getStatusText(candidate.status) }}
+                        </a-tag>
+                      </a-col>
+                    </a-row>
+
+                    <a-row justify="space-between">
+                      <a-col :span="14">考号: {{ candidate.examId }}</a-col>
+                      <a-col :span="10" class="text-right">
+                        <a-tag
+                          v-if="candidate.riskLevel !== 'none'"
+                          :color="getRiskLevelColor(candidate.riskLevel)"
+                        >
+                          {{ getRiskLevelText(candidate.riskLevel) }}
+                        </a-tag>
+                      </a-col>
+                    </a-row>
+
+                    <a-row v-if="candidate.riskDescription">
+                      <a-col :span="24" class="risk-description">
+                        <icon-exclamation-circle-fill
+                          style="color: #f53f3f; margin-right: 4px"
+                        />
+                        {{ candidate.riskDescription }}
+                      </a-col>
+                    </a-row>
+                  </a-space>
+                </div>
+              </div>
             </div>
+          </div>
+
+          <div class="pagination-container">
+            <a-pagination
+              v-model:current="pagination.current"
+              v-model:page-size="pagination.pageSize"
+              :page-size-options="[6, 12, 18]"
+              :total="pagination.total"
+              show-total
+              @change="handlePageChange"
+            />
+          </div>
         </a-spin>
       </div>
     </a-card>
 
-    <a-back-top target-container="#many-monitor-container" :style="{position:'absolute'}" />
+    <a-back-top
+      :style="{ position: 'absolute' }"
+      target-container="#many-monitor-container"
+    />
   </div>
 </template>
 
-<style scoped lang="less">
+<style lang="less" scoped>
 .container-form {
   padding: 0 20px 20px 20px;
 }
@@ -368,13 +383,13 @@ onMounted(() => {
     min-height: 320px;
   }
 }
-  
+
 @media screen and (max-width: 1100px) {
   .monitor-card {
     flex-basis: calc(50% - 8px);
   }
 }
-  
+
 @media screen and (max-width: 768px) {
   .monitor-card {
     flex-basis: 100%;

@@ -20,7 +20,7 @@ const mockSuspiciousProcesses: SuspiciousProcess[] = [
     processName: "TeamViewer.exe",
     processPath: "C:\\Program Files\\TeamViewer\\TeamViewer.exe",
     createdAt: new Date("2023-10-15"),
-    updatedAt: new Date("2023-10-15")
+    updatedAt: new Date("2023-10-15"),
   },
   {
     id: 2,
@@ -29,7 +29,7 @@ const mockSuspiciousProcesses: SuspiciousProcess[] = [
     processName: "AnyDesk.exe",
     processPath: "C:\\Program Files\\AnyDesk\\AnyDesk.exe",
     createdAt: new Date("2023-10-20"),
-    updatedAt: new Date("2023-10-20")
+    updatedAt: new Date("2023-10-20"),
   },
   {
     id: 3,
@@ -38,7 +38,7 @@ const mockSuspiciousProcesses: SuspiciousProcess[] = [
     processName: "vmware.exe",
     processPath: "C:\\Program Files\\VMware\\VMware Workstation\\vmware.exe",
     createdAt: new Date("2023-11-05"),
-    updatedAt: new Date("2023-11-10")
+    updatedAt: new Date("2023-11-10"),
   },
   {
     id: 4,
@@ -47,7 +47,7 @@ const mockSuspiciousProcesses: SuspiciousProcess[] = [
     processName: "v2ray.exe",
     processPath: null,
     createdAt: new Date("2023-11-15"),
-    updatedAt: new Date("2023-11-15")
+    updatedAt: new Date("2023-11-15"),
   },
   {
     id: 5,
@@ -56,8 +56,8 @@ const mockSuspiciousProcesses: SuspiciousProcess[] = [
     processName: "Wireshark.exe",
     processPath: "C:\\Program Files\\Wireshark\\Wireshark.exe",
     createdAt: new Date("2023-12-01"),
-    updatedAt: new Date("2023-12-01")
-  }
+    updatedAt: new Date("2023-12-01"),
+  },
 ];
 
 // 获取可疑进程列表
@@ -137,7 +137,9 @@ export const updateSuspiciousProcess = async (
     await new Promise((resolve) => setTimeout(resolve, 300));
 
     // 模拟修改
-    const index = mockSuspiciousProcesses.findIndex((item) => item.id === processData.id);
+    const index = mockSuspiciousProcesses.findIndex(
+      (item) => item.id === processData.id
+    );
     if (index !== -1) {
       mockSuspiciousProcesses[index] = {
         ...mockSuspiciousProcesses[index],
@@ -174,4 +176,4 @@ export const deleteSuspiciousProcess = async (id: number) => {
     Message.error("删除失败");
     return false;
   }
-}; 
+};
