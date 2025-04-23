@@ -34,14 +34,28 @@
           textAlign: 'left',
         }"
       >
-        <template #label="{ label }">{{ $t(label) }} :</template>
+        <template #label="{ label }">{{ label }} :</template>
         <template #value="{ value, data }">
           <a-tag
-            v-if="data.label === 'userSetting.label.certification'"
+            v-if="data.label === '实名认证'"
             color="green"
             size="small"
           >
             已认证
+          </a-tag>
+          <a-tag
+            v-else-if="data.label === '角色'"
+            color="blue"
+            size="small"
+          >
+            {{ value }}
+          </a-tag>
+          <a-tag
+            v-else-if="data.label === '状态'"
+            :color="value === '在线' ? 'green' : 'orange'"
+            size="small"
+          >
+            {{ value }}
           </a-tag>
           <span v-else>{{ value }}</span>
         </template>
@@ -66,28 +80,43 @@
     name: 'avatar.png',
     url: userStore.avatar,
   };
+  
+  // 更新渲染数据，显示更多监考员相关信息
   const renderData = [
     {
-      label: 'userSetting.label.name',
+      label: '用户名',
       value: userStore.name,
     },
     {
-      label: 'userSetting.label.certification',
-      value: userStore.certification,
+      label: '角色',
+      value: '监考员',
     },
     {
-      label: 'userSetting.label.accountId',
+      label: '账号ID',
       value: userStore.accountId,
     },
     {
-      label: 'userSetting.label.phone',
+      label: '状态',
+      value: '在线',
+    },
+    {
+      label: '实名认证',
+      value: userStore.certification,
+    },
+    {
+      label: '手机号码',
       value: userStore.phone,
     },
     {
-      label: 'userSetting.label.registrationDate',
+      label: '所在学院',
+      value: '计算机学院',
+    },
+    {
+      label: '注册时间',
       value: userStore.registrationDate,
     },
   ] as DescData[];
+  
   const fileList = ref<FileItem[]>([file]);
   const uploadChange = (fileItemList: FileItem[], fileItem: FileItem) => {
     fileList.value = [fileItem];

@@ -269,7 +269,8 @@ const columns = computed<TableColumnData[]>(() => [
     title: "操作",
     dataIndex: "operations",
     slotName: "operation",
-    width: 150,
+    width: 200,
+    align: "center",
     fixed: "right",
   },
 ]);
