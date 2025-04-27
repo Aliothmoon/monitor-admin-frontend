@@ -273,7 +273,8 @@ const columns = computed<TableColumnData[]>(() => [
     dataIndex: "examName",
     ellipsis: true,
     tooltip: true,
-    width: 100,
+    width: 180,
+    align: "center",
   },
   {
     title: "学生姓名",
@@ -288,6 +289,7 @@ const columns = computed<TableColumnData[]>(() => [
     dataIndex: "captureTime",
     slotName: "captureTime",
     width: 180,
+    align: "center",
   },
   {
     title: "文件大小",
@@ -296,26 +298,31 @@ const columns = computed<TableColumnData[]>(() => [
     width: 100,
     ellipsis: true,
     tooltip: true,
+    align: "center",
   },
   {
     title: "风险等级",
     dataIndex: "riskLevel",
     slotName: "riskLevel",
     width: 100,
+    align: "center",
+  },
+  {
+    title: "图片",
+    dataIndex: "image",
+    slotName: "image",
+    width: 100,
+    align: "center",
   },
   {
     title: "备注",
     dataIndex: "remark",
     ellipsis: true,
     tooltip: true,
-  },
-  {
-    title: "图片",
-    dataIndex: "image",
-    slotName: "image",
-    width: 80,
+    width:100,
     align: "center",
   },
+
   {
     title: "操作",
     dataIndex: "operations",

@@ -196,7 +196,14 @@ import dayjs from "dayjs";
 import { useRouter } from "vue-router";
 
 // 导入考试相关API和类型
-import { Exam, getExamList, createExam, updateExam, deleteExam } from "./index";
+import {
+  Exam,
+  ExamStatus,
+  getExamList,
+  createExamInfo,
+  updateExamInfo,
+  deleteExamById,
+} from "@/api/exam";
 
 // 表单相关
 const generateFormModel = () => {
@@ -231,20 +238,18 @@ const columns = computed<TableColumnData[]>(() => [
     dataIndex: "name",
   },
   {
-    title: "考试描述",
-    ellipsis: true,
-    tooltip: true,
-    dataIndex: "description",
-  },
-  {
     title: "开始时间",
     dataIndex: "startTime",
     slotName: "startTime",
+    ellipsis: true,
+    tooltip: true,
   },
   {
     title: "结束时间",
     dataIndex: "endTime",
     slotName: "endTime",
+    ellipsis: true,
+    tooltip: true,
   },
   {
     title: "考试时长(分钟)",
@@ -257,6 +262,12 @@ const columns = computed<TableColumnData[]>(() => [
       const statusMap = ["未开始", "进行中", "已结束"];
       return statusMap[record.status];
     },
+  },
+  {
+    title: "描述",
+    ellipsis: true,
+    tooltip: true,
+    dataIndex: "description",
   },
   {
     title: "操作",
@@ -337,13 +348,13 @@ const handleUpdate = (record: Exam) => {
 // 提交表单
 const handleCompete = async () => {
   const valid = await upsertFormRef.value.validate();
-  if (!valid) return false;
+  if (valid) return false;
 
   try {
     let result = false;
     if (upsertType.value === "c") {
       // 新增考试
-      result = await createExam({
+      result = await createExamInfo({
         name: upsertForm.value.name!,
         description: upsertForm.value.description,
         startTime: upsertForm.value.startTime!,
@@ -352,11 +363,11 @@ const handleCompete = async () => {
       });
     } else {
       // 修改考试
-      result = await updateExam(upsertForm.value as Exam);
+      result = await updateExamInfo(upsertForm.value as Exam);
     }
 
     if (result) {
-      fetchData(pagination.current);
+      await fetchData(pagination.current);
       return true;
     }
     return false;
@@ -370,7 +381,7 @@ const handleCompete = async () => {
 // 删除
 const handleRemove = async (record: Exam) => {
   try {
-    const result = await deleteExam(record.id);
+    const result = await deleteExamById(record.id);
     if (result) {
       fetchData(pagination.current);
     }

@@ -8,7 +8,7 @@ import {
   deleteSuspiciousProcess,
   SuspiciousProcessVO,
   SuspiciousProcessQueryParams
-} from "@/api/exam";
+} from "@/api/exam-config";
 
 // 使用后端的数据结构定义
 export type SuspiciousProcess = SuspiciousProcessVO;

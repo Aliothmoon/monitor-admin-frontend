@@ -11,7 +11,7 @@
             label-align="left"
           >
             <a-row :gutter="16">
-              <a-col :span="8">
+              <a-col :span="12">
                 <a-form-item :label="'关键词搜索'" field="keyword">
                   <a-input
                     v-model="formModel.keyword"
@@ -19,7 +19,7 @@
                   />
                 </a-form-item>
               </a-col>
-              <a-col :span="8">
+              <a-col :span="12">
                 <a-form-item :label="'风险等级'" field="riskLevel">
                   <a-select
                     v-model="formModel.riskLevel"
@@ -32,7 +32,7 @@
                   </a-select>
                 </a-form-item>
               </a-col>
-              <a-col :span="8">
+              <a-col :span="12">
                 <a-form-item :label="'录屏时间'" field="timeRange">
                   <a-range-picker
                     v-model="formModel.timeRange"
@@ -208,8 +208,8 @@ import dayjs from "dayjs";
 import {
   ScreenRecord,
   getScreenRecordList,
-  updateScreenRecord,
-  deleteScreenRecord,
+  updateScreenRecordInfo,
+  deleteScreenRecordById,
 } from "./index";
 
 // 表单相关
@@ -300,7 +300,10 @@ const columns = computed<TableColumnData[]>(() => [
   {
     title: "考试名称",
     dataIndex: "examName",
-    width: 180,
+    width: 100,
+    align: "center",
+    ellipsis: true,
+    tooltip: true,
   },
   {
     title: "学生姓名",
@@ -314,20 +317,26 @@ const columns = computed<TableColumnData[]>(() => [
     title: "时间范围",
     dataIndex: "timeRange",
     slotName: "timeRange",
+    width: 320,
     ellipsis: true,
     tooltip: true,
+    align: "center",
   },
   {
     title: "时长",
     dataIndex: "duration",
     slotName: "duration",
     width: 100,
+    align: "center",
+    ellipsis: true,
+    tooltip: true,
   },
   {
     title: "文件大小",
     dataIndex: "fileSize",
     slotName: "fileSize",
     width: 100,
+    align: "center",
     ellipsis: true,
     tooltip: true,
   },
@@ -342,12 +351,14 @@ const columns = computed<TableColumnData[]>(() => [
     dataIndex: "remark",
     ellipsis: true,
     tooltip: true,
+    align: "center",
   },
   {
     title: "操作",
     dataIndex: "operations",
     slotName: "operation",
     width: 240,
+    align: "center",
     fixed: "right",
   },
 ]);
@@ -376,8 +387,6 @@ const fetchData = async (current: number = 1) => {
     const { data, total } = await getScreenRecordList(
       current,
       pagination.pageSize,
-      undefined,
-      undefined,
       keyword,
       riskLevel,
       startDate,
@@ -445,7 +454,7 @@ const handleSave = async () => {
         return;
       }
 
-      const result = await updateScreenRecord(editForm.value);
+      const result = await updateScreenRecordInfo(editForm.value);
 
       if (result) {
         fetchData(pagination.current);
@@ -458,7 +467,7 @@ const handleSave = async () => {
 
 // 删除
 const handleRemove = async (record: ScreenRecord) => {
-  const result = await deleteScreenRecord(record.id);
+  const result = await deleteScreenRecordById(record.id);
   if (result) {
     fetchData(
       renderData.value.length === 1 && pagination.current > 1

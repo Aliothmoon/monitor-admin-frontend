@@ -6,7 +6,7 @@ import {
   addDomainBlacklist,
   updateDomainBlacklist as updateDomainBlacklistApi,
   deleteDomainBlacklist as deleteDomain,
-} from "@/api/exam";
+} from "@/api/exam-config";
 
 // 定义域名黑名单数据接口
 export interface DomainBlacklist {

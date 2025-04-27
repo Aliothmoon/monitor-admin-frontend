@@ -8,7 +8,7 @@ import {
   updateRiskImageTemplate as updateRiskImageTemplateApi,
   deleteRiskImageTemplate as deleteRiskImageApi,
   RiskImageTemplateVO
-} from "@/api/exam";
+} from "@/api/exam-config";
 
 // 定义风险图片模板数据接口
 export interface RiskImageTemplate {
