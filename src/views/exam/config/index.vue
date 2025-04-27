@@ -1,6 +1,6 @@
 <template>
   <div class="container-form">
-    <Breadcrumb :items="['监考配置', '可疑进程黑名单管理']" direct />
+    <Breadcrumb :items="['监考设置', '可疑进程黑名单管理']" direct />
     <a-card :title="'可疑进程黑名单管理'">
       <a-row>
         <a-col :flex="1">
@@ -196,7 +196,7 @@ import {
   getRiskLevelText,
 } from "./index";
 
-// 表单相关
+
 const generateFormModel = () => {
   return {
     processName: "",
@@ -299,7 +299,7 @@ const fetchData = async (current: number = 1) => {
   }
 };
 
-// 表单相关
+
 const visible = ref(false);
 const upsertFormRef = ref(null);
 const upsertType = ref<"c" | "u">("c");

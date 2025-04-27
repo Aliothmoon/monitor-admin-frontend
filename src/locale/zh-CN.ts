@@ -45,7 +45,7 @@ export default {
   "navbar.docs": "文档中心",
   "navbar.action.locale": "切换为中文",
 
-  "users.manage": "用户管理",
+  "users.manage": "账号管理",
   "manager.managers": "监考员管理",
   "manager.candidates": "考生管理",
   ...localeSettings,

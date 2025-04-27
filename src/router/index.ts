@@ -6,6 +6,9 @@ import { appRoutes } from "./routes";
 import { REDIRECT_MAIN, NOT_FOUND_ROUTE } from "./routes/base";
 import createRouteGuard from "./guard";
 
+// 导入操作日志路由
+import OPERATION_LOG from './routes/modules/operation-log';
+
 NProgress.configure({ showSpinner: false }); // NProgress Configuration
 
 const router = createRouter({
@@ -24,6 +27,7 @@ const router = createRouter({
       },
     },
     ...appRoutes,
+    OPERATION_LOG,
     REDIRECT_MAIN,
     NOT_FOUND_ROUTE,
   ],

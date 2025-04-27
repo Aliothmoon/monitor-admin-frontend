@@ -1,6 +1,6 @@
 <template>
   <div class="container-form">
-    <Breadcrumb :items="['访问域名黑名单']" direct />
+    <Breadcrumb :items="['监考设置', '访问域名黑名单']" direct />
     <a-card :title="'访问域名黑名单管理'">
       <a-row>
         <a-col :flex="1">
@@ -26,9 +26,9 @@
                     allow-clear
                     placeholder="请选择分类"
                   >
+                    <a-option label="搜索引擎" value="搜索引擎" />
                     <a-option label="社交媒体" value="社交媒体" />
                     <a-option label="视频网站" value="视频网站" />
-                    <a-option label="搜索引擎" value="搜索引擎" />
                     <a-option label="其他" value="其他" />
                   </a-select>
                 </a-form-item>
@@ -139,9 +139,9 @@
           label="分类"
         >
           <a-select v-model="upsertForm.category" placeholder="请选择分类">
+            <a-option label="搜索引擎" value="搜索引擎" />
             <a-option label="社交媒体" value="社交媒体" />
             <a-option label="视频网站" value="视频网站" />
-            <a-option label="搜索引擎" value="搜索引擎" />
             <a-option label="其他" value="其他" />
           </a-select>
         </a-form-item>
@@ -167,7 +167,6 @@ import {
   deleteDomainBlacklist,
 } from "./domain";
 
-// 表单相关
 const generateFormModel = () => {
   return {
     keyword: "",
@@ -200,14 +199,14 @@ const columns = computed<TableColumnData[]>(() => [
   {
     title: "域名",
     dataIndex: "domain",
-    width: 100,
+    minWidth: 120,
     ellipsis: true,
     tooltip: true,
   },
   {
     title: "描述",
     dataIndex: "description",
-    minWidth: 120,
+    width: 100,
     ellipsis: true,
     tooltip: true,
   },
@@ -272,7 +271,6 @@ const fetchData = async (current: number = 1) => {
   }
 };
 
-// 表单相关
 const visible = ref(false);
 const upsertFormRef = ref(null);
 const upsertType = ref<"c" | "u">("c");

@@ -6,7 +6,7 @@ const USERS: AppRouteRecordRaw = {
   name: "users",
   component: DEFAULT_LAYOUT,
   meta: {
-    menuName: "用户管理",
+    menuName: "账号管理",
     icon: "icon-user",
     requiresAuth: true,
     order: 1,
@@ -17,18 +17,17 @@ const USERS: AppRouteRecordRaw = {
       name: "manage",
       component: () => import("@/views/users/manager/index.vue"),
       meta: {
-        menuName: "监考员管理",
+        menuName: "监考员账号管理",
         requiresAuth: true,
         roles: ["*"],
       },
     },
     {
-      path: "candidate",
-      name: "candidate",
-      component: () => import("@/views/users/candidate/index.vue"),
+      path: "candidate-accounts",
+      name: "examineeAllAccounts",
+      component: () => import("@/views/examinee/all-accounts/index.vue"),
       meta: {
-        menuName: "考生管理",
-        requiresAuth: true,
+        menuName: "考生账号管理",
         roles: ["*"],
       },
     },

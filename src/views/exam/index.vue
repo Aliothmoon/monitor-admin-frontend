@@ -205,7 +205,7 @@ import {
   deleteExamById,
 } from "@/api/exam";
 
-// 表单相关
+
 const generateFormModel = () => {
   return {
     keyword: "",

@@ -9,7 +9,7 @@ const EXAMS: AppRouteRecordRaw = {
     menuName: "考试管理",
     icon: "icon-user-group",
     order: 1,
-    single: false,
+    single: true,
   },
   children: [
     {
@@ -28,6 +28,7 @@ const EXAMS: AppRouteRecordRaw = {
       meta: {
         menuName: "考场管理",
         roles: ["*"],
+        hideInMenu: true,
       },
     },
   ],

@@ -1,7 +1,7 @@
 <template>
   <div class="container-form">
-    <Breadcrumb :items="['文件管理', '截图管理']" direct />
-    <a-card :title="'截图管理'">
+    <Breadcrumb :items="['文件管理', '截屏管理']" direct />
+    <a-card :title="'截屏管理'">
       <a-row>
         <a-col :flex="1">
           <a-form
@@ -198,7 +198,6 @@ import {
   deleteScreenshotById,
 } from "./index";
 
-// 表单相关
 const generateFormModel = () => {
   return {
     keyword: "",
@@ -285,10 +284,10 @@ const columns = computed<TableColumnData[]>(() => [
     tooltip: true,
   },
   {
-    title: "截图时间",
-    dataIndex: "captureTime",
-    slotName: "captureTime",
-    width: 180,
+    title: "图片",
+    dataIndex: "image",
+    slotName: "image",
+    width: 100,
     align: "center",
   },
   {
@@ -308,10 +307,10 @@ const columns = computed<TableColumnData[]>(() => [
     align: "center",
   },
   {
-    title: "图片",
-    dataIndex: "image",
-    slotName: "image",
-    width: 100,
+    title: "截图时间",
+    dataIndex: "captureTime",
+    slotName: "captureTime",
+    width: 180,
     align: "center",
   },
   {
@@ -319,7 +318,7 @@ const columns = computed<TableColumnData[]>(() => [
     dataIndex: "remark",
     ellipsis: true,
     tooltip: true,
-    width:100,
+    width: 100,
     align: "center",
   },
 

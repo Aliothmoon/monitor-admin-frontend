@@ -12,28 +12,12 @@ export const createProctorPanelData = (userStore: UserState): DescData[] => [
     value: "监考员",
   },
   {
-    label: "账号ID",
-    value: userStore.accountId,
-  },
-  {
     label: "状态",
     value: "在线",
   },
   {
-    label: "实名认证",
-    value: userStore.certification ? "已认证" : "未认证",
-  },
-  {
     label: "手机号码",
     value: userStore.phone,
-  },
-  {
-    label: "所在学院",
-    value: "计算机学院",
-  },
-  {
-    label: "注册时间",
-    value: userStore.registrationDate,
   },
 ];
 
@@ -73,46 +57,6 @@ export const collegeOptions = [
   },
 ];
 
-// 职称/职位选项
-export const titleOptions = [
-  {
-    label: "教授",
-    value: "professor",
-  },
-  {
-    label: "副教授",
-    value: "associateProfessor",
-  },
-  {
-    label: "讲师",
-    value: "lecturer",
-  },
-  {
-    label: "助教",
-    value: "assistant",
-  },
-  {
-    label: "教务管理员",
-    value: "admin",
-  },
-];
-
-// 通知方式选项
-export const notificationOptions = [
-  {
-    label: "邮件通知",
-    value: "email",
-  },
-  {
-    label: "短信通知",
-    value: "sms",
-  },
-  {
-    label: "应用内通知",
-    value: "app",
-  },
-];
-
 // 监考员表单默认值
 export interface ProctorInfoModel {
   email: string;
@@ -129,7 +73,7 @@ export interface ProctorInfoModel {
 export const formFields = {
   email: {
     label: "邮箱",
-    placeholder: "请输入邮箱地址，如xxx@example.com",
+    placeholder: "请输入邮箱地址，如xxx@qq.com",
     required: true,
     errorMessage: "请输入邮箱",
   },

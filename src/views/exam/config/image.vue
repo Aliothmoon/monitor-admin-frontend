@@ -1,6 +1,6 @@
 <template>
   <div class="container-form">
-    <Breadcrumb :items="['风险图片模板']" direct />
+    <Breadcrumb :items="['监考设置','风险图片模板']" direct />
     <a-card :title="'风险图片模板管理'">
       <a-row>
         <a-col :flex="1">
@@ -220,7 +220,7 @@ import {
   deleteRiskImageTemplate,
 } from "./image";
 
-// 表单相关
+
 const generateFormModel = () => {
   return {
     keyword: "",
@@ -340,7 +340,7 @@ const previewImage = (record: RiskImageTemplate) => {
   previewVisible.value = true;
 };
 
-// 表单相关
+
 const visible = ref(false);
 const upsertFormRef = ref(null);
 const upsertType = ref<"c" | "u">("c");

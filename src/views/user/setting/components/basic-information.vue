@@ -66,20 +66,6 @@
         :placeholder="formFields.department.placeholder"
       />
     </a-form-item>
-    <a-form-item :label="formFields.title.label" field="title">
-      <a-select
-        v-model="formData.title"
-        :placeholder="formFields.title.placeholder"
-      >
-        <a-option
-          v-for="option in titleOptions"
-          :key="option.value"
-          :value="option.value"
-        >
-          {{ option.label }}
-        </a-option>
-      </a-select>
-    </a-form-item>
     <a-form-item
       :label="formFields.phone.label"
       :rules="[
@@ -138,7 +124,6 @@ import {
   ProctorInfoModel,
   formFields,
   collegeOptions,
-  titleOptions,
 } from "../columns";
 import { getUserProfile, updateUserProfile } from "@/api/user";
 

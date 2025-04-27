@@ -1,6 +1,6 @@
 <template>
   <div class="container-form">
-    <Breadcrumb :items="['监考员管理', '监考员管理']" />
+    <Breadcrumb :items="['账号管理', '监考员管理']" />
     <a-card :title="'查询表格'" class="general-card">
       <a-row>
         <a-col :flex="1">
@@ -141,22 +141,15 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, reactive, watch, nextTick } from "vue";
-import { useI18n } from "vue-i18n";
+import { computed, ref, reactive, watch } from "vue";
 import useLoading from "@/hooks/loading";
 import { Pagination } from "@/types/global";
 import type { TableColumnData } from "@arco-design/web-vue/es/table/interface";
 import { MonitorUser } from "@/api/code/models/monitor-user";
-import {
-  getMonitorUserPageData,
-  saveMonitorUser,
-  updateMonitorUser,
-  removeMonitorUser,
-} from "@/views/users/manager/index";
-import { TableDataInfo } from "@/api/types";
 import { useTrigger } from "@/utils/trigger";
 import { Message } from "@arco-design/web-vue";
 import dayjs from "dayjs";
+import { getMonitorUserPageData, saveMonitorUser, updateMonitorUser, removeMonitorUser } from "@/api/monitor-user";
 
 const generateFormModel = () => {
   return {

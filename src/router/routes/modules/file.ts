@@ -17,7 +17,7 @@ const FILES: AppRouteRecordRaw = {
       name: "file-screenshot",
       component: () => import("@/views/file/screenshot/index.vue"),
       meta: {
-        menuName: "截图管理",
+        menuName: "截屏管理",
         roles: ["*"],
       },
     },
