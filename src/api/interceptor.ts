@@ -1,11 +1,9 @@
 import axios from "axios";
 import { Message, Modal } from "@arco-design/web-vue";
-import { useUserStore } from "@/store";
 import { getToken } from "@/utils/auth";
 import {
   ErrorCode,
   ErrorMessages,
-  SPECIAL_ERROR_CODES,
   getErrorMessage,
 } from "./error-code";
 import router from "@/router";
@@ -81,7 +79,6 @@ axios.interceptors.response.use(
 
         // 默认错误处理
         default:
-          console.log(response.data);
           Message.error({
             content: ErrorMessages[res.code] || res.msg,
             duration: 5 * 1000,

@@ -44,7 +44,6 @@ export const getSuspiciousProcessList = async (
     const response = await fetchSuspiciousProcessList(params);
     const { data } = response;
 
-    console.log(data)
     if (data.code === 0) {
       return {
         data: data.data.records || [],

@@ -248,7 +248,6 @@ const handleCompete = async () => {
     ? saveMonitorUser(upsertForm.value)
     : updateMonitorUser(upsertForm.value));
 
-  console.log(data);
   Message.success(upsertType.value === "c" ? "创建成功" : "更新成功");
 
   await fetchData();
@@ -272,7 +271,6 @@ const handleUpdate = (record: MonitorUser) => {
 const handleRemove = async (record: MonitorUser) => {
   const data = await removeMonitorUser(record.userId!);
   await fetchData();
-  console.log(data);
 };
 </script>
 
