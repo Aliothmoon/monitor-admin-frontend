@@ -43,7 +43,8 @@ export default defineComponent({
         selectedKey.value = [item.name as string];
         return;
       }
-      // Trigger router change
+      // Trigger router change and set selectedKey immediately
+      selectedKey.value = [item.name as string];
       router.push({
         name: item.name,
       });
@@ -153,6 +154,7 @@ export default defineComponent({
 
     return () => (
       <a-menu
+        breakpoint="xl"
         mode={topMenu.value ? "horizontal" : "vertical"}
         v-model:collapsed={collapsed.value}
         v-model:open-keys={openKeys.value}

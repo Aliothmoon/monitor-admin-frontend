@@ -122,7 +122,6 @@ export interface ProctorInfoModel {
   title: string;
   phone: string;
   employeeId: string;
-  notifications: string[];
   profile: string;
 }
 
@@ -167,10 +166,6 @@ export const formFields = {
     placeholder: "请输入您的教职工工号",
     required: true,
     errorMessage: "请输入工号",
-  },
-  notifications: {
-    label: "通知方式",
-    required: false,
   },
   profile: {
     label: "个人简介",

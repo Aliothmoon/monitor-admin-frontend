@@ -1,6 +1,6 @@
 <template>
   <div class="container-form">
-    <Breadcrumb :items="['监考配置']" direct />
+    <Breadcrumb :items="['监考配置','可疑进程黑名单管理']" direct />
     <a-card :title="'可疑进程黑名单管理'">
       <a-row>
         <a-col :flex="1">

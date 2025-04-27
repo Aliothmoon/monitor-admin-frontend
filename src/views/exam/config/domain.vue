@@ -200,12 +200,16 @@ const columns = computed<TableColumnData[]>(() => [
   {
     title: "域名",
     dataIndex: "domain",
-    width: 200,
+    width: 100,
+    ellipsis: true,
+    tooltip: true,
   },
   {
     title: "描述",
     dataIndex: "description",
-    width: 250,
+    minWidth: 120,
+    ellipsis: true,
+    tooltip: true,
   },
   {
     title: "分类",
@@ -216,13 +220,15 @@ const columns = computed<TableColumnData[]>(() => [
     title: "创建时间",
     dataIndex: "createdAt",
     slotName: "createdAt",
-    width: 180,
+    tooltip: true,
+    ellipsis: true,
   },
   {
     title: "更新时间",
     dataIndex: "updatedAt",
     slotName: "updatedAt",
-    width: 180,
+    tooltip: true,
+    ellipsis: true,
   },
   {
     title: "操作",

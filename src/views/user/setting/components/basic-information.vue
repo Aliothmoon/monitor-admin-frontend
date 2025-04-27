@@ -109,17 +109,6 @@
         :placeholder="formFields.employeeId.placeholder"
       />
     </a-form-item>
-    <a-form-item :label="formFields.notifications.label" field="notifications">
-      <a-checkbox-group v-model="formData.notifications">
-        <a-checkbox
-          v-for="option in notificationOptions"
-          :key="option.value"
-          :value="option.value"
-        >
-          {{ option.label }}
-        </a-checkbox>
-      </a-checkbox-group>
-    </a-form-item>
     <a-form-item>
       <a-space>
         <a-button type="primary" @click="validate"> 保存</a-button>
@@ -152,7 +141,6 @@ const formData = ref<ProctorInfoModel>({
   title: "",
   phone: userStore.phone || "",
   employeeId: "",
-  notifications: ["email"],
   profile: userStore.introduction || "",
 });
 

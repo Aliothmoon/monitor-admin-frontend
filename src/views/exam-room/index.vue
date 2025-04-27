@@ -94,6 +94,7 @@ const columns = computed<TableColumnData[]>(() => [
     align: "center",
     width: 300,
     slotName: "operation",
+    fixed: "right",
   },
 ]);
 

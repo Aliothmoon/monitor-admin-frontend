@@ -83,15 +83,17 @@
         </template>
 
         <template #imageUrl="{ record }">
-          <div class="image-preview">
-            <img
-              :src="record.imageUrl"
-              alt="模板图片"
-              style="max-width: 100px; max-height: 60px"
-            />
-            <a-button type="text" @click="previewImage(record)">
-              <icon-eye />
-            </a-button>
+          <div class="image-preview-wrapper">
+            <div class="image-preview" @click="previewImage(record)">
+              <img
+                :src="record.imageUrl"
+                alt="模板图片"
+                style="max-width: 100px; max-height: 60px"
+              />
+              <div class="preview-icon">
+                <icon-eye class="eye-icon" />
+              </div>
+            </div>
           </div>
         </template>
 
@@ -245,6 +247,7 @@ const columns = computed<TableColumnData[]>(() => [
     title: "序号",
     dataIndex: "index",
     slotName: "index",
+    width: 80,
     align: "center",
   },
   {
@@ -252,22 +255,29 @@ const columns = computed<TableColumnData[]>(() => [
     dataIndex: "name",
     ellipsis: true,
     tooltip: true,
+    align:'center',
   },
   {
     title: "描述",
     dataIndex: "description",
     ellipsis: true,
     tooltip: true,
+    align:'center',
+
   },
   {
     title: "图片",
     dataIndex: "imageUrl",
     slotName: "imageUrl",
+    align:'center',
+    width: 100
+
   },
   {
     title: "相似度阈值",
     dataIndex: "similarity",
     slotName: "similarity",
+    align:'center',
   },
   {
     title: "创建时间",
@@ -431,10 +441,41 @@ onMounted(() => {
   padding: 20px;
 }
 
+.image-preview-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
 .image-preview {
+  position: relative;
+  cursor: pointer;
   display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 8px;
+}
+
+.preview-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.3s;
+  background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 50%;
+  padding: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.eye-icon {
+  color: #165DFF;
+  font-size: 18px;
+}
+
+.image-preview:hover .preview-icon {
+  opacity: 1;
 }
 
 .image-preview-container {

@@ -13,16 +13,8 @@ const EXAM_ROOM: AppRouteRecordRaw = {
     requiresAuth: false,
   },
   children: [
-    {
-      path: "manage",
-      name: "exam-room-manage",
-      component: () => import("@/views/exam-room/index.vue"),
-      meta: {
-        menuName: "考场管理",
-        roles: ["*"],
-      },
-    },
+
   ],
 };
 
-export default EXAM_ROOM;
+// export default EXAM_ROOM;

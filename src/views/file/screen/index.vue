@@ -105,7 +105,7 @@
             type="primary"
             @click="handlePlay(record)"
           >
-            播放
+            查看
           </a-button>
           <a-button
             size="small"
