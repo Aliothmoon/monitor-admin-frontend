@@ -23,7 +23,7 @@ import { useUserStore } from "@/store";
 const userStore = useUserStore();
 const userInfo = computed(() => {
   return {
-    name: userStore.name,
+    name: userStore.username,
   };
 });
 

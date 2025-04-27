@@ -1,7 +1,8 @@
 export type RoleType = "" | "*" | "admin" | "user";
+export type RoleId = 10 | 11 | 12;
 
 export interface UserState {
-  name?: string;
+  username?: string;
   avatar?: string;
   job?: string;
   organization?: string;
@@ -17,4 +18,11 @@ export interface UserState {
   accountId?: string;
   certification?: number;
   role: RoleType;
+  roleId?: RoleId;
+  nickname?: string;
+  college?: string;
+  department?: string;
+  title?: string;
+  employeeId?: string;
+  profile?: string;
 }

@@ -1,97 +1,59 @@
 import { Message } from "@arco-design/web-vue";
+import {
+  getSuspiciousProcessList as fetchSuspiciousProcessList,
+  getSuspiciousProcessById,
+  getSuspiciousProcessByRiskLevel,
+  addSuspiciousProcess,
+  updateSuspiciousProcess,
+  deleteSuspiciousProcess,
+  SuspiciousProcessVO,
+  SuspiciousProcessQueryParams
+} from "@/api/exam";
 
-// 定义可疑进程数据接口
-export interface SuspiciousProcess {
-  id: number;
-  name: string;
-  description?: string;
-  processName: string;
-  processPath?: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
+// 使用后端的数据结构定义
+export type SuspiciousProcess = SuspiciousProcessVO;
 
-// 模拟数据
-const mockSuspiciousProcesses: SuspiciousProcess[] = [
-  {
-    id: 1,
-    name: "远程控制软件",
-    description: "常见的远程控制软件，可能被用于作弊",
-    processName: "TeamViewer.exe",
-    processPath: "C:\\Program Files\\TeamViewer\\TeamViewer.exe",
-    createdAt: new Date("2023-10-15"),
-    updatedAt: new Date("2023-10-15"),
-  },
-  {
-    id: 2,
-    name: "屏幕共享工具",
-    description: "可用于分享屏幕给他人",
-    processName: "AnyDesk.exe",
-    processPath: "C:\\Program Files\\AnyDesk\\AnyDesk.exe",
-    createdAt: new Date("2023-10-20"),
-    updatedAt: new Date("2023-10-20"),
-  },
-  {
-    id: 3,
-    name: "虚拟机软件",
-    description: "可能用于运行其他操作系统",
-    processName: "vmware.exe",
-    processPath: "C:\\Program Files\\VMware\\VMware Workstation\\vmware.exe",
-    createdAt: new Date("2023-11-05"),
-    updatedAt: new Date("2023-11-10"),
-  },
-  {
-    id: 4,
-    name: "代理软件",
-    description: "可能用于绕过网络限制",
-    processName: "v2ray.exe",
-    processPath: null,
-    createdAt: new Date("2023-11-15"),
-    updatedAt: new Date("2023-11-15"),
-  },
-  {
-    id: 5,
-    name: "网络抓包工具",
-    description: "可用于分析网络流量",
-    processName: "Wireshark.exe",
-    processPath: "C:\\Program Files\\Wireshark\\Wireshark.exe",
-    createdAt: new Date("2023-12-01"),
-    updatedAt: new Date("2023-12-01"),
-  },
+// 风险等级选项
+export const riskLevelOptions = [
+  { label: "低风险", value: 1 },
+  { label: "中风险", value: 2 },
+  { label: "高风险", value: 3 },
 ];
+
+// 获取风险等级文本
+export const getRiskLevelText = (level: number): string => {
+  const option = riskLevelOptions.find(opt => opt.value === level);
+  return option ? option.label : "未知";
+};
 
 // 获取可疑进程列表
 export const getSuspiciousProcessList = async (
   current = 1,
   pageSize = 10,
-  keyword = ""
+  processName = "",
+  riskLevel = undefined,
 ) => {
   try {
-    // 模拟API请求延迟
-    await new Promise((resolve) => setTimeout(resolve, 300));
-
-    // 筛选数据
-    let filteredData = [...mockSuspiciousProcesses];
-
-    // 关键词搜索（名称、描述和进程名）
-    if (keyword) {
-      filteredData = filteredData.filter(
-        (item) =>
-          item.name.includes(keyword) ||
-          (item.description && item.description.includes(keyword)) ||
-          item.processName.includes(keyword)
-      );
-    }
-
-    // 模拟分页数据
-    const start = (current - 1) * pageSize;
-    const end = start + pageSize;
-    const data = filteredData.slice(start, end);
-
-    return {
-      data,
-      total: filteredData.length,
+    const params: SuspiciousProcessQueryParams = {
+      pageNum: current,
+      pageSize: pageSize,
+      processName: processName || undefined,
+      riskLevel: riskLevel,
     };
+    
+    const response = await fetchSuspiciousProcessList(params);
+    const { data } = response;
+
+    console.log(data)
+    if (data.code === 0) {
+      return {
+        data: data.data.records || [],
+        total: data.data.totalRow || 0
+      };
+    } else {
+      Message.error(data.msg || "获取可疑进程列表失败");
+      return { data: [], total: 0 };
+    }
   } catch (error) {
     console.error(error);
     Message.error("获取可疑进程列表失败");
@@ -102,25 +64,57 @@ export const getSuspiciousProcessList = async (
   }
 };
 
-// 新增可疑进程
-export const createSuspiciousProcess = async (
-  processData: Omit<SuspiciousProcess, "id" | "createdAt" | "updatedAt">
-) => {
+// 根据风险等级获取可疑进程列表
+export const getSuspiciousProcessesByRiskLevel = async (riskLevel: number) => {
   try {
-    // 模拟API请求延迟
-    await new Promise((resolve) => setTimeout(resolve, 300));
+    const response = await getSuspiciousProcessByRiskLevel(riskLevel);
+    const { data } = response;
+    
+    if (data.code === 0 && data.data) {
+      return data.data;
+    } else {
+      Message.error(data.msg || "获取特定风险等级的可疑进程失败");
+      return [];
+    }
+  } catch (error) {
+    console.error(error);
+    Message.error("获取特定风险等级的可疑进程失败");
+    return [];
+  }
+};
 
-    // 模拟新增
-    const now = new Date();
-    const newProcess: SuspiciousProcess = {
-      id: mockSuspiciousProcesses.length + 1,
-      ...processData,
-      createdAt: now,
-      updatedAt: now,
-    };
-    mockSuspiciousProcesses.push(newProcess);
-    Message.success("新增成功");
-    return true;
+// 获取可疑进程详情
+export const getSuspiciousProcess = async (id: number) => {
+  try {
+    const response = await getSuspiciousProcessById(id);
+    const { data } = response;
+    
+    if (data.code === 0 && data.data) {
+      return data.data;
+    } else {
+      Message.error(data.msg || "获取可疑进程详情失败");
+      return null;
+    }
+  } catch (error) {
+    console.error(error);
+    Message.error("获取可疑进程详情失败");
+    return null;
+  }
+};
+
+// 新增可疑进程
+export const createSuspiciousProcess = async (processData: SuspiciousProcessVO) => {
+  try {
+    const response = await addSuspiciousProcess(processData);
+    const { data } = response;
+    
+    if (data.code === 0 && data.data) {
+      Message.success("新增成功");
+      return true;
+    } else {
+      Message.error(data.msg || "新增失败");
+      return false;
+    }
   } catch (error) {
     console.error(error);
     Message.error("新增失败");
@@ -129,27 +123,18 @@ export const createSuspiciousProcess = async (
 };
 
 // 修改可疑进程
-export const updateSuspiciousProcess = async (
-  processData: Partial<SuspiciousProcess> & { id: number }
-) => {
+export const updateSuspiciousProcessData = async (processData: SuspiciousProcessVO) => {
   try {
-    // 模拟API请求延迟
-    await new Promise((resolve) => setTimeout(resolve, 300));
-
-    // 模拟修改
-    const index = mockSuspiciousProcesses.findIndex(
-      (item) => item.id === processData.id
-    );
-    if (index !== -1) {
-      mockSuspiciousProcesses[index] = {
-        ...mockSuspiciousProcesses[index],
-        ...processData,
-        updatedAt: new Date(),
-      } as SuspiciousProcess;
+    const response = await updateSuspiciousProcess(processData);
+    const { data } = response;
+    
+    if (data.code === 0 && data.data) {
       Message.success("修改成功");
       return true;
+    } else {
+      Message.error(data.msg || "修改失败");
+      return false;
     }
-    return false;
   } catch (error) {
     console.error(error);
     Message.error("修改失败");
@@ -158,19 +143,18 @@ export const updateSuspiciousProcess = async (
 };
 
 // 删除可疑进程
-export const deleteSuspiciousProcess = async (id: number) => {
+export const deleteSuspiciousProcessData = async (id: number) => {
   try {
-    // 模拟API请求延迟
-    await new Promise((resolve) => setTimeout(resolve, 300));
-
-    // 模拟删除
-    const index = mockSuspiciousProcesses.findIndex((item) => item.id === id);
-    if (index !== -1) {
-      mockSuspiciousProcesses.splice(index, 1);
+    const response = await deleteSuspiciousProcess(id);
+    const { data } = response;
+    
+    if (data.code === 0 && data.data) {
       Message.success("删除成功");
       return true;
+    } else {
+      Message.error(data.msg || "删除失败");
+      return false;
     }
-    return false;
   } catch (error) {
     console.error(error);
     Message.error("删除失败");

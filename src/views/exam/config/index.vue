@@ -1,6 +1,6 @@
 <template>
   <div class="container-form">
-    <Breadcrumb :items="['监考配置','可疑进程黑名单管理']" direct />
+    <Breadcrumb :items="['监考配置', '可疑进程黑名单管理']" direct />
     <a-card :title="'可疑进程黑名单管理'">
       <a-row>
         <a-col :flex="1">
@@ -12,11 +12,28 @@
           >
             <a-row :gutter="16">
               <a-col :span="12">
-                <a-form-item :label="'关键词搜索'" field="keyword">
+                <a-form-item :label="'进程名称'" field="processName">
                   <a-input
-                    v-model="formModel.keyword"
-                    placeholder="搜索名称、描述或进程名"
+                    v-model="formModel.processName"
+                    placeholder="搜索进程名称"
                   />
+                </a-form-item>
+              </a-col>
+              <a-col :span="12">
+                <a-form-item :label="'风险等级'" field="riskLevel">
+                  <a-select
+                    v-model="formModel.riskLevel"
+                    placeholder="请选择风险等级"
+                    allow-clear
+                  >
+                    <a-option
+                      v-for="option in riskLevelOptions"
+                      :key="option.value"
+                      :value="option.value"
+                    >
+                      {{ option.label }}
+                    </a-option>
+                  </a-select>
                 </a-form-item>
               </a-col>
             </a-row>
@@ -67,6 +84,20 @@
           {{ rowIndex + 1 + (pagination.current - 1) * pagination.pageSize }}
         </template>
 
+        <template #riskLevel="{ record }">
+          <a-tag
+            :color="
+              record.riskLevel === 3
+                ? 'red'
+                : record.riskLevel === 2
+                ? 'orange'
+                : 'blue'
+            "
+          >
+            {{ getRiskLevelText(record.riskLevel) }}
+          </a-tag>
+        </template>
+
         <template #createdAt="{ record }">
           {{ dayjs(record.createdAt).format("YYYY-MM-DD HH:mm:ss") }}
         </template>
@@ -108,16 +139,6 @@
       >
         <a-form-item
           :rules="[{ required: true, message: '不能为空' }]"
-          field="name"
-          label="名称"
-        >
-          <a-input v-model="upsertForm.name"></a-input>
-        </a-form-item>
-        <a-form-item field="description" label="描述">
-          <a-textarea v-model="upsertForm.description"></a-textarea>
-        </a-form-item>
-        <a-form-item
-          :rules="[{ required: true, message: '不能为空' }]"
           field="processName"
           label="进程名称"
         >
@@ -126,11 +147,30 @@
             placeholder="例如: chrome.exe"
           ></a-input>
         </a-form-item>
-        <a-form-item field="processPath" label="进程路径">
-          <a-input
-            v-model="upsertForm.processPath"
-            placeholder="例如: C:\Program Files\Google\Chrome\Application\chrome.exe"
-          ></a-input>
+        <a-form-item
+          :rules="[{ required: true, message: '不能为空' }]"
+          field="description"
+          label="描述"
+        >
+          <a-textarea
+            v-model="upsertForm.description"
+            placeholder="请输入进程描述"
+          ></a-textarea>
+        </a-form-item>
+        <a-form-item
+          :rules="[{ required: true, message: '不能为空' }]"
+          field="riskLevel"
+          label="风险等级"
+        >
+          <a-select v-model="upsertForm.riskLevel" placeholder="请选择风险等级">
+            <a-option
+              v-for="option in riskLevelOptions"
+              :key="option.value"
+              :value="option.value"
+            >
+              {{ option.label }}
+            </a-option>
+          </a-select>
         </a-form-item>
       </a-form>
     </a-modal>
@@ -150,14 +190,17 @@ import {
   SuspiciousProcess,
   getSuspiciousProcessList,
   createSuspiciousProcess,
-  updateSuspiciousProcess,
-  deleteSuspiciousProcess,
+  updateSuspiciousProcessData,
+  deleteSuspiciousProcessData,
+  riskLevelOptions,
+  getRiskLevelText,
 } from "./index";
 
 // 表单相关
 const generateFormModel = () => {
   return {
-    keyword: "",
+    processName: "",
+    riskLevel: undefined,
   };
 };
 
@@ -184,8 +227,8 @@ const columns = computed<TableColumnData[]>(() => [
     align: "center",
   },
   {
-    title: "名称",
-    dataIndex: "name",
+    title: "进程名称",
+    dataIndex: "processName",
     ellipsis: true,
     tooltip: true,
   },
@@ -196,24 +239,23 @@ const columns = computed<TableColumnData[]>(() => [
     tooltip: true,
   },
   {
-    title: "进程名称",
-    dataIndex: "processName",
-  },
-  {
-    title: "进程路径",
-    dataIndex: "processPath",
-    ellipsis: true,
-    tooltip: true,
+    title: "风险等级",
+    dataIndex: "riskLevel",
+    slotName: "riskLevel",
   },
   {
     title: "创建时间",
     dataIndex: "createdAt",
     slotName: "createdAt",
+    ellipsis: true,
+    tooltip: true,
   },
   {
     title: "更新时间",
     dataIndex: "updatedAt",
     slotName: "updatedAt",
+    ellipsis: true,
+    tooltip: true,
   },
   {
     title: "操作",
@@ -239,11 +281,12 @@ const pagination = reactive<Pagination>({
 const fetchData = async (current: number = 1) => {
   setLoading(true);
   try {
-    const { keyword } = formModel;
+    const { processName, riskLevel } = formModel;
     const { data, total } = await getSuspiciousProcessList(
       current,
       pagination.pageSize,
-      keyword
+      processName,
+      riskLevel
     );
     renderData.value = data;
     pagination.current = current;
@@ -260,21 +303,19 @@ const fetchData = async (current: number = 1) => {
 const visible = ref(false);
 const upsertFormRef = ref(null);
 const upsertType = ref<"c" | "u">("c");
-const upsertForm = ref<Partial<SuspiciousProcess> & { id?: number }>({
-  name: "",
-  description: "",
+const upsertForm = ref<SuspiciousProcess>({
   processName: "",
-  processPath: "",
+  description: "",
+  riskLevel: 1,
 });
 
 // 新增
 const handleInsert = () => {
   upsertType.value = "c";
   upsertForm.value = {
-    name: "",
-    description: "",
     processName: "",
-    processPath: "",
+    description: "",
+    riskLevel: 1,
   };
   visible.value = true;
 };
@@ -284,19 +325,23 @@ const handleUpdate = (record: SuspiciousProcess) => {
   upsertType.value = "u";
   upsertForm.value = {
     id: record.id,
-    name: record.name,
-    description: record.description,
     processName: record.processName,
-    processPath: record.processPath,
+    description: record.description,
+    riskLevel: record.riskLevel,
   };
   visible.value = true;
 };
 
 // 删除
 const handleRemove = async (record: SuspiciousProcess) => {
-  const result = await deleteSuspiciousProcess(record.id);
+  if (!record.id) {
+    Message.error("记录ID不存在");
+    return;
+  }
+
+  const result = await deleteSuspiciousProcessData(record.id);
   if (result) {
-    fetchData(
+    await fetchData(
       renderData.value.length === 1 && pagination.current > 1
         ? pagination.current - 1
         : pagination.current
@@ -321,21 +366,14 @@ const handleCompete = async () => {
       let result = false;
       if (upsertType.value === "c") {
         // 新增
-        result = await createSuspiciousProcess(
-          upsertForm.value as Omit<
-            SuspiciousProcess,
-            "id" | "createdAt" | "updatedAt"
-          >
-        );
+        result = await createSuspiciousProcess(upsertForm.value);
       } else {
         // 修改
-        result = await updateSuspiciousProcess(
-          upsertForm.value as Partial<SuspiciousProcess> & { id: number }
-        );
+        result = await updateSuspiciousProcessData(upsertForm.value);
       }
 
       if (result) {
-        fetchData(pagination.current);
+        await fetchData(pagination.current);
       }
 
       resolve(result);

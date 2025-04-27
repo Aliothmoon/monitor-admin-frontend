@@ -5,6 +5,7 @@
     :model="formData"
     :wrapper-col-props="{ span: 16 }"
     class="form"
+    :disabled="loading"
   >
     <a-form-item
       :label="formFields.email.label"
@@ -109,51 +110,143 @@
         :placeholder="formFields.employeeId.placeholder"
       />
     </a-form-item>
+    <a-form-item
+      :label="formFields.profile.label"
+      field="profile"
+    >
+      <a-textarea
+        v-model="formData.profile"
+        :placeholder="formFields.profile.placeholder"
+        :max-length="formFields.profile.maxLength"
+      />
+    </a-form-item>
     <a-form-item>
       <a-space>
-        <a-button type="primary" @click="validate"> 保存</a-button>
-        <a-button type="secondary" @click="reset"> 重置</a-button>
+        <a-button type="primary" @click="validate" :loading="loading"> 保存</a-button>
+        <a-button type="secondary" @click="reset" :disabled="loading"> 重置</a-button>
       </a-space>
     </a-form-item>
   </a-form>
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useUserStore } from "@/store";
 import { FormInstance } from "@arco-design/web-vue";
+import { Message } from "@arco-design/web-vue";
 import {
   ProctorInfoModel,
   formFields,
   collegeOptions,
   titleOptions,
-  notificationOptions,
 } from "../columns";
+import { getUserProfile, updateUserProfile } from "@/api/user";
 
 const formRef = ref<FormInstance>();
 const userStore = useUserStore();
+const loading = ref(false);
 
 const formData = ref<ProctorInfoModel>({
-  email: userStore.email || "",
-  nickname: userStore.name || "",
+  email: "",
+  nickname: "",
   college: "",
   department: "",
   title: "",
-  phone: userStore.phone || "",
+  phone: "",
   employeeId: "",
-  profile: userStore.introduction || "",
+  profile: "",
 });
 
-const validate = async () => {
-  const res = await formRef.value?.validate();
-  if (!res) {
-    // do some thing
-    // you also can use html-type to submit
+// 加载用户个人信息
+const loadUserProfile = async () => {
+  try {
+    loading.value = true;
+    const res = await getUserProfile();
+    if (res.data.code === 0 && res.data.data) {
+      const profile = res.data.data;
+      formData.value = {
+        email: profile.email || userStore.email || "",
+        nickname: profile.nickname || userStore.username || "",
+        college: profile.college || "",
+        department: profile.department || "",
+        title: profile.title || "",
+        phone: profile.phone || userStore.phone || "",
+        employeeId: profile.employeeId || "",
+        profile: profile.profile || userStore.introduction || "",
+      };
+    } else {
+      // 没有个人信息时，使用用户store中的信息
+      formData.value = {
+        email: userStore.email || "",
+        nickname: userStore.username || "",
+        college: userStore.college || "",
+        department: userStore.department || "",
+        title: userStore.title || "",
+        phone: userStore.phone || "",
+        employeeId: userStore.employeeId || "",
+        profile: userStore.profile || userStore.introduction || "",
+      };
+    }
+  } catch (error) {
+    console.error("加载用户个人信息失败:", error);
+    Message.error("加载用户个人信息失败");
+  } finally {
+    loading.value = false;
   }
 };
+
+// 保存用户个人信息
+const validate = async () => {
+  try {
+    const errors = await formRef.value?.validate();
+    if (!errors) {
+      loading.value = true;
+      const result = await updateUserProfile({
+        nickname: formData.value.nickname,
+        email: formData.value.email,
+        phone: formData.value.phone,
+        college: formData.value.college,
+        department: formData.value.department,
+        title: formData.value.title,
+        employeeId: formData.value.employeeId,
+        profile: formData.value.profile,
+      });
+      
+      if (result.data.code === 0) {
+        Message.success("保存成功");
+        // 更新用户store中的相关信息
+        userStore.setInfo({
+          email: formData.value.email,
+          phone: formData.value.phone,
+          username: formData.value.nickname,
+          introduction: formData.value.profile,
+          nickname: formData.value.nickname,
+          college: formData.value.college,
+          department: formData.value.department,
+          title: formData.value.title,
+          employeeId: formData.value.employeeId,
+          profile: formData.value.profile,
+        });
+      } else {
+        Message.error(result.data.msg || "保存失败");
+      }
+    }
+  } catch (error) {
+    console.error("保存用户个人信息失败:", error);
+    Message.error("保存失败");
+  } finally {
+    loading.value = false;
+  }
+};
+
 const reset = async () => {
   await formRef.value?.resetFields();
+  loadUserProfile(); // 重新加载原始数据
 };
+
+onMounted(() => {
+  loadUserProfile();
+});
 </script>
 
 <style scoped lang="less">

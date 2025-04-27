@@ -5,7 +5,7 @@ import { UserState } from "@/store/modules/user/types";
 export const createProctorPanelData = (userStore: UserState): DescData[] => [
   {
     label: "用户名",
-    value: userStore.name,
+    value: userStore.username,
   },
   {
     label: "角色",

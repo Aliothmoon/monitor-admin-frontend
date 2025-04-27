@@ -1,23 +1,9 @@
 <template>
   <a-card :bordered="false">
     <a-space :size="54">
-      <a-upload
-        :custom-request="customRequest"
-        :file-list="fileList"
-        :show-file-list="false"
-        :show-upload-button="true"
-        list-type="picture-card"
-        @change="uploadChange"
-      >
-        <template #upload-button>
-          <a-avatar :size="100" class="info-avatar">
-            <template #trigger-icon>
-              <icon-camera />
-            </template>
-            <img v-if="fileList.length" :src="fileList[0].url" />
-          </a-avatar>
-        </template>
-      </a-upload>
+      <a-avatar :size="100" class="info-avatar" :style="{ backgroundColor: avatarColor, color: 'white' }">
+        {{ userInitial }}
+      </a-avatar>
       <a-descriptions
         :column="2"
         :data="renderData"
@@ -57,65 +43,34 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue";
-import type {
-  FileItem,
-  RequestOption,
-} from "@arco-design/web-vue/es/upload/interfaces";
+import { computed } from "vue";
 import { useUserStore } from "@/store";
-import { userUploadApi } from "@/api/user-center";
 import { createProctorPanelData } from "../columns";
 
 const userStore = useUserStore();
-const file = {
-  uid: "-2",
-  name: "avatar.png",
-  url: userStore.avatar,
-};
 
 // 从columns.ts文件获取监考员信息面板数据
 const renderData = createProctorPanelData(userStore);
 
-const fileList = ref<FileItem[]>([file]);
-const uploadChange = (fileItemList: FileItem[], fileItem: FileItem) => {
-  fileList.value = [fileItem];
+// 用户名首字母计算
+const userInitial = computed(() => {
+  return userStore.username?.[0]?.toUpperCase() || '';
+});
+
+// 根据用户名生成颜色
+const getColorHash = (str: string) => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const h = Math.abs(hash % 360);
+  return `hsl(${h}, 70%, 40%)`;
 };
-const customRequest = (options: RequestOption) => {
-  // docs: https://axios-http.com/docs/cancellation
-  const controller = new AbortController();
 
-  (async function requestWrap() {
-    const { onProgress, onError, onSuccess, fileItem, name = "file" } = options;
-    onProgress(20);
-    const formData = new FormData();
-    formData.append(name as string, fileItem.file as Blob);
-    const onUploadProgress = (event: ProgressEvent) => {
-      let percent;
-      if (event.total > 0) {
-        percent = (event.loaded / event.total) * 100;
-      }
-      onProgress(parseInt(String(percent), 10), event);
-    };
-
-    try {
-      // https://github.com/axios/axios/issues/1630
-      // https://github.com/nuysoft/Mock/issues/127
-
-      const res = await userUploadApi(formData, {
-        controller,
-        onUploadProgress,
-      });
-      onSuccess(res);
-    } catch (error) {
-      onError(error);
-    }
-  })();
-  return {
-    abort() {
-      controller.abort();
-    },
-  };
-};
+// 用户头像背景色
+const avatarColor = computed(() => {
+  return getColorHash(userStore.username || 'user');
+});
 </script>
 
 <style lang="less" scoped>
@@ -124,16 +79,11 @@ const customRequest = (options: RequestOption) => {
   border-radius: 4px;
 }
 
-:deep(.arco-avatar-trigger-icon-button) {
-  width: 32px;
-  height: 32px;
-  line-height: 32px;
-  background-color: #e8f3ff;
-
-  .arco-icon-camera {
-    margin-top: 8px;
-    color: rgb(var(--arcoblue-6));
-    font-size: 14px;
-  }
+.info-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  font-weight: bold;
 }
 </style>

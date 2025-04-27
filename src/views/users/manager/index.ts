@@ -30,7 +30,7 @@ export const getMonitorUserPageData = async (
   }
 
   return (await axios.post<TableDataInfo<MonitorUser>>(
-    "/api/monitorUser/getPageData",
+    "/monitorUser/getPageData",
     params
   )) as unknown as TableDataInfo<MonitorUser>;
 };
@@ -42,7 +42,7 @@ export const getMonitorUserPageData = async (
 export const saveMonitorUser = async (
   monitorUser: Partial<MonitorUser>
 ): Promise<any> => {
-  return await axios.post("/api/monitorUser/save", monitorUser);
+  return await axios.post("/monitorUser/save", monitorUser);
 };
 
 /**

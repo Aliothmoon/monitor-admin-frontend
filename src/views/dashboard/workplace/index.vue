@@ -251,7 +251,7 @@ import { useUserStore } from "@/store";
 const userStore = useUserStore();
 const userInfo = computed(() => {
   return {
-    name: userStore.name || "监考教师",
+    name: userStore.username || "监考教师",
   };
 });
 

@@ -9,9 +9,6 @@ export default function useMenuTree() {
   const permission = usePermission();
   const appStore = useAppStore();
   const appRoute = computed(() => {
-    if (appStore.menuFromServer) {
-      return appStore.appAsyncMenus;
-    }
     return appClientMenus;
   });
   const menuTree = computed(() => {

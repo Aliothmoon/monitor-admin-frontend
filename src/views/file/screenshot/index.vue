@@ -11,7 +11,7 @@
             label-align="left"
           >
             <a-row :gutter="16">
-              <a-col :span="8">
+              <a-col :span="12">
                 <a-form-item :label="'关键词搜索'" field="keyword">
                   <a-input
                     v-model="formModel.keyword"
@@ -19,7 +19,7 @@
                   />
                 </a-form-item>
               </a-col>
-              <a-col :span="8">
+              <a-col :span="12">
                 <a-form-item :label="'风险等级'" field="riskLevel">
                   <a-select
                     v-model="formModel.riskLevel"
@@ -32,7 +32,7 @@
                   </a-select>
                 </a-form-item>
               </a-col>
-              <a-col :span="8">
+              <a-col :span="12">
                 <a-form-item :label="'截图时间'" field="timeRange">
                   <a-range-picker
                     v-model="formModel.timeRange"
@@ -78,19 +78,8 @@
           {{ rowIndex + 1 + (pagination.current - 1) * pagination.pageSize }}
         </template>
 
-        <template #imageUrl="{ record }">
-          <div class="image-preview-wrapper">
-            <div class="image-preview" @click="previewImage(record)">
-              <img
-                :src="record.imageUrl"
-                alt="截图"
-                style="max-width: 100px; max-height: 60px"
-              />
-              <div class="preview-icon">
-                <icon-eye class="eye-icon" />
-              </div>
-            </div>
-          </div>
+        <template #fileSize="{ record }">
+          {{ formatFileSize(record.fileSize) }}
         </template>
 
         <template #captureTime="{ record }">
@@ -101,6 +90,15 @@
           <a-tag :color="getRiskLevelColor(record.riskLevel)">
             {{ getRiskLevelText(record.riskLevel) }}
           </a-tag>
+        </template>
+
+        <template #image="{ record }">
+          <a-button size="small" type="text" @click="viewImage(record)">
+            <template #icon>
+              <icon-eye />
+            </template>
+            查看
+          </a-button>
         </template>
 
         <template #operation="{ record }">
@@ -124,19 +122,29 @@
       </a-table>
     </a-card>
 
-    <!-- 图片预览 -->
+    <!-- 查看图片弹窗 -->
     <a-modal
-      v-model:visible="previewVisible"
+      v-model:visible="imageVisible"
       :footer="false"
       :mask-closable="true"
-      title="截图预览"
+      :modal-style="{ maxWidth: '900px', width: '90%' }"
+      title="截图查看"
     >
-      <div class="image-preview-container">
+      <div class="image-container">
         <img
-          :src="previewImageUrl"
-          alt="截图预览"
+          :src="currentImageUrl"
           style="max-width: 100%; max-height: 500px"
+          alt="截图"
         />
+      </div>
+      <div v-if="currentRecord" class="image-info">
+        <h3>{{ currentRecord.examName }} - {{ currentRecord.studentName }}</h3>
+        <p>
+          截图时间：
+          {{ dayjs(currentRecord.captureTime).format("YYYY-MM-DD HH:mm:ss") }}
+        </p>
+        <p>文件大小：{{ formatFileSize(currentRecord.fileSize) }}</p>
+        <p v-if="currentRecord.remark">备注：{{ currentRecord.remark }}</p>
       </div>
     </a-modal>
 
@@ -186,8 +194,8 @@ import dayjs from "dayjs";
 import {
   Screenshot,
   getScreenshotList,
-  updateScreenshot,
-  deleteScreenshot,
+  updateScreenshotInfo,
+  deleteScreenshotById,
 } from "./index";
 
 // 表单相关
@@ -210,6 +218,17 @@ const reset = () => {
 // 查询
 const search = () => {
   fetchData(1);
+};
+
+// 格式化文件大小
+const formatFileSize = (size: number) => {
+  if (size < 1024) {
+    return size + " KB";
+  } else if (size < 1024 * 1024) {
+    return (size / 1024).toFixed(2) + " MB";
+  } else {
+    return (size / (1024 * 1024)).toFixed(2) + " GB";
+  }
 };
 
 // 获取风险等级文本
@@ -252,24 +271,31 @@ const columns = computed<TableColumnData[]>(() => [
   {
     title: "考试名称",
     dataIndex: "examName",
-    width: 180,
+    ellipsis: true,
+    tooltip: true,
+    width: 100,
   },
   {
     title: "学生姓名",
     dataIndex: "studentName",
-    width: 120,
-  },
-  {
-    title: "截图",
-    dataIndex: "imageUrl",
-    slotName: "imageUrl",
-    width: 120,
+    width: 100,
+    align: "center",
+    ellipsis: true,
+    tooltip: true,
   },
   {
     title: "截图时间",
     dataIndex: "captureTime",
     slotName: "captureTime",
     width: 180,
+  },
+  {
+    title: "文件大小",
+    dataIndex: "fileSize",
+    slotName: "fileSize",
+    width: 100,
+    ellipsis: true,
+    tooltip: true,
   },
   {
     title: "风险等级",
@@ -280,7 +306,15 @@ const columns = computed<TableColumnData[]>(() => [
   {
     title: "备注",
     dataIndex: "remark",
-    width: 200,
+    ellipsis: true,
+    tooltip: true,
+  },
+  {
+    title: "图片",
+    dataIndex: "image",
+    slotName: "image",
+    width: 80,
+    align: "center",
   },
   {
     title: "操作",
@@ -308,20 +342,18 @@ const fetchData = async (current: number = 1) => {
   setLoading(true);
   try {
     const { keyword, riskLevel, timeRange } = formModel;
-    const startDate =
+    const startTime =
       timeRange && timeRange.length > 0 ? timeRange[0] : undefined;
-    const endDate =
+    const endTime =
       timeRange && timeRange.length > 0 ? timeRange[1] : undefined;
 
     const { data, total } = await getScreenshotList(
       current,
       pagination.pageSize,
-      undefined,
-      undefined,
       keyword,
       riskLevel,
-      startDate,
-      endDate
+      startTime,
+      endTime
     );
     renderData.value = data;
     pagination.current = current;
@@ -334,13 +366,15 @@ const fetchData = async (current: number = 1) => {
   }
 };
 
-// 图片预览
-const previewVisible = ref(false);
-const previewImageUrl = ref("");
+// 图片查看
+const imageVisible = ref(false);
+const currentImageUrl = ref("");
+const currentRecord = ref<Screenshot | null>(null);
 
-const previewImage = (record: Screenshot) => {
-  previewImageUrl.value = record.imageUrl;
-  previewVisible.value = true;
+const viewImage = (record: Screenshot) => {
+  currentImageUrl.value = record.imageUrl;
+  currentRecord.value = record;
+  imageVisible.value = true;
 };
 
 // 编辑表单
@@ -376,10 +410,10 @@ const handleSave = async () => {
         return;
       }
 
-      const result = await updateScreenshot(editForm.value);
+      const result = await updateScreenshotInfo(editForm.value);
 
       if (result) {
-        fetchData(pagination.current);
+        await fetchData(pagination.current);
       }
 
       resolve(result);
@@ -389,9 +423,9 @@ const handleSave = async () => {
 
 // 删除
 const handleRemove = async (record: Screenshot) => {
-  const result = await deleteScreenshot(record.id);
+  const result = await deleteScreenshotById(record.id);
   if (result) {
-    fetchData(
+    await fetchData(
       renderData.value.length === 1 && pagination.current > 1
         ? pagination.current - 1
         : pagination.current
@@ -410,46 +444,15 @@ onMounted(() => {
   padding: 20px;
 }
 
-.image-preview-wrapper {
-  position: relative;
-  display: inline-block;
-}
-
-.image-preview {
-  position: relative;
-  cursor: pointer;
+.image-container {
   display: flex;
   justify-content: center;
-  align-items: center;
+  margin-bottom: 16px;
 }
 
-.preview-icon {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  opacity: 0;
-  transition: opacity 0.3s;
-  background-color: rgba(255, 255, 255, 0.7);
-  border-radius: 50%;
-  padding: 8px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.eye-icon {
-  color: #165DFF;
-  font-size: 18px;
-}
-
-.image-preview:hover .preview-icon {
-  opacity: 1;
-}
-
-.image-preview-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+.image-info {
+  padding: 8px 16px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
 }
 </style>

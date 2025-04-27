@@ -1,6 +1,6 @@
 <template>
   <div class="container-form">
-    <Breadcrumb :items="['个人中心', '监考员设置']" />
+    <Breadcrumb :items="['个人中心', '个人信息']" />
     <a-row style="margin-bottom: 16px">
       <a-col :span="24">
         <UserPanel />
@@ -9,7 +9,7 @@
     <a-row class="wrapper">
       <a-col :span="24">
         <a-tabs default-active-key="1" type="rounded">
-          <a-tab-pane key="1" title="监考员信息">
+          <a-tab-pane key="1" title="个人信息">
             <BasicInformation />
           </a-tab-pane>
         </a-tabs>

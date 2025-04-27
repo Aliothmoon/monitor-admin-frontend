@@ -33,20 +33,20 @@
       </li>
 
       <li>
-        <a-tooltip :content="$t('settings.navbar.alerts')">
-          <div class="message-box-trigger">
-            <a-badge :count="9" dot>
-              <a-button
-                  :shape="'circle'"
-                  class="nav-btn"
-                  type="outline"
-                  @click="setPopoverVisible"
-              >
-                <icon-notification/>
-              </a-button>
-            </a-badge>
-          </div>
-        </a-tooltip>
+        <!--        <a-tooltip :content="''">-->
+        <!--          <div class="message-box-trigger">-->
+        <!--            <a-badge :count="9" dot>-->
+        <!--              <a-button-->
+        <!--                  :shape="'circle'"-->
+        <!--                  class="nav-btn"-->
+        <!--                  type="outline"-->
+        <!--                  @click="setPopoverVisible"-->
+        <!--              >-->
+        <!--                <icon-notification/>-->
+        <!--              </a-button>-->
+        <!--            </a-badge>-->
+        <!--          </div>-->
+        <!--        </a-tooltip>-->
         <a-popover
             :arrow-style="{ display: 'none' }"
             :content-style="{ padding: 0, minWidth: '400px' }"
@@ -108,26 +108,10 @@
           </a-avatar>
           <template #content>
             <a-doption>
-              <a-space @click="switchRoles">
-                <icon-tag/>
-                <span>
-                  {{ $t("messageBox.switchRoles") }}
-                </span>
-              </a-space>
-            </a-doption>
-            <a-doption>
-              <a-space @click="$router.push({ name: 'Info' })">
-                <icon-user/>
-                <span>
-                  {{ $t("messageBox.userCenter") }}
-                </span>
-              </a-space>
-            </a-doption>
-            <a-doption>
               <a-space @click="$router.push({ name: 'Setting' })">
                 <icon-settings/>
                 <span>
-                  {{ $t("messageBox.userSettings") }}
+                  用户设置
                 </span>
               </a-space>
             </a-doption>
@@ -135,7 +119,7 @@
               <a-space @click="handleLogout">
                 <icon-export/>
                 <span>
-                  {{ $t("messageBox.logout") }}
+                  退出登录
                 </span>
               </a-space>
             </a-doption>
@@ -149,10 +133,8 @@
 <script lang="ts" setup>
 import {computed, ref, inject} from "vue";
 import {Message} from "@arco-design/web-vue";
-import {useDark, useToggle, useFullscreen} from "@vueuse/core";
+import {useFullscreen} from "@vueuse/core";
 import {useAppStore, useUserStore} from "@/store";
-import {LOCALE_OPTIONS} from "@/locale";
-import useLocale from "@/hooks/locale";
 import useUser from "@/hooks/user";
 import Menu from "@/components/menu/index.vue";
 import MessageBox from "../message-box/index.vue";
@@ -170,16 +152,14 @@ const getColorHash = (str: string) => {
 };
 
 const userInitial = computed(() => {
-  return userStore.name?.[0]?.toUpperCase() || '';
+  return userStore.username?.[0]?.toUpperCase() || '';
 });
 
 const avatarColor = computed(() => {
-  return getColorHash(userStore.name || 'user');
+  return getColorHash(userStore.username || 'user');
 });
 const {logout} = useUser();
-const {changeLocale, currentLocale} = useLocale();
 const {isFullscreen, toggle: toggleFullScreen} = useFullscreen();
-const locales = [...LOCALE_OPTIONS];
 
 const topMenu = computed(() => appStore.topMenu && appStore.menu);
 
@@ -187,29 +167,8 @@ const setVisible = () => {
   appStore.updateSettings({globalSettings: true});
 };
 const refBtn = ref();
-const triggerBtn = ref();
-const setPopoverVisible = () => {
-  const event = new MouseEvent("click", {
-    view: window,
-    bubbles: true,
-    cancelable: true,
-  });
-  refBtn.value.dispatchEvent(event);
-};
 const handleLogout = () => {
   logout();
-};
-const setDropDownVisible = () => {
-  const event = new MouseEvent("click", {
-    view: window,
-    bubbles: true,
-    cancelable: true,
-  });
-  triggerBtn.value.dispatchEvent(event);
-};
-const switchRoles = async () => {
-  const res = await userStore.switchRoles();
-  Message.success(res as string);
 };
 const toggleDrawerMenu = inject("toggleDrawerMenu") as () => void;
 </script>
