@@ -4,7 +4,6 @@
       <a-space>
         <!--        LOGO -->
         <img :src="'/src/assets/logo.svg'" :width="30"></img>
-        <!--        <icon-computer size="" />-->
         <a-typography-title
             :heading="5"
             :style="{ margin: 0, fontSize: '18px' }"
@@ -22,16 +21,6 @@
       <Menu v-if="topMenu"/>
     </div>
     <ul class="right-side">
-      <li>
-        <a-tooltip :content="$t('settings.search')">
-          <a-button :shape="'circle'" class="nav-btn" type="outline">
-            <template #icon>
-              <icon-search/>
-            </template>
-          </a-button>
-        </a-tooltip>
-      </li>
-
       <li>
         <!--        <a-tooltip :content="''">-->
         <!--          <div class="message-box-trigger">-->
@@ -81,20 +70,6 @@
         </a-tooltip>
       </li>
       <li>
-        <a-tooltip :content="$t('settings.title')">
-          <a-button
-              :shape="'circle'"
-              class="nav-btn"
-              type="outline"
-              @click="setVisible"
-          >
-            <template #icon>
-              <icon-settings/>
-            </template>
-          </a-button>
-        </a-tooltip>
-      </li>
-      <li>
         <a-dropdown trigger="click">
           <a-avatar
               :size="32"
@@ -132,7 +107,6 @@
 
 <script lang="ts" setup>
 import {computed, ref, inject} from "vue";
-import {Message} from "@arco-design/web-vue";
 import {useFullscreen} from "@vueuse/core";
 import {useAppStore, useUserStore} from "@/store";
 import useUser from "@/hooks/user";
