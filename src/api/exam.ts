@@ -1,6 +1,7 @@
 import axios from "axios";
 import { Message } from "@arco-design/web-vue";
 import type { AxiosResponse } from 'axios';
+import dayjs from "dayjs";
 
 // 考试状态枚举
 export enum ExamStatus {
@@ -17,6 +18,7 @@ export interface Exam {
   startTime: Date;
   endTime: Date;
   duration: number;
+  location: string;
   status: ExamStatus;
   createdAt: Date;
   updatedAt: Date;
@@ -237,3 +239,4 @@ export async function downloadExamineeTemplate() {
   link.click();
   document.body.removeChild(link);
 }
+

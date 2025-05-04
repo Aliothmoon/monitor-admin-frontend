@@ -16,6 +16,9 @@ importers:
       '@arco-design/web-vue':
         specifier: ^2.44.7
         version: 2.57.0(vue@3.5.13(typescript@4.9.5))
+      '@types/uuid':
+        specifier: ^10.0.0
+        version: 10.0.0
       '@vueuse/core':
         specifier: ^9.3.0
         version: 9.13.0(vue@3.5.13(typescript@4.9.5))
@@ -49,6 +52,9 @@ importers:
       sortablejs:
         specifier: ^1.15.0
         version: 1.15.6
+      uuid:
+        specifier: ^11.1.0
+        version: 11.1.0
       vue:
         specifier: ^3.2.40
         version: 3.5.13(typescript@4.9.5)
@@ -131,9 +137,6 @@ importers:
       lint-staged:
         specifier: ^13.0.3
         version: 13.3.0
-      mockjs:
-        specifier: ^1.1.0
-        version: 1.1.0
       postcss:
         specifier: ^8.5.3
         version: 8.5.3
@@ -652,6 +655,9 @@ packages:
 
   '@types/unist@3.0.3':
     resolution: {integrity: sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q==}
+
+  '@types/uuid@10.0.0':
+    resolution: {integrity: sha512-7gqG38EyHgyP1S+7+xomFtL+ZNHcKv6DwNaCZmJmo1vgMugyF3TCnXVg4t1uk89mLNwnLtnY3TpOpCOyp1/xHQ==}
 
   '@types/vfile-message@2.0.0':
     resolution: {integrity: sha512-GpTIuDpb9u4zIO165fUy9+fXcULdD8HFRNli04GehoMVbeNq7D6OBnqSmg3lxZnC+UvgUhEWKxdKiwYUkGltIw==}
@@ -1350,10 +1356,6 @@ packages:
   commander@11.0.0:
     resolution: {integrity: sha512-9HMlXtt/BNoYr8ooyjjNRdIilOTkVJXB+GhxMTtOKwk0R4j4lS4NpjuqmRxroBfnfTSHQIHQB7wryHhXarNjmQ==}
     engines: {node: '>=16'}
-
-  commander@13.1.0:
-    resolution: {integrity: sha512-/rFeCpNJQbhSZjGVwO9RFV3xPqbnERS8MmIQzCtD/zl6gpJuV/bMLuN92oG3F7d8oDEHHRrujSXNUr8fpjntKw==}
-    engines: {node: '>=18'}
 
   commander@2.20.3:
     resolution: {integrity: sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ==}
@@ -3508,10 +3510,6 @@ packages:
     resolution: {integrity: sha512-FP+p8RB8OWpF3YZBCrP5gtADmtXApB5AMLn+vdyA+PyxCjrCs00mjyUozssO33cwDeT3wNGdLxJ5M//YqtHAJw==}
     hasBin: true
 
-  mockjs@1.1.0:
-    resolution: {integrity: sha512-eQsKcWzIaZzEZ07NuEyO4Nw65g0hdWAyurVol1IPl1gahRwY+svqzfgfey8U8dahLwG44d6/RwEzuK52rSa/JQ==}
-    hasBin: true
-
   mozjpeg@7.1.1:
     resolution: {integrity: sha512-iIDxWvzhWvLC9mcRJ1uSkiKaj4drF58oCqK2bITm5c2Jt6cJ8qQjSSru2PCaysG+hLIinryj8mgz5ZJzOYTv1A==}
     engines: {node: '>=10'}
@@ -5037,6 +5035,10 @@ packages:
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
 
+  uuid@11.1.0:
+    resolution: {integrity: sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==}
+    hasBin: true
+
   uuid@3.4.0:
     resolution: {integrity: sha512-HjSDRw6gZE5JMggctHBcjVak08+KEVhSIiDzFnT9S9aegmp85S/bReBVTb4QTFaRNptJ9kuYaNhnbNEOkbKb/A==}
     deprecated: Please upgrade  to version 7 or higher.  Older versions may use Math.random() in certain circumstances, which is known to be problematic.  See https://v8.dev/blog/math-random for details.
@@ -5857,6 +5859,8 @@ snapshots:
 
   '@types/unist@3.0.3': {}
 
+  '@types/uuid@10.0.0': {}
+
   '@types/vfile-message@2.0.0':
     dependencies:
       vfile-message: 4.0.2
@@ -6658,8 +6662,6 @@ snapshots:
       delayed-stream: 1.0.0
 
   commander@11.0.0: {}
-
-  commander@13.1.0: {}
 
   commander@2.20.3: {}
 
@@ -8947,10 +8949,6 @@ snapshots:
     dependencies:
       minimist: 1.2.8
 
-  mockjs@1.1.0:
-    dependencies:
-      commander: 13.1.0
-
   mozjpeg@7.1.1:
     dependencies:
       bin-build: 3.0.0
@@ -10651,6 +10649,8 @@ snapshots:
   use@3.1.1: {}
 
   util-deprecate@1.0.2: {}
+
+  uuid@11.1.0: {}
 
   uuid@3.4.0: {}
 

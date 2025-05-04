@@ -1,6 +1,6 @@
 <template>
   <div class="container-form">
-    <Breadcrumb :items="['监考设置','风险图片模板']" direct />
+    <Breadcrumb :items="['监考设置', '风险图片模板']" direct />
     <a-card :title="'风险图片模板管理'">
       <a-row>
         <a-col :flex="1">
@@ -86,7 +86,7 @@
           <div class="image-preview-wrapper">
             <div class="image-preview" @click="previewImage(record)">
               <img
-                :src="record.imageUrl"
+                :src="getFullImageUrl(record.imageUrl)"
                 alt="模板图片"
                 style="max-width: 100px; max-height: 60px"
               />
@@ -97,7 +97,7 @@
           </div>
         </template>
 
-        <template #similarity="{ record }"> {{ record.similarity }}% </template>
+        <template #similarity="{ record }"> {{ record.similarity }}%</template>
 
         <template #createdAt="{ record }">
           {{ dayjs(record.createdAt).format("YYYY-MM-DD HH:mm:ss") }}
@@ -162,11 +162,55 @@
           </a-select>
         </a-form-item>
         <a-form-item
-          :rules="[{ required: true, message: '不能为空' }]"
+          :rules="[{ required: true, message: '请上传图片' }]"
           field="imageUrl"
-          label="图片URL"
+          label="图片"
         >
-          <a-input v-model="upsertForm.imageUrl"></a-input>
+          <div
+            v-if="upsertForm.imageUrl"
+            class="current-image"
+            @click="openFileUpload"
+          >
+            <img
+              :src="getFullImageUrl(upsertForm.imageUrl)"
+              style="max-width: 200px; max-height: 100px"
+            />
+            <div class="image-overlay">
+              <icon-refresh class="refresh-icon" />
+              <span>点击更换图片</span>
+            </div>
+          </div>
+          <a-upload
+            ref="uploadRef"
+            v-if="!upsertForm.imageUrl"
+            :custom-request="handleUpload"
+            :limit="1"
+            :show-file-list="false"
+            accept="image/*"
+          >
+            <template #upload-button>
+              <a-button>
+                <template #icon>
+                  <icon-upload />
+                </template>
+                上传图片
+              </a-button>
+            </template>
+          </a-upload>
+          <input
+            ref="hiddenFileInput"
+            type="file"
+            accept="image/*"
+            style="display: none"
+            @change="handleFileInputChange"
+          />
+          <div v-if="uploadLoading" style="margin-top: 8px">
+            <a-spin />
+            <span style="margin-left: 8px">上传中...</span>
+          </div>
+          <div v-if="upsertForm.imageUrl && !uploadLoading" style="margin-top: 8px">
+            <a-tag color="green">图片已上传</a-tag>
+          </div>
         </a-form-item>
         <a-form-item
           :rules="[
@@ -204,22 +248,25 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, reactive, onMounted } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import useLoading from "@/hooks/loading";
 import { Pagination } from "@/types/global";
 import type { TableColumnData } from "@arco-design/web-vue/es/table/interface";
 import { Message } from "@arco-design/web-vue";
 import dayjs from "dayjs";
+import { useUserStore } from "@/store";
+import { v4 as uuidv4 } from "uuid";
 
 // 导入风险图片模板API和类型
 import {
-  RiskImageTemplate,
-  getRiskImageTemplateList,
   createRiskImageTemplate,
-  updateRiskImageTemplate,
   deleteRiskImageTemplate,
+  getRiskImageTemplateList,
+  RiskImageTemplate,
+  updateRiskImageTemplate,
 } from "./image";
-
+import { RequestOption } from "@arco-design/web-vue/es/upload/interfaces";
+import axios from "axios";
 
 const generateFormModel = () => {
   return {
@@ -241,6 +288,117 @@ const search = () => {
   fetchData(1);
 };
 
+// 获取用户信息，用于拼接文件URL
+const userStore = useUserStore();
+
+// 获取完整的图片URL
+const getFullImageUrl = (imageUrl: string) => {
+  if (!imageUrl) return "";
+  return userStore.fileUrlPrefix + imageUrl;
+};
+
+// 上传图片相关
+const uploadLoading = ref(false);
+const hiddenFileInput = ref<HTMLInputElement | null>(null);
+const showImageUploader = ref(false);
+
+// 直接打开文件选择窗口
+const openFileUpload = () => {
+  if (hiddenFileInput.value) {
+    hiddenFileInput.value.click();
+  }
+};
+
+// 处理文件选择变化
+const handleFileInputChange = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
+  
+  if (file) {
+    // 模拟RequestOption对象
+    const options = {
+      fileItem: { file },
+      onSuccess: () => {
+        // 清空input，使同一文件可以再次被选择
+        if (hiddenFileInput.value) {
+          hiddenFileInput.value.value = '';
+        }
+      },
+      onError: () => {
+        // 清空input，使同一文件可以再次被选择
+        if (hiddenFileInput.value) {
+          hiddenFileInput.value.value = '';
+        }
+      }
+    };
+    // 调用上传函数
+    handleUpload(options as RequestOption);
+  }
+};
+
+// 处理更换图片按钮点击（保留以支持其他可能的触发方式）
+const handleReplaceImage = () => {
+  openFileUpload();
+};
+
+// 处理图片上传
+const handleUpload = async (options: RequestOption) => {
+  const { fileItem, onSuccess, onError } = options;
+
+  const file = fileItem?.file;
+  if (!file) {
+    Message.error("请选择文件");
+    return;
+  }
+  
+  uploadLoading.value = true;
+  showImageUploader.value = false;
+  
+  try {
+    // 生成UUID作为文件名的一部分
+    const uuid = uuidv4();
+    // 获取文件扩展名
+    const ext = file.name.substring(file.name.lastIndexOf("."));
+    // 构建文件名 risk-image/uuid.扩展名
+    const filename = `risk-image/${uuid}${ext}`;
+
+    // 创建FormData对象
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("filename", filename);
+
+    // 发送请求
+    const response = await axios.post("/common/upload", formData);
+
+    if (response.status !== 200) {
+      throw new Error("上传失败");
+    }
+
+    const result = response.data;
+
+    if (result.code === 0) {
+      // 将文件名存储到表单中
+      upsertForm.value.imageUrl = filename;
+      Message.success("上传成功");
+      if (typeof onSuccess === 'function') {
+        onSuccess(result);
+      }
+    } else {
+      throw new Error(result.message || "上传失败");
+    }
+  } catch (error) {
+    console.error("上传失败", error);
+    Message.error(
+      "上传失败: " + (error instanceof Error ? error.message : "未知错误")
+    );
+    if (typeof onError === 'function') {
+      onError(error);
+    }
+  } finally {
+    uploadLoading.value = false;
+  }
+};
+
 // 表格配置
 const columns = computed<TableColumnData[]>(() => [
   {
@@ -255,29 +413,27 @@ const columns = computed<TableColumnData[]>(() => [
     dataIndex: "name",
     ellipsis: true,
     tooltip: true,
-    align:'center',
+    align: "center",
   },
   {
     title: "描述",
     dataIndex: "description",
     ellipsis: true,
     tooltip: true,
-    align:'center',
-
+    align: "center",
   },
   {
     title: "图片",
     dataIndex: "imageUrl",
     slotName: "imageUrl",
-    align:'center',
-    width: 100
-
+    align: "center",
+    width: 100,
   },
   {
     title: "相似度阈值",
     dataIndex: "similarity",
     slotName: "similarity",
-    align:'center',
+    align: "center",
   },
   {
     title: "创建时间",
@@ -336,10 +492,9 @@ const previewVisible = ref(false);
 const previewImageUrl = ref("");
 
 const previewImage = (record: RiskImageTemplate) => {
-  previewImageUrl.value = record.imageUrl;
+  previewImageUrl.value = getFullImageUrl(record.imageUrl);
   previewVisible.value = true;
 };
-
 
 const visible = ref(false);
 const upsertFormRef = ref(null);
@@ -362,6 +517,7 @@ const handleInsert = () => {
     imageUrl: "",
     similarity: 80,
   };
+  showImageUploader.value = false;
   visible.value = true;
 };
 
@@ -376,6 +532,7 @@ const handleUpdate = (record: RiskImageTemplate) => {
     imageUrl: record.imageUrl,
     similarity: record.similarity,
   };
+  showImageUploader.value = false;
   visible.value = true;
 };
 
@@ -470,7 +627,7 @@ onMounted(() => {
 }
 
 .eye-icon {
-  color: #165DFF;
+  color: #165dff;
   font-size: 18px;
 }
 
@@ -482,5 +639,43 @@ onMounted(() => {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.current-image {
+  margin-bottom: 10px;
+  position: relative;
+  cursor: pointer;
+  display: inline-block;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.image-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.3s;
+  color: white;
+}
+
+.refresh-icon {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.current-image:hover .image-overlay {
+  opacity: 1;
+}
+
+.image-actions {
+  display: none;
 }
 </style>

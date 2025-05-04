@@ -170,7 +170,17 @@
           />
         </a-form-item>
         <a-form-item
-          :rules="[{ required: true, message: '不能为空' }]"
+          :rules="[
+            { required: true, message: '不能为空' },
+            {
+              validator: (value, cb) => {
+                if (upsertForm.startTime && value && dayjs(value).isBefore(dayjs(upsertForm.startTime))) {
+                  cb('结束时间必须晚于开始时间');
+                }
+                cb();
+              }
+            }
+          ]"
           field="endTime"
           label="结束时间"
         >
@@ -186,6 +196,15 @@
           label="考试时长(分钟)"
         >
           <a-input-number v-model="upsertForm.duration" :max="300" :min="1" />
+        </a-form-item>
+
+        <!-- 添加考试地点字段 -->
+        <a-form-item
+          :rules="[{ required: true, message: '不能为空' }]"
+          field="location"
+          label="考试地点"
+        >
+          <a-input v-model="upsertForm.location" placeholder="请输入考试地点" />
         </a-form-item>
 
         <!-- 新增可疑进程选择 -->
@@ -319,7 +338,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import useLoading from "@/hooks/loading";
 import { Pagination } from "@/types/global";
 import type { TableColumnData } from "@arco-design/web-vue/es/table/interface";
@@ -473,6 +492,12 @@ const columns = computed<TableColumnData[]>(() => [
     dataIndex: "duration",
   },
   {
+    title: "考试地点",
+    dataIndex: "location",
+    ellipsis: true,
+    tooltip: true,
+  },
+  {
     title: "状态",
     dataIndex: "status",
     render: ({ record }) => {
@@ -539,11 +564,59 @@ const upsertForm = ref<Partial<Exam>>({
   startTime: new Date(),
   endTime: new Date(),
   duration: 120,
+  location: "",
   suspiciousProcessIds: [],
   blacklistDomainIds: [],
   riskImageIds: [],
 });
 const upsertFormRef = ref();
+
+// 监听时间变化，自动计算时长
+let timeUpdateLock = false;  // 避免循环更新的锁
+let durationUpdateLock = false;  // 避免循环更新的锁
+
+watch(
+  () => [upsertForm.value.startTime, upsertForm.value.endTime],
+  ([newStartTime, newEndTime]) => {
+    if (timeUpdateLock) return;  // 如果处于锁定状态，跳过处理
+    
+    if (newStartTime && newEndTime) {
+      // 计算时间差（分钟）
+      const startTime = dayjs(newStartTime);
+      const endTime = dayjs(newEndTime);
+      const diffMinutes = endTime.diff(startTime, 'minute');
+      
+      // 如果时间差有效（大于0），则更新duration
+      if (diffMinutes > 0) {
+        durationUpdateLock = true;  // 锁定duration的更新监听
+        upsertForm.value.duration = diffMinutes;
+        // 使用setTimeout解锁，确保DOM更新完成
+        setTimeout(() => {
+          durationUpdateLock = false;
+        }, 0);
+      }
+    }
+  }
+);
+
+// 监听时长变化，自动调整结束时间
+watch(
+  () => upsertForm.value.duration,
+  (newDuration) => {
+    if (durationUpdateLock) return;  // 如果处于锁定状态，跳过处理
+    
+    if (newDuration && upsertForm.value.startTime) {
+      // 基于开始时间和新时长计算结束时间
+      timeUpdateLock = true;  // 锁定时间更新监听
+      const startTime = dayjs(upsertForm.value.startTime);
+      upsertForm.value.endTime = startTime.add(newDuration, 'minute').toDate();
+      // 使用setTimeout解锁，确保DOM更新完成
+      setTimeout(() => {
+        timeUpdateLock = false;
+      }, 0);
+    }
+  }
+);
 
 // 新增
 const handleInsert = () => {
@@ -554,6 +627,7 @@ const handleInsert = () => {
     startTime: new Date(),
     endTime: new Date(),
     duration: 120,
+    location: "",
     suspiciousProcessIds: [],
     blacklistDomainIds: [],
     riskImageIds: [],
@@ -583,6 +657,7 @@ const handleCompete = async () => {
         startTime: upsertForm.value.startTime!,
         endTime: upsertForm.value.endTime!,
         duration: upsertForm.value.duration!,
+        location: upsertForm.value.location!,
         suspiciousProcessIds: upsertForm.value.suspiciousProcessIds || [],
         blacklistDomainIds: upsertForm.value.blacklistDomainIds || [],
         riskImageIds: upsertForm.value.riskImageIds || [],

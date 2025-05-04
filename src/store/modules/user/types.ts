@@ -15,6 +15,7 @@ export interface UserState {
   locationName?: string;
   phone?: string;
   registrationDate?: string;
+  fileUrlPrefix: string;
   accountId?: string;
   certification?: number;
   role: RoleType;

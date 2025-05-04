@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "@arco-design/web-vue": "^2.44.7",
+    "@types/uuid": "^10.0.0",
     "@vueuse/core": "^9.3.0",
     "axios": "1.8.2",
     "dayjs": "^1.11.5",
@@ -40,6 +41,7 @@
     "pinia": "^2.0.23",
     "query-string": "^8.0.3",
     "sortablejs": "^1.15.0",
+    "uuid": "^11.1.0",
     "vue": "^3.2.40",
     "vue-echarts": "^6.2.3",
     "vue-i18n": "^9.2.2",
