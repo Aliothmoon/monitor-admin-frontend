@@ -127,7 +127,7 @@
         >
           <a-input
             v-model="upsertForm.domain"
-            placeholder="例如: *.example.com"
+            placeholder="例如: baidu.com"
           ></a-input>
         </a-form-item>
         <a-form-item field="description" label="描述">

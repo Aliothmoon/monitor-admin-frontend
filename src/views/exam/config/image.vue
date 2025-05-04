@@ -26,11 +26,12 @@
                     allow-clear
                     placeholder="请选择分类"
                   >
-                    <a-option label="公式" value="公式" />
-                    <a-option label="答案" value="答案" />
-                    <a-option label="小抄" value="小抄" />
-                    <a-option label="参考表" value="参考表" />
-                    <a-option label="其他" value="其他" />
+                    <a-option 
+                      v-for="category in categoryOptions" 
+                      :key="category.value" 
+                      :label="category.label" 
+                      :value="category.value" 
+                    />
                   </a-select>
                 </a-form-item>
               </a-col>
@@ -154,11 +155,12 @@
           label="分类"
         >
           <a-select v-model="upsertForm.category" placeholder="请选择分类">
-            <a-option label="公式" value="公式" />
-            <a-option label="答案" value="答案" />
-            <a-option label="小抄" value="小抄" />
-            <a-option label="参考表" value="参考表" />
-            <a-option label="其他" value="其他" />
+            <a-option 
+              v-for="category in categoryOptions" 
+              :key="category.value" 
+              :label="category.label" 
+              :value="category.value" 
+            />
           </a-select>
         </a-form-item>
         <a-form-item
@@ -267,6 +269,15 @@ import {
 } from "./image";
 import { RequestOption } from "@arco-design/web-vue/es/upload/interfaces";
 import axios from "axios";
+
+// 分类选项
+const categoryOptions = [
+  { label: '公式', value: '公式' },
+  { label: '可疑图标', value: '可疑图标' },
+  { label: '小抄', value: '小抄' },
+  { label: '参考表', value: '参考表' },
+  { label: '其他', value: '其他' },
+];
 
 const generateFormModel = () => {
   return {
@@ -421,6 +432,12 @@ const columns = computed<TableColumnData[]>(() => [
     ellipsis: true,
     tooltip: true,
     align: "center",
+  },
+  {
+    title: "分类",
+    dataIndex: "category",
+    align: "center",
+    width: 100,
   },
   {
     title: "图片",
