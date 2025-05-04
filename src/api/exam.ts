@@ -1,5 +1,6 @@
 import axios from "axios";
 import { Message } from "@arco-design/web-vue";
+import type { AxiosResponse } from 'axios';
 
 // 考试状态枚举
 export enum ExamStatus {
@@ -12,15 +13,18 @@ export enum ExamStatus {
 export interface Exam {
   id: number;
   name: string;
-  description?: string;
+  description: string;
   startTime: Date;
   endTime: Date;
   duration: number;
   status: ExamStatus;
-  createdAt?: Date;
-  updatedAt?: Date;
-  createdBy?: number;
-  updatedBy?: number;
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy: number;
+  updatedBy: number;
+  suspiciousProcessIds?: number[];
+  blacklistDomainIds?: number[];
+  riskImageIds?: number[];
 }
 
 // 查询参数
@@ -166,3 +170,70 @@ export const deleteExamById = async (id: number) => {
     return false;
   }
 };
+
+export interface SuspiciousProcess {
+  id: number;
+  name: string;
+  description?: string;
+}
+
+export interface BlacklistDomain {
+  id: number;
+  domain: string;
+  description?: string;
+}
+
+export interface RiskImageTemplate {
+  id: number;
+  name: string;
+  imageUrl: string;
+  description?: string;
+}
+
+export interface ExamPageResult {
+  data: Exam[];
+  total: number;
+}
+
+// 获取可疑进程列表
+export async function getSuspiciousProcessList(): Promise<SuspiciousProcess[]> {
+  const response = await axios.get('/exam/suspicious-process/list');
+  return response.data.data;
+}
+
+// 获取域名黑名单列表
+export async function getBlacklistDomainList(): Promise<BlacklistDomain[]> {
+  const response = await axios.get('/exam/domain-blacklist/list');
+  return response.data.data;
+}
+
+// 获取风险图片模板列表
+export async function getRiskImageTemplateList(): Promise<RiskImageTemplate[]> {
+  const response = await axios.get('/exam/risk-image-template/list');
+  return response.data.data;
+}
+
+// 导入考生信息
+export async function importExaminees(formData: FormData): Promise<boolean> {
+  const response = await axios.post('/exam/examinees/import', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  });
+  return response.data.data;
+}
+
+// 下载考生导入模板
+export async function downloadExamineeTemplate() {
+  const response = await axios.get('/exam/examinees/template', {
+    responseType: 'blob'
+  });
+  
+  const url = window.URL.createObjectURL(new Blob([response.data]));
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', '考生导入模板.xlsx');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}

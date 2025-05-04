@@ -75,6 +75,12 @@
               </template>
               新建
             </a-button>
+            <a-button @click="handleImportOpen">
+              <template #icon>
+                <icon-upload />
+              </template>
+              导入考生
+            </a-button>
           </a-space>
         </a-col>
       </a-row>
@@ -134,6 +140,7 @@
       v-model:visible="visible"
       :on-before-ok="handleCompete"
       :title="upsertType == 'c' ? '新增' : '修改'"
+      width="650px"
     >
       <a-form
         ref="upsertFormRef"
@@ -180,31 +187,160 @@
         >
           <a-input-number v-model="upsertForm.duration" :max="300" :min="1" />
         </a-form-item>
+
+        <!-- 新增可疑进程选择 -->
+        <a-form-item field="suspiciousProcessIds" label="可疑进程">
+          <div class="select-wrapper">
+            <a-select
+              v-model="upsertForm.suspiciousProcessIds"
+              placeholder="请选择可疑进程"
+              allow-clear
+              multiple
+              style="width: calc(100% - 80px)"
+            >
+              <a-option
+                v-for="item in processOptions"
+                :key="item.id"
+                :value="item.id"
+                :label="item.processName"
+              />
+            </a-select>
+            <a-button
+              :type="'primary'"
+              size="medium"
+              status="normal"
+              @click="handleSelectAllProcesses"
+              style="margin-left: 8px"
+            >
+              {{ isAllProcessesSelected ? "清除" : "全选" }}
+            </a-button>
+          </div>
+        </a-form-item>
+
+        <!-- 新增域名黑名单选择 -->
+        <a-form-item field="blacklistDomainIds" label="域名黑名单">
+          <div class="select-wrapper">
+            <a-select
+              v-model="upsertForm.blacklistDomainIds"
+              placeholder="请选择域名黑名单"
+              allow-clear
+              multiple
+              style="width: calc(100% - 80px)"
+            >
+              <a-option
+                v-for="item in domainOptions"
+                :key="item.id"
+                :value="item.id"
+                :label="item.domain"
+              />
+            </a-select>
+            <a-button
+              :type="'primary'"
+              status="normal"
+              size="medium"
+              @click="handleSelectAllDomains"
+              style="margin-left: 8px"
+            >
+              {{ isAllDomainsSelected ? "清除" : "全选" }}
+            </a-button>
+          </div>
+        </a-form-item>
+
+        <!-- 新增风险图片模板选择 -->
+        <a-form-item field="riskImageIds" label="风险图片模板">
+          <div class="select-wrapper">
+            <a-select
+              v-model="upsertForm.riskImageIds"
+              placeholder="请选择风险图片模板"
+              allow-clear
+              multiple
+              style="width: calc(100% - 80px)"
+            >
+              <a-option
+                v-for="item in imageOptions"
+                :key="item.id"
+                :value="item.id"
+                :label="item.name"
+              />
+            </a-select>
+            <a-button
+              :type="'primary'"
+              size="medium"
+              status="normal"
+              @click="handleSelectAllImages"
+              style="margin-left: 8px"
+            >
+              {{ isAllImagesSelected ? "清除" : "全选" }}
+            </a-button>
+          </div>
+        </a-form-item>
+      </a-form>
+    </a-modal>
+
+    <!-- 导入考生信息弹窗 -->
+    <a-modal
+      v-model:visible="importVisible"
+      :title="'导入考生信息'"
+      @before-ok="handleImportExaminees"
+    >
+      <a-form>
+        <a-form-item field="examId" label="考试">
+          <a-select v-model="importForm.examId" placeholder="请选择考试">
+            <a-option
+              v-for="exam in renderData"
+              :key="exam.id"
+              :value="exam.id"
+              :label="exam.name"
+            />
+          </a-select>
+        </a-form-item>
+        <a-form-item field="file" label="考生Excel文件">
+          <a-upload
+            :accept="'.xlsx,.xls'"
+            :action="'/api/exam/examinees/import'"
+            :custom-request="customUploadRequest"
+            :limit="1"
+            :show-file-list="true"
+          >
+            <template #upload-button>
+              <a-button>选择文件</a-button>
+            </template>
+          </a-upload>
+          <div class="upload-tip">
+            上传Excel文件，包含考生学院、班级、姓名等信息
+          </div>
+        </a-form-item>
+        <a-form-item>
+          <a-button type="primary" @click="downloadTemplate">下载模板</a-button>
+        </a-form-item>
       </a-form>
     </a-modal>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, reactive, onMounted } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import useLoading from "@/hooks/loading";
 import { Pagination } from "@/types/global";
 import type { TableColumnData } from "@arco-design/web-vue/es/table/interface";
-import axios from "axios";
 import { Message } from "@arco-design/web-vue";
 import dayjs from "dayjs";
 import { useRouter } from "vue-router";
 
 // 导入考试相关API和类型
+// 导入新的API
 import {
-  Exam,
-  ExamStatus,
-  getExamList,
   createExamInfo,
-  updateExamInfo,
   deleteExamById,
+  downloadExamineeTemplate,
+  Exam,
+  getBlacklistDomainList,
+  getExamList,
+  getRiskImageTemplateList,
+  getSuspiciousProcessList,
+  importExaminees,
+  updateExamInfo,
 } from "@/api/exam";
-
 
 const generateFormModel = () => {
   return {
@@ -223,6 +359,87 @@ const pagination = reactive<Pagination>({
   pageSize: 10,
   total: 0,
 });
+
+// 可疑进程、域名黑名单、风险图片模板选项
+const processOptions = ref([]);
+const domainOptions = ref([]);
+const imageOptions = ref([]);
+
+// 全选状态计算属性
+const isAllProcessesSelected = computed(() => {
+  return (
+    processOptions.value.length > 0 &&
+    upsertForm.value.suspiciousProcessIds?.length ===
+      processOptions.value.length
+  );
+});
+
+const isAllDomainsSelected = computed(() => {
+  return (
+    domainOptions.value.length > 0 &&
+    upsertForm.value.blacklistDomainIds?.length === domainOptions.value.length
+  );
+});
+
+const isAllImagesSelected = computed(() => {
+  return (
+    imageOptions.value.length > 0 &&
+    upsertForm.value.riskImageIds?.length === imageOptions.value.length
+  );
+});
+
+// 全选/取消全选处理函数
+const handleSelectAllProcesses = () => {
+  if (isAllProcessesSelected.value) {
+    // 当前是全选状态，取消全选
+    upsertForm.value.suspiciousProcessIds = [];
+  } else {
+    // 当前非全选状态，设置全选
+    upsertForm.value.suspiciousProcessIds = processOptions.value.map(
+      (item) => item.id
+    );
+  }
+};
+
+const handleSelectAllDomains = () => {
+  if (isAllDomainsSelected.value) {
+    // 当前是全选状态，取消全选
+    upsertForm.value.blacklistDomainIds = [];
+  } else {
+    // 当前非全选状态，设置全选
+    upsertForm.value.blacklistDomainIds = domainOptions.value.map(
+      (item) => item.id
+    );
+  }
+};
+
+const handleSelectAllImages = () => {
+  if (isAllImagesSelected.value) {
+    // 当前是全选状态，取消全选
+    upsertForm.value.riskImageIds = [];
+  } else {
+    // 当前非全选状态，设置全选
+    upsertForm.value.riskImageIds = imageOptions.value.map((item) => item.id);
+  }
+};
+
+// 获取选项数据
+const fetchOptions = async () => {
+  try {
+    const [processes, domains, images] = await Promise.all([
+      getSuspiciousProcessList(),
+      getBlacklistDomainList(),
+      getRiskImageTemplateList(),
+    ]);
+
+    processOptions.value = processes;
+    domainOptions.value = domains;
+    imageOptions.value = images;
+  } catch (error) {
+    console.error(error);
+    Message.error("获取选项数据失败");
+  }
+};
 
 const columns = computed<TableColumnData[]>(() => [
   {
@@ -322,6 +539,9 @@ const upsertForm = ref<Partial<Exam>>({
   startTime: new Date(),
   endTime: new Date(),
   duration: 120,
+  suspiciousProcessIds: [],
+  blacklistDomainIds: [],
+  riskImageIds: [],
 });
 const upsertFormRef = ref();
 
@@ -334,6 +554,9 @@ const handleInsert = () => {
     startTime: new Date(),
     endTime: new Date(),
     duration: 120,
+    suspiciousProcessIds: [],
+    blacklistDomainIds: [],
+    riskImageIds: [],
   };
   visible.value = true;
 };
@@ -360,6 +583,9 @@ const handleCompete = async () => {
         startTime: upsertForm.value.startTime!,
         endTime: upsertForm.value.endTime!,
         duration: upsertForm.value.duration!,
+        suspiciousProcessIds: upsertForm.value.suspiciousProcessIds || [],
+        blacklistDomainIds: upsertForm.value.blacklistDomainIds || [],
+        riskImageIds: upsertForm.value.riskImageIds || [],
       });
     } else {
       // 修改考试
@@ -398,10 +624,67 @@ const handleProctoring = (record: Exam) => {
   Message.info(`准备进入考试 ${record.name} 的监考页面`);
 };
 
+// 导入考生信息
+const importVisible = ref(false);
+const importForm = reactive({
+  examId: undefined,
+  file: null,
+});
+
+// 打开导入考生对话框
+const handleImportOpen = () => {
+  importVisible.value = true;
+};
+
+// 自定义上传请求
+const customUploadRequest = (options) => {
+  const { file, onSuccess, onError } = options;
+  importForm.file = file;
+
+  // 仅保存文件引用，不立即上传
+  onSuccess();
+};
+
+// 提交导入
+const handleImportExaminees = async () => {
+  if (!importForm.examId) {
+    Message.error("请选择考试");
+    return false;
+  }
+
+  if (!importForm.file) {
+    Message.error("请选择文件");
+    return false;
+  }
+
+  try {
+    const formData = new FormData();
+    formData.append("examId", importForm.examId);
+    formData.append("file", importForm.file);
+
+    const result = await importExaminees(formData);
+    if (result) {
+      Message.success("导入成功");
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.error(error);
+    Message.error("导入失败");
+    return false;
+  }
+};
+
+// 下载模板
+const downloadTemplate = () => {
+  downloadExamineeTemplate();
+};
+
 const router = useRouter();
 
 onMounted(() => {
   fetchData(1);
+  fetchOptions();
 });
 </script>
 
@@ -412,5 +695,17 @@ onMounted(() => {
 
 .general-card {
   margin-top: 16px;
+}
+
+.upload-tip {
+  margin-top: 8px;
+  color: #666;
+  font-size: 12px;
+}
+
+.select-wrapper {
+  display: flex;
+  width: 100%;
+  align-items: center;
 }
 </style>
