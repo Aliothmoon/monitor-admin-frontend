@@ -26,13 +26,6 @@ axios.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
 
-    // 添加时间戳，防止缓存
-    if (config.method?.toUpperCase() === "GET") {
-      config.params = {
-        ...config.params,
-        _t: new Date().getTime(),
-      };
-    }
 
     return config;
   },

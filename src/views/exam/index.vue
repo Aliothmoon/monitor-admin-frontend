@@ -298,79 +298,88 @@
       </a-form>
     </a-modal>
 
-
     <!-- 考生名单管理模态框 -->
     <a-modal
       v-model:visible="examineeVisible"
       :title="`考生名单管理 - ${currentExam?.name || ''}`"
-      width="1200px"
-      :footer="false"
+      width="70vw"
     >
-      <div style="max-height: 70vh; overflow-y: auto">
-        <a-row style="margin-bottom: 16px">
-          <a-col :span="24">
-            <a-space>
-              <a-button type="primary" @click="handleAddExaminee">
-                <template #icon>
-                  <icon-plus />
-                </template>
-                添加考生
-              </a-button>
-              <a-input
-                v-model="examineeSearchKeyword"
-                placeholder="搜索考生姓名/学号"
-                style="width: 240px"
-              >
-                <template #suffix>
-                  <icon-search />
-                </template>
-              </a-input>
-              <a-button status="success" @click="handleExportExaminees">
-                <template #icon>
-                  <icon-download />
-                </template>
-                导出名单
-              </a-button>
-            </a-space>
-          </a-col>
-        </a-row>
+      <a-row style="margin-bottom: 16px">
+        <a-col :span="24">
+          <a-space>
+            <a-button type="primary" @click="handleAddExaminee">
+              <template #icon>
+                <icon-plus />
+              </template>
+              添加考生
+            </a-button>
+            <a-input
+              v-model="examineeSearchKeyword"
+              placeholder="搜索考生姓名/学号"
+              style="width: 240px"
+            >
+              <template #suffix>
+                <icon-search />
+              </template>
+            </a-input>
+            <a-button status="success" @click="handleExportExaminees">
+              <template #icon>
+                <icon-download />
+              </template>
+              导出名单
+            </a-button>
+            <!-- 新增批量导入按钮 -->
+            <a-button type="primary" status="warning" @click="showImportDialog">
+              <template #icon>
+                <icon-import />
+              </template>
+              批量导入
+            </a-button>
+            <!-- 新增下载模板按钮 -->
+            <a-button @click="downloadTemplate">
+              <template #icon>
+                <icon-file />
+              </template>
+              下载模板
+            </a-button>
+          </a-space>
+        </a-col>
+      </a-row>
 
-        <a-table
-          :loading="examineeLoading"
-          :pagination="examineePagination"
-          :data="filteredExaminees"
-          :columns="examineeColumns"
-          row-key="id"
-          :scroll="{ y: '50vh' }"
-          @page-change="handleExamineePageChange"
-        >
-          <template #index="{ rowIndex }">
-            {{
-              rowIndex +
-              1 +
-              (examineePagination.current - 1) * examineePagination.pageSize
-            }}
-          </template>
-          <template #operation="{ record }">
-            <a-space>
-              <a-button
-                size="small"
-                type="primary"
-                @click="handleEditExaminee(record)"
-              >
-                编辑
-              </a-button>
-              <a-button
-                size="small"
-                status="danger"
-                @click="handleDeleteExaminee(record)"
-              >
-                删除
-              </a-button>
-            </a-space>
-          </template>
-        </a-table>
-      </div>
+      <a-table
+        :loading="examineeLoading"
+        :pagination="examineePagination"
+        :data="filteredExaminees"
+        :columns="examineeColumns"
+        row-key="accountId"
+        @page-change="handleExamineePageChange"
+      >
+        <template #index="{ rowIndex }">
+          {{
+            rowIndex +
+            1 +
+            (examineePagination.current - 1) * examineePagination.pageSize
+          }}
+        </template>
+        <template #operation="{ record }">
+          <a-space>
+            <a-button
+              size="small"
+              type="primary"
+              @click="handleEditExaminee(record)"
+            >
+              编辑
+            </a-button>
+            <a-button
+              size="small"
+              status="danger"
+              @click="handleDeleteExaminee(record)"
+            >
+              删除
+            </a-button>
+          </a-space>
+        </template>
+      </a-table>
     </a-modal>
 
     <!-- 考生信息编辑模态框 -->
@@ -430,6 +439,200 @@
         </a-form-item>
       </a-form>
     </a-modal>
+
+    <!-- 新增考生选择模态框 -->
+    <a-modal
+      v-model:visible="examineeSelectorVisible"
+      title="选择考生"
+      width="70vw"
+      @cancel="resetExamineeSelector"
+    >
+      <div>
+        <!-- 筛选表单 -->
+        <a-form
+          :model="examineeSelectorForm"
+          layout="inline"
+          style="margin-bottom: 16px"
+        >
+          <a-form-item field="name" label="姓名">
+            <a-input
+              v-model="examineeSelectorForm.name"
+              placeholder="请输入姓名"
+              allow-clear
+            />
+          </a-form-item>
+          <a-form-item field="studentId" label="学号">
+            <a-input
+              v-model="examineeSelectorForm.studentId"
+              placeholder="请输入学号"
+              allow-clear
+            />
+          </a-form-item>
+          <a-form-item field="college" label="学院">
+            <a-input
+              v-model="examineeSelectorForm.college"
+              placeholder="请输入学院"
+              allow-clear
+            />
+          </a-form-item>
+          <a-form-item field="className" label="班级">
+            <a-input
+              v-model="examineeSelectorForm.className"
+              placeholder="请输入班级"
+              allow-clear
+            />
+          </a-form-item>
+          <a-form-item>
+            <a-button type="primary" @click="searchExaminees">
+              <template #icon>
+                <icon-search />
+              </template>
+              查询
+            </a-button>
+            <a-button style="margin-left: 8px" @click="resetExamineeSearch">
+              <template #icon>
+                <icon-refresh />
+              </template>
+              重置
+            </a-button>
+          </a-form-item>
+        </a-form>
+
+        <!-- 考生表格 -->
+        <a-table
+          :data="availableExaminees"
+          :loading="examineeSelectorLoading"
+          :pagination="examineeSelectorPagination"
+          :row-selection="selectionConfig"
+          v-model:selected-keys="selectedExaminees"
+          row-key="examineeInfoId"
+          @page-change="handleExamineeSelectorPageChange"
+        >
+          <template #columns>
+            <a-table-column title="姓名" data-index="name" />
+            <a-table-column title="学号" data-index="studentId" />
+            <a-table-column title="学院" data-index="college" />
+            <a-table-column title="班级" data-index="className" />
+          </template>
+        </a-table>
+      </div>
+
+      <template #footer>
+        <a-space>
+          <a-button @click="resetExamineeSelector">取消</a-button>
+          <a-button
+            type="primary"
+            :disabled="selectedExaminees.length === 0"
+            :loading="addingExaminees"
+            @click="confirmAddExaminees"
+          >
+            确认添加 ({{ selectedExaminees.length }})
+          </a-button>
+        </a-space>
+      </template>
+    </a-modal>
+
+    <!-- 新增批量导入考生模态框 -->
+    <a-modal
+      v-model:visible="importVisible"
+      title="批量导入考生"
+      width="800px"
+      :unmount-on-close="true"
+      @cancel="resetImport"
+    >
+      <div class="flex justify-center">
+        <div style="width: 70%">
+          <a-upload
+            :accept="'.xlsx,.xls'"
+            :auto-upload="false"
+            :limit="1"
+            draggable
+            :custom-request="() => {}"
+            @change="handleFileChange"
+          >
+            <div class="arco-upload-trigger-content">
+              <div>
+                <div class="arco-upload-trigger-picture">
+                  <icon-file-excel size="36" />
+                </div>
+                <p>点击上传或将Excel文件拖拽到此处</p>
+                <p class="upload-tip">仅支持.xlsx或.xls格式文件</p>
+              </div>
+            </div>
+          </a-upload>
+        </div>
+      </div>
+
+      <div class="flex justify-center">
+        <div style="margin-top: 16px; color: #999; font-size: 13px">
+          <p>1. 请先下载模板，按照格式填写考生信息</p>
+          <p>2. 必填字段：姓名、学号</p>
+          <p>3. 若不填账号，将默认使用学号作为账号</p>
+          <p>4. 若不填密码，将自动生成随机密码</p>
+        </div>
+      </div>
+
+      <!-- 新增导入结果展示 -->
+      <div v-if="importResults.length > 0" style="margin-top: 16px">
+        <a-divider>导入结果</a-divider>
+        <a-alert
+          type="info"
+          :content="`共导入 ${
+            importResults.length
+          } 条数据，成功 ${getSuccessCount()} 条，失败 ${getFailCount()} 条`"
+          style="margin-bottom: 16px"
+        />
+        <a-table
+          :data="importResults"
+          :pagination="{ pageSize: 5 }"
+          :bordered="false"
+          size="small"
+          :scroll="{ y: 200 }"
+        >
+          <template #columns>
+            <a-table-column title="行号" data-index="rowNum" :width="70" />
+            <a-table-column title="姓名" data-index="name" :width="100" />
+            <a-table-column title="学号" data-index="studentId" :width="120" />
+            <a-table-column title="账号" data-index="account" :width="120" />
+            <a-table-column title="状态" data-index="status" :width="80">
+              <template #cell="{ record }">
+                <a-tag
+                  :color="
+                    record.status === '成功' ||
+                    record.status === '新增' ||
+                    record.status === '更新'
+                      ? 'green'
+                      : 'red'
+                  "
+                >
+                  {{ record.status }}
+                </a-tag>
+              </template>
+            </a-table-column>
+            <a-table-column title="备注" data-index="message" />
+          </template>
+        </a-table>
+      </div>
+
+      <template #footer>
+        <a-space>
+          <a-button @click="resetImport"
+            >{{ importResults.length > 0 ? "关闭" : "取消" }}
+          </a-button>
+          <a-button
+            v-if="importResults.length === 0"
+            type="primary"
+            :loading="importLoading"
+            @click="confirmImport"
+          >
+            导入
+          </a-button>
+          <a-button v-else type="primary" @click="continueImport">
+            继续导入
+          </a-button>
+        </a-space>
+      </template>
+    </a-modal>
   </div>
 </template>
 
@@ -464,8 +667,11 @@ import {
 
 // 引入考生信息和账号相关API
 import { ExamineeAccountWithInfo } from "@/api/examinee-account";
-import { ExamineeInfo, saveExamineeInfo } from "@/api/examinee-info";
-import { RequestOption } from "@arco-design/web-vue/es/upload/interfaces";
+import {
+  ExamineeInfo,
+  getExamineeInfoPageData,
+  saveExamineeInfo,
+} from "@/api/examinee-info";
 
 const generateFormModel = () => {
   return {
@@ -622,7 +828,6 @@ const columns = computed<TableColumnData[]>(() => [
     align: "center",
     width: 300,
     slotName: "operation",
-    fixed: "right",
   },
 ]);
 
@@ -800,15 +1005,13 @@ const handleRemove = async (record: Exam) => {
 
 // 添加进入监考的处理函数
 const handleProctoring = (record: Exam) => {
-  console.log(`进入考试 ${record.id} (${record.name}) 的监考...`);
-  router.push({ path: "/proctoring-view", query: { examId: record.id } });
-  Message.info(`准备进入考试 ${record.name} 的监考页面`);
+  router.push({
+    name: "online-monitor-manage",
+    query: {
+      examId: record.id,
+    },
+  });
 };
-
-
-
-
-
 
 // 下载模板
 const downloadTemplate = () => {
@@ -850,48 +1053,42 @@ const examineeColumns = computed<TableColumnData[]>(() => [
     dataIndex: "id",
     width: 70,
     slotName: "index",
-    fixed: "left",
   },
   {
     title: "姓名",
     dataIndex: "name",
-    width: 120,
+    width: 100,
     ellipsis: true,
     tooltip: true,
   },
   {
     title: "学号",
     dataIndex: "studentId",
-    width: 140,
     ellipsis: true,
     tooltip: true,
   },
   {
     title: "学院",
     dataIndex: "college",
-    width: 180,
     ellipsis: true,
     tooltip: true,
   },
   {
     title: "班级",
     dataIndex: "className",
-    width: 180,
     ellipsis: true,
     tooltip: true,
   },
   {
     title: "考试账号",
     dataIndex: "account",
-    width: 140,
     ellipsis: true,
     tooltip: true,
   },
   {
     title: "操作",
-    width: 160,
     slotName: "operation",
-    fixed: "right",
+    align: "center",
   },
 ]);
 
@@ -911,12 +1108,12 @@ const fetchExaminees = async () => {
   examineeLoading.value = true;
   try {
     // 使用正确的API调用获取考试的考生列表
-    const { data, total } = await getExamExaminees(
+    const { rows, total } = await getExamExaminees(
       currentExam.value.id,
       examineePagination.current,
       examineePagination.pageSize
     );
-    examinees.value = data || [];
+    examinees.value = rows || [];
     examineePagination.total = total;
   } catch (error) {
     console.error(error);
@@ -970,21 +1167,196 @@ const examineeRules = {
 
 // 添加考生
 const handleAddExaminee = () => {
-  examineeEditType.value = "add";
-  examineeForm.value = {
-    id: undefined,
+  // 打开考生选择器
+  examineeSelectorVisible.value = true;
+  // 重置选择器状态
+  selectedExaminees.value = [];
+  examineeSelectorForm.value = {
     name: "",
     studentId: "",
     college: "",
     className: "",
-    account: "",
-    password: "",
-    examId: currentExam.value?.id,
+    pageNum: 1,
+    pageSize: 10,
   };
-  examineeEditVisible.value = true;
+  // 加载考生数据
+  fetchAvailableExaminees();
 };
 
-// 编辑考生
+// 考生选择器相关
+const examineeSelectorVisible = ref(false);
+const examineeSelectorLoading = ref(false);
+const availableExaminees = ref<ExamineeInfo[]>([]);
+
+const selectedExaminees = ref<number[]>([]);
+const selectedRowKeys = ref<(string | number)[]>([]);
+const addingExaminees = ref(false);
+
+const selectionConfig = reactive({
+  type: "checkbox",
+  showCheckedAll: true,
+});
+
+// 重置考生选择器
+const resetExamineeSelector = () => {
+  examineeSelectorVisible.value = false;
+  selectedExaminees.value = [];
+  selectedRowKeys.value = [];
+  availableExaminees.value = [];
+};
+
+// 考生选择器分页
+const examineeSelectorPagination = reactive({
+  current: 1,
+  pageSize: 10,
+  total: 0,
+  onChange: (page: number) => {
+    examineeSelectorPagination.current = page;
+    examineeSelectorForm.value.pageNum = page;
+    fetchAvailableExaminees();
+  },
+});
+
+// 考生选择器表单
+const examineeSelectorForm = ref({
+  name: "",
+  studentId: "",
+  college: "",
+  className: "",
+  pageNum: 1,
+  pageSize: 10,
+});
+
+// 查询考生
+const searchExaminees = () => {
+  examineeSelectorForm.value.pageNum = 1;
+  examineeSelectorPagination.current = 1;
+  fetchAvailableExaminees();
+};
+
+// 重置考生查询
+const resetExamineeSearch = () => {
+  examineeSelectorForm.value = {
+    name: "",
+    studentId: "",
+    college: "",
+    className: "",
+    pageNum: 1,
+    pageSize: 10,
+  };
+  examineeSelectorPagination.current = 1;
+  selectedExaminees.value = [];
+  selectedRowKeys.value = [];
+  fetchAvailableExaminees();
+};
+
+// 处理考生选择器分页变化
+const handleExamineeSelectorPageChange = (page: number) => {
+  examineeSelectorPagination.current = page;
+  examineeSelectorForm.value.pageNum = page;
+  fetchAvailableExaminees();
+};
+
+// 获取可用的考生列表
+const fetchAvailableExaminees = async () => {
+  examineeSelectorLoading.value = true;
+  try {
+    const response = await getExamineeInfoPageData(
+      examineeSelectorForm.value.pageNum,
+      examineeSelectorForm.value.pageSize,
+      examineeSelectorForm.value.name,
+      examineeSelectorForm.value.studentId,
+      examineeSelectorForm.value.college,
+      examineeSelectorForm.value.className
+    );
+
+    console.log("获取到考生数据:", response);
+
+    if (response && response.rows) {
+      // 处理数据，确保每个考生都有正确的examineeInfoId字段
+      availableExaminees.value = response.rows;
+      examineeSelectorPagination.total = response.total || 0;
+    } else {
+      console.error("考生数据格式异常:", response);
+      availableExaminees.value = [];
+      examineeSelectorPagination.total = 0;
+    }
+  } catch (error) {
+    console.error("获取考生列表失败", error);
+    Message.error("获取考生列表失败");
+    availableExaminees.value = [];
+    examineeSelectorPagination.total = 0;
+  } finally {
+    examineeSelectorLoading.value = false;
+  }
+};
+
+// 确认添加选中的考生
+const confirmAddExaminees = async () => {
+  if (!currentExam.value || selectedExaminees.value.length === 0) {
+    return;
+  }
+
+  addingExaminees.value = true;
+  try {
+    // 显示确认对话框
+    Modal.confirm({
+      title: "确认添加",
+      content: `确定要添加选中的 ${selectedExaminees.value.length} 名考生吗？`,
+      okText: "确认添加",
+      cancelText: "取消",
+      onOk: async () => {
+        try {
+          // 记录选中的考生数据
+          console.log("选中的考生:", selectedExaminees.value);
+
+          // 逐个添加考生到考试
+          const promises = [];
+          for (const examineeInfoId of selectedExaminees.value) {
+            // 确保获取到正确的ID
+            const examineeId = examineeInfoId;
+            if (!examineeId) {
+              console.error("考生ID缺失", examineeInfoId);
+              continue;
+            }
+
+            promises.push(addExamineeToExam(currentExam.value!.id, examineeId));
+          }
+
+          if (promises.length === 0) {
+            Message.error("没有有效的考生可添加");
+            addingExaminees.value = false;
+            return;
+          }
+
+          const results = await Promise.all(promises);
+          const successCount = results.filter((r) => r).length;
+
+          Message.success(
+            `成功添加 ${successCount}/${selectedExaminees.value.length} 名考生到考试`
+          );
+          resetExamineeSelector();
+          // 刷新考生列表
+          await fetchExaminees();
+        } catch (error) {
+          console.error("添加考生过程中出错", error);
+          Message.error("添加考生失败");
+        } finally {
+          addingExaminees.value = false;
+        }
+      },
+      onCancel: () => {
+        addingExaminees.value = false;
+      },
+    });
+  } catch (error) {
+    console.error("添加考生失败", error);
+    Message.error("添加考生失败");
+    addingExaminees.value = false;
+  }
+};
+
+// 考生编辑相关
 const handleEditExaminee = (record: any) => {
   examineeEditType.value = "edit";
   examineeForm.value = {
@@ -1037,14 +1409,14 @@ const handleExamineeEditSubmit = async () => {
           if (!addResult) {
             // 如果添加失败，可能是考生已经在这个考试中了
             // 获取当前考试的考生列表，检查是否已存在
-            const { data } = await getExamExaminees(
+            const { rows } = await getExamExaminees(
               currentExam.value!.id,
               1,
               1000, // 获取足够多的记录以便查找
               examineeForm.value.studentId
             );
 
-            const existingExaminee = data.find(
+            const existingExaminee = rows.find(
               (e) => e.studentId === examineeForm.value.studentId
             );
 
@@ -1106,18 +1478,21 @@ const handleExamineeEditSubmit = async () => {
 const handleDeleteExaminee = async (record: any) => {
   try {
     // 显示删除确认对话框
-    const confirmed = await Modal.confirm({
-      title: "删除确认",
-      content: `确定要删除考生 ${record.name || ""} (${
-        record.studentId || ""
-      }) 吗？`,
+    await new Promise<never>((resolve) => {
+      Modal.confirm({
+        title: "删除确认",
+        content: `确定要删除考生 ${record.name || ""} (${
+          record.studentId || ""
+        }) 吗？`,
+        onOk: () => {
+          resolve(undefined);
+        },
+      });
     });
-
-    if (!confirmed) return;
 
     const result = await removeExamineeFromExam(
       currentExam.value.id,
-      record.id
+      record.accountId
     );
     if (result) {
       Message.success("删除考生成功");
@@ -1144,6 +1519,121 @@ const handleExportExaminees = async () => {
     console.error(error);
     Message.error("导出考生名单失败");
   }
+};
+
+// 导入功能相关
+const importVisible = ref(false);
+const importLoading = ref(false);
+const fileList = ref<any[]>([]);
+const importForm = reactive({
+  examId: null as number | null,
+});
+
+// 显示导入对话框
+const showImportDialog = () => {
+  if (!currentExam.value) {
+    Message.error("请先选择一个考试");
+    return;
+  }
+  importForm.examId = currentExam.value.id;
+  importVisible.value = true;
+};
+
+// 文件上传变更
+const handleFileChange = (files: any) => {
+  fileList.value = files;
+};
+
+// 处理批量导入考生
+const importResults = ref<any[]>([]);
+
+// 计算成功数量
+const getSuccessCount = () => {
+  return importResults.value.filter(
+    (item) =>
+      item.status === "成功" || item.status === "新增" || item.status === "更新"
+  ).length;
+};
+
+// 计算失败数量
+const getFailCount = () => {
+  return importResults.value.filter((item) => item.status === "失败").length;
+};
+
+// 重置导入表单
+const resetImport = () => {
+  fileList.value = [];
+  importVisible.value = false;
+  importLoading.value = false;
+  importResults.value = [];
+};
+
+// 处理批量导入考生
+const handleImportExaminees = async () => {
+  if (fileList.value.length === 0) {
+    Message.warning("请选择要上传的文件");
+    return;
+  }
+
+  if (!currentExam.value) {
+    Message.error("考试信息不存在");
+    return;
+  }
+
+  const file = fileList.value[0].file;
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("examId", currentExam.value.id.toString());
+
+  importLoading.value = true;
+  try {
+    const result = await importExaminees(formData);
+    if (result && result.details) {
+      // 设置导入结果
+      importResults.value = result.details;
+      Message.success(`成功导入考生信息，共 ${result.total} 条记录`);
+      // 不关闭导入对话框，展示导入结果
+      importLoading.value = false;
+      // 刷新考生列表
+      await fetchExaminees();
+    } else {
+      Message.error("导入失败");
+      importLoading.value = false;
+    }
+  } catch (error) {
+    console.error(error);
+    Message.error("导入失败");
+    importLoading.value = false;
+  }
+};
+
+// 确认导入对话框
+const confirmImport = async () => {
+  if (fileList.value.length === 0) {
+    Message.warning("请选择要上传的文件");
+    return;
+  }
+
+  await new Promise<never>((resolve) => {
+    Modal.confirm({
+      title: "确认导入",
+      content:
+        "确定要导入考生信息吗？导入过程中将根据学号和姓名匹配现有考生信息，若学号与姓名均匹配则会更新现有考生信息并添加到考试中。",
+      okText: "确认导入",
+      cancelText: "取消",
+      onOk: () => {
+        resolve(undefined);
+      },
+    });
+  });
+  await handleImportExaminees();
+};
+
+// 继续导入
+const continueImport = () => {
+  // 清空导入结果，允许用户继续导入
+  importResults.value = [];
+  fileList.value = [];
 };
 
 const router = useRouter();

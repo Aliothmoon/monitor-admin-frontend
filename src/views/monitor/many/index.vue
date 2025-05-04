@@ -1,17 +1,27 @@
 <script lang="ts" setup>
-import { ref, reactive, onMounted } from "vue";
+import { onMounted, reactive, ref } from "vue";
 import { Pagination } from "@/types/global";
 import {
   Candidate,
   getCandidateList,
-  getStatusColor,
-  getStatusText,
+  getExamCandidateList,
   getRiskLevelColor,
   getRiskLevelText,
+  getStatusColor,
+  getStatusText,
 } from "./index";
 import useLoading from "@/hooks/loading";
 import { Message } from "@arco-design/web-vue";
-import router from "@/router";
+import { useRoute, useRouter } from "vue-router";
+
+const router = useRouter();
+const route = useRoute();
+
+console.log(route.params);
+
+// 获取路由中的考试ID参数
+const examId = ref<number | null>(null);
+const examName = ref<string>("多人监控");
 
 // 搜索表单
 const formModel = ref({
@@ -21,7 +31,7 @@ const formModel = ref({
 // 分页参数
 const pagination = reactive<Pagination>({
   current: 1,
-  pageSize: 24,
+  pageSize: 10,
   total: 0,
 });
 
@@ -34,15 +44,59 @@ const playingVideos = ref<Set<number>>(new Set());
 // 最大同时播放数量
 const MAX_PLAYING_VIDEOS = 6;
 
+// 根据字符串生成颜色的函数
+const getAvatarColor = (name: string) => {
+  const colors = [
+    "#1890ff",
+    "#52c41a",
+    "#722ed1",
+    "#eb2f96",
+    "#faad14",
+    "#fa8c16",
+    "#f5222d",
+    "#13c2c2",
+    "#2f54eb",
+    "#a0d911",
+  ];
+
+  // 计算字符串的简单哈希
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+
+  // 将哈希映射到颜色数组索引
+  const index = Math.abs(hash) % colors.length;
+  return colors[index];
+};
+
 // 获取考生监控数据
 const fetchCandidateData = async (page = 1) => {
   setLoading(true);
   try {
-    const { data, total } = await getCandidateList(
-      page,
-      pagination.pageSize,
-      formModel.value.keyword
-    );
+    let data = [];
+    let total = 0;
+
+    // 如果有考试ID，则获取该考试的考生数据
+    if (examId.value) {
+      const result = await getExamCandidateList(
+        examId.value,
+        page,
+        pagination.pageSize,
+        formModel.value.keyword
+      );
+      data = result.data;
+      total = result.total;
+    } else {
+      // 否则获取常规监控数据
+      const result = await getCandidateList(
+        page,
+        pagination.pageSize,
+        formModel.value.keyword
+      );
+      data = result.data;
+      total = result.total;
+    }
 
     monitoringCards.value = data;
     pagination.total = total;
@@ -97,8 +151,45 @@ const toggleVideoPlay = (candidate: Candidate) => {
   }
 };
 
+// 查看单个考生详情
+const viewCandidateDetail = (candidate: Candidate) => {
+  router.push({
+    name: "online-monitor-watch",
+    query: {
+      id: candidate.id,
+      examId: examId.value || undefined,
+      studentId: candidate.studentId,
+      accountId: candidate.accountId,
+    },
+  });
+};
+
+// 在script部分添加默认图片处理
+const getScreenshot = (candidate: Candidate) => {
+  // 如果截图存在且有效
+  if (candidate.screenshot && 
+      candidate.screenshot.trim() !== '' && 
+      !candidate.screenshot.includes('undefined') &&
+      !candidate.screenshot.includes('null')) {
+    return candidate.screenshot;
+  }
+  
+  // 返回默认占位图
+  return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='120' viewBox='0 0 200 120'%3E%3Crect width='200' height='120' fill='%23f0f2f5'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='16' text-anchor='middle' fill='%23909399'%3E等待截图...%3C/text%3E%3C/svg%3E`;
+};
+
 // 初始加载
 onMounted(() => {
+  // 从路由参数中获取考试ID
+  if (route.query.examId) {
+    examId.value = Number(route.query.examId);
+  }
+
+  // 获取考试名称
+  if (route.query.examName) {
+    examName.value = String(route.query.examName);
+  }
+
   fetchCandidateData();
 });
 </script>
@@ -106,7 +197,10 @@ onMounted(() => {
 <template>
   <div id="many-monitor-container" class="container-form">
     <Breadcrumb :items="['考场监控', '多人监控']" direct />
-    <a-card :title="'多人考场监控'" class="general-card">
+    <a-card
+      :title="examId ? `考试监控 - ${examName}` : '多人考场监控'"
+      class="general-card"
+    >
       <a-row>
         <a-col :flex="1">
           <a-form
@@ -121,7 +215,12 @@ onMounted(() => {
                   <a-input
                     v-model="formModel.keyword"
                     placeholder="搜索考生姓名或考号"
-                  />
+                    allow-clear
+                  >
+                    <template #suffix>
+                      <icon-search />
+                    </template>
+                  </a-input>
                 </a-form-item>
               </a-col>
             </a-row>
@@ -174,57 +273,83 @@ onMounted(() => {
 
       <div class="flex w-full justify-center">
         <a-spin :loading="loading">
-          <div class="monitor-cards-wrapper w-full">
+          <div v-if="monitoringCards.length === 0" class="empty-container">
+            <a-empty description="暂无监控数据" />
+          </div>
+          <div v-else class="monitor-cards-wrapper w-full">
             <div
               v-for="candidate in monitoringCards"
               :key="candidate.id"
               class="monitor-card"
+              :class="{ 'risk-card': candidate.riskLevel !== 'none' }"
             >
               <div class="monitor-card-video">
                 <div class="video-container">
                   <img
                     v-if="!playingVideos.has(candidate.id)"
-                    :src="candidate.screenshot"
+                    :src="getScreenshot(candidate)"
                     alt="监控画面"
                     class="video-screenshot"
                   />
                   <div v-else class="live-video">
                     <img
-                      :src="candidate.screenshot"
+                      :src="getScreenshot(candidate)"
                       alt="实时监控"
                       class="live-stream"
                     />
-                    <div class="live-indicator">直播中</div>
+                    <div class="live-indicator">
+                      <span class="live-dot"></span>
+                      直播中
+                    </div>
                   </div>
 
-                  <div class="video-controls">
-                    <a-button
-                      :type="
-                        playingVideos.has(candidate.id) ? 'primary' : 'outline'
-                      "
-                      shape="circle"
-                      @click="toggleVideoPlay(candidate)"
-                    >
-                      <template #icon>
-                        <icon-pause v-if="playingVideos.has(candidate.id)" />
-                        <icon-play-arrow v-else />
-                      </template>
-                    </a-button>
+                  <div class="video-overlay">
+                    <div class="student-info-overlay">
+                      <span class="student-name-overlay">{{
+                        candidate.name
+                      }}</span>
+                      <span class="student-id-overlay">{{
+                        candidate.examId
+                      }}</span>
+                    </div>
+                  </div>
+
+
+                  <div
+                    class="status-badge"
+                    :style="{ background: getStatusColor(candidate.status) }"
+                  >
+                    {{ getStatusText(candidate.status) }}
+                  </div>
+
+                  <div
+                    v-if="candidate.riskLevel !== 'none'"
+                    class="risk-badge"
+                    :style="{
+                      background: getRiskLevelColor(candidate.riskLevel),
+                    }"
+                  >
+                    {{ getRiskLevelText(candidate.riskLevel) }}
                   </div>
                 </div>
               </div>
 
               <div
                 class="monitor-card-info"
-                @click="router.push({ name: 'online-monitor-watch' })"
+                @click="viewCandidateDetail(candidate)"
               >
                 <div class="candidate-info">
-                  <a-space direction="vertical" fill>
-                    <a-row justify="space-between">
+                  <a-space direction="vertical" fill size="mini">
+                    <a-row align="center" justify="space-between">
                       <a-col :span="16">
-                        <a-space>
-                          <a-avatar :size="24"
-                            >{{ candidate.name.charAt(0) }}
+                        <a-space align="center">
+                          <a-avatar
+                            :size="28"
+                            :style="{
+                              backgroundColor: getAvatarColor(candidate.name),
+                            }"
+                          >
+                            {{ candidate.name.charAt(0) }}
                           </a-avatar>
                           <span class="candidate-name">{{
                             candidate.name
@@ -232,21 +357,32 @@ onMounted(() => {
                         </a-space>
                       </a-col>
                       <a-col :span="8" class="text-right">
-                        <a-tag :color="getStatusColor(candidate.status)">
-                          {{ getStatusText(candidate.status) }}
-                        </a-tag>
+                        <a-button
+                          type="text"
+                          size="mini"
+                          @click.stop="viewCandidateDetail(candidate)"
+                        >
+                          详情
+                          <template #icon>
+                            <icon-right />
+                          </template>
+                        </a-button>
                       </a-col>
                     </a-row>
 
                     <a-row justify="space-between">
-                      <a-col :span="14">考号: {{ candidate.examId }}</a-col>
-                      <a-col :span="10" class="text-right">
-                        <a-tag
-                          v-if="candidate.riskLevel !== 'none'"
-                          :color="getRiskLevelColor(candidate.riskLevel)"
-                        >
-                          {{ getRiskLevelText(candidate.riskLevel) }}
-                        </a-tag>
+                      <a-col :span="24">
+                        <a-space fill size="mini">
+                          <a-typography-text type="secondary"
+                            >考号: {{ candidate.examId }}</a-typography-text
+                          >
+                          <a-typography-text
+                            v-if="candidate.lastActivity"
+                            type="secondary"
+                          >
+                            最后活动: {{ candidate.lastActivity }}
+                          </a-typography-text>
+                        </a-space>
                       </a-col>
                     </a-row>
 
@@ -268,7 +404,7 @@ onMounted(() => {
             <a-pagination
               v-model:current="pagination.current"
               v-model:page-size="pagination.pageSize"
-              :page-size-options="[6, 12, 18]"
+              :page-size-options="[8, 12, 24, 36]"
               :total="pagination.total"
               show-total
               @change="handlePageChange"
@@ -290,31 +426,53 @@ onMounted(() => {
   padding: 0 20px 20px 20px;
 }
 
+.empty-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+
 .monitor-cards-wrapper {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 12px;
   margin-bottom: 16px;
   justify-content: start;
 }
 
 .monitor-card {
-  flex-basis: calc(25% - 12px);
-  min-width: 180px;
-  min-height: 60px;
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  flex-basis: calc(25% - 9px);
+  min-width: 160px;
+  min-height: 40px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   overflow: hidden;
   background-color: var(--color-bg-2);
   display: flex;
   flex-direction: column;
   margin-bottom: 0;
+  position: relative;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  }
+
+  &.risk-card {
+    box-shadow: 0 2px 10px rgba(245, 63, 63, 0.2);
+
+    &:hover {
+      box-shadow: 0 4px 15px rgba(245, 63, 63, 0.25);
+    }
+  }
 }
 
 .monitor-card-video {
   position: relative;
   width: 100%;
-  height: 180px;
+  height: 120px;
   overflow: hidden;
 }
 
@@ -332,28 +490,114 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.3s ease;
+  background-color: #f0f2f5;
+}
+
+.monitor-card:hover .video-screenshot,
+.monitor-card:hover .live-stream {
+  transform: scale(1.05);
+}
+
+.video-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 8px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+  color: white;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.monitor-card:hover .video-overlay {
+  opacity: 1;
+}
+
+.student-info-overlay {
+  display: flex;
+  flex-direction: column;
+}
+
+.student-name-overlay {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.student-id-overlay {
+  font-size: 12px;
+  opacity: 0.8;
 }
 
 .video-controls {
   position: absolute;
   bottom: 16px;
   right: 16px;
+  z-index: 10;
+}
+
+.status-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  z-index: 5;
+}
+
+.risk-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  z-index: 5;
 }
 
 .live-indicator {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  bottom: 8px;
+  left: 8px;
   background-color: rgba(255, 0, 0, 0.7);
   color: white;
   padding: 2px 8px;
   border-radius: 10px;
   font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.live-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: white;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 .monitor-card-info {
-  padding: 12px;
+  padding: 8px;
   flex: 1;
+  cursor: pointer;
 }
 
 .candidate-name {
@@ -369,6 +613,9 @@ onMounted(() => {
   font-size: 13px;
   line-height: 1.3;
   margin-top: 4px;
+  background-color: rgba(245, 63, 63, 0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
 }
 
 .pagination-container {
@@ -377,16 +624,21 @@ onMounted(() => {
   margin-top: 16px;
 }
 
+@media screen and (min-width: 1500px) {
+  .monitor-card {
+    flex-basis: calc(20% - 9.6px);
+  }
+}
+
 @media screen and (max-width: 1400px) {
   .monitor-card {
-    flex-basis: calc(33.333% - 11px);
-    min-height: 320px;
+    flex-basis: calc(33.333% - 8px);
   }
 }
 
 @media screen and (max-width: 1100px) {
   .monitor-card {
-    flex-basis: calc(50% - 8px);
+    flex-basis: calc(50% - 6px);
   }
 }
 

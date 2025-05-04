@@ -232,7 +232,7 @@ const columns = computed<TableColumnData[]>(() => [
   {
     title: "账号",
     dataIndex: "account",
-    width: 120,
+    width: 140,
   },
   {
     title: "考试ID",

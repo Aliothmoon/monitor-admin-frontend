@@ -27,6 +27,7 @@ const EXAM_ROOM: AppRouteRecordRaw = {
       name: "online-monitor-manage",
       component: () => import("@/views/monitor/many/index.vue"),
       meta: {
+        hideInMenu: true,
         menuName: "多人监控",
         roles: ["*"],
       },

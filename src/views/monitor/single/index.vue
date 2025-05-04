@@ -1,19 +1,36 @@
 <script lang="ts" setup>
 import { ref, onMounted, onUnmounted } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import axios from "axios";
+
+// 获取路由实例和当前路由
+const router = useRouter();
+const route = useRoute();
+
+// 从路由中获取考生ID、考试ID和学生ID
+const candidateId = ref(route.query.id ? Number(route.query.id) : null);
+const examId = ref(route.query.examId ? Number(route.query.examId) : null);
+const studentId = ref(route.query.studentId ? String(route.query.studentId) : "");
+const accountId = ref(route.query.accountId ? Number(route.query.accountId) : null);
+
+// 返回上一级
+const goBack = () => {
+  router.back();
+};
 
 // 创建随机屏幕截图路径 (使用picsum.photos服务提供随机图片)
 const getRandomScreenshot = (id: number) =>
   `https://picsum.photos/800/600?random=${id}`;
 
-// 模拟数据
+// 学生信息
 const studentInfo = ref({
-  name: "张三",
-  id: "20230001",
-  examName: "2023年度计算机基础考试",
-  status: "online", // online, offline
-  screenCapture: getRandomScreenshot(1),
-  switchCount: 5,
-  lastActiveTime: "10:30:45",
+  name: "",
+  id: "",
+  examName: "",
+  status: "offline", // online, offline
+  screenCapture: "",
+  switchCount: 0,
+  lastActiveTime: "",
 });
 
 // 网站访问记录
@@ -137,6 +154,237 @@ const getAnalysisColor = (level: string) => {
   }
 };
 
+// 获取考生详细信息
+const fetchCandidateDetails = async () => {
+  if (!candidateId.value) return;
+  
+  try {
+    // 获取考生信息
+    const response = await axios.get(`/examinee/detail/${candidateId.value}`);
+    
+    if (response.data.code === 0) {
+      const data = response.data.data;
+      
+      studentInfo.value = {
+        name: data.name || "未知姓名",
+        id: data.studentId || "未知学号",
+        examName: data.examName || "未知考试",
+        status: data.status === 1 ? "online" : "offline",
+        screenCapture: data.screenshot || getRandomScreenshot(candidateId.value),
+        switchCount: data.switchCount || 0,
+        lastActiveTime: data.lastActivity || new Date().toLocaleTimeString(),
+      };
+      
+      // 更新accountId
+      if (data.accountId && !accountId.value) {
+        accountId.value = data.accountId;
+      }
+      
+      // 更新examId
+      if (data.examId && !examId.value) {
+        examId.value = data.examId;
+      }
+    }
+  } catch (error) {
+    console.error("获取考生详情失败:", error);
+    
+    // 使用临时数据
+    studentInfo.value = {
+      name: "考生" + candidateId.value,
+      id: studentId.value || "未知学号",
+      examName: "考试信息加载中...",
+      status: "online",
+      screenCapture: getRandomScreenshot(candidateId.value),
+      switchCount: 0,
+      lastActiveTime: new Date().toLocaleTimeString(),
+    };
+  }
+  
+  // 如果有考试ID，获取考试信息
+  if (examId.value) {
+    try {
+      const examResponse = await axios.get(`/exam/detail/${examId.value}`);
+      if (examResponse.data.code === 0) {
+        studentInfo.value.examName = examResponse.data.data.name || "未知考试";
+      }
+    } catch (error) {
+      console.error("获取考试信息失败:", error);
+    }
+  }
+  
+  // 获取考生监控数据
+  await fetchScreenshots();
+  await fetchWebsiteVisits();
+  await fetchProcessRecords();
+  await fetchBehaviorAnalysis();
+};
+
+// 获取考生自动截图列表
+const fetchScreenshots = async () => {
+  if (!accountId.value || !examId.value) return;
+  
+  try {
+    const response = await axios.get('/monitor/data/screenshots', {
+      params: {
+        accountId: accountId.value,
+        examId: examId.value,
+        limit: 10 // 最多获取10张截图
+      }
+    });
+    
+    if (response.data.code === 0 && response.data.data) {
+      // 更新截图列表
+      screenshots.value = response.data.data.map(item => ({
+        id: item.id,
+        time: item.time,
+        url: item.url || getRandomScreenshot(item.id), // 使用URL或备用图片
+        hasWarning: item.hasWarning || false,
+        analysis: item.analysis || "正常考试状态"
+      }));
+      
+      // 如果有截图，更新屏幕显示
+      if (screenshots.value.length > 0 && studentInfo.value.status === "online") {
+        studentInfo.value.screenCapture = screenshots.value[0].url;
+      }
+    }
+  } catch (error) {
+    console.error("获取截图数据失败:", error);
+    // 保留已有的模拟数据
+  }
+};
+
+// 获取考生最新截图
+const fetchLatestScreenshot = async () => {
+  if (!accountId.value || !examId.value) return;
+  
+  try {
+    const response = await axios.get('/monitor/data/latest-screenshot', {
+      params: {
+        accountId: accountId.value,
+        examId: examId.value
+      }
+    });
+    
+    if (response.data.code === 0 && response.data.data) {
+      // 更新当前屏幕显示
+      studentInfo.value.screenCapture = response.data.data.url || getRandomScreenshot(Math.random() * 100);
+      
+      // 如果这是新截图，添加到截图列表的开头
+      const newScreenshot = response.data.data;
+      const existingIndex = screenshots.value.findIndex(s => s.id === newScreenshot.id);
+      
+      if (existingIndex === -1) {
+        screenshots.value.unshift({
+          id: newScreenshot.id,
+          time: newScreenshot.time,
+          url: newScreenshot.url || getRandomScreenshot(newScreenshot.id),
+          hasWarning: newScreenshot.hasWarning || false,
+          analysis: newScreenshot.analysis || "正常考试状态"
+        });
+        
+        // 如果列表超过10个，移除最老的
+        if (screenshots.value.length > 10) {
+          screenshots.value.pop();
+        }
+      }
+    }
+  } catch (error) {
+    console.error("获取最新截图失败:", error);
+    // 使用随机截图作为后备
+    refreshScreenshot();
+  }
+};
+
+// 获取考生访问网站记录
+const fetchWebsiteVisits = async () => {
+  if (!accountId.value || !examId.value) return;
+  
+  try {
+    const response = await axios.get('/monitor/data/website-visits', {
+      params: {
+        accountId: accountId.value,
+        examId: examId.value
+      }
+    });
+    
+    if (response.data.code === 0 && response.data.data) {
+      // 更新网站访问记录
+      visitedWebsites.value = response.data.data.map(item => ({
+        id: item.id,
+        url: item.url,
+        time: item.time,
+        risk: item.risk || (item.riskLevel > 0 ? "warning" : "normal"),
+        description: item.description || "网站访问"
+      }));
+    }
+  } catch (error) {
+    console.error("获取网站访问记录失败:", error);
+    // 保留已有的模拟数据
+  }
+};
+
+// 获取考生后台进程记录
+const fetchProcessRecords = async () => {
+  if (!accountId.value || !examId.value) return;
+  
+  try {
+    const response = await axios.get('/monitor/data/process-records', {
+      params: {
+        accountId: accountId.value,
+        examId: examId.value
+      }
+    });
+    
+    if (response.data.code === 0 && response.data.data) {
+      // 更新后台进程记录
+      backgroundProcesses.value = response.data.data.map(item => ({
+        id: item.id,
+        name: item.name,
+        status: item.status || (item.riskLevel > 0 ? "warning" : "normal"),
+        description: item.description || "进程信息"
+      }));
+    }
+  } catch (error) {
+    console.error("获取后台进程记录失败:", error);
+    // 保留已有的模拟数据
+  }
+};
+
+// 获取考生行为分析记录
+const fetchBehaviorAnalysis = async () => {
+  if (!accountId.value || !examId.value) return;
+  
+  try {
+    const response = await axios.get('/monitor/data/behavior-analysis', {
+      params: {
+        accountId: accountId.value,
+        examId: examId.value
+      }
+    });
+    
+    if (response.data.code === 0 && response.data.data) {
+      // 更新行为分析记录
+      analysisRecords.value = response.data.data.map(item => ({
+        id: item.id,
+        time: item.time,
+        content: item.content,
+        level: item.level || "info"
+      }));
+      
+      // 更新切屏次数
+      const switchEvents = analysisRecords.value.filter(
+        record => record.content.includes("切屏") || record.content.includes("切换")
+      );
+      if (switchEvents.length > 0) {
+        studentInfo.value.switchCount = switchEvents.length;
+      }
+    }
+  } catch (error) {
+    console.error("获取行为分析记录失败:", error);
+    // 保留已有的模拟数据
+  }
+};
+
 // 刷新屏幕截图
 const refreshScreenshot = () => {
   studentInfo.value.screenCapture = getRandomScreenshot(
@@ -165,38 +413,44 @@ const forceRefresh = () => {
 let autoRefreshInterval: number | null = null;
 
 // 自动刷新功能
-const toggleAutoRefresh = (enable: boolean) => {
-  if (enable && !autoRefreshInterval) {
-    autoRefreshInterval = window.setInterval(() => {
-      if (studentInfo.value.status === "online") {
-        refreshScreenshot();
-      }
-    }, 5000); // 每5秒刷新一次
-  } else if (!enable && autoRefreshInterval) {
-    clearInterval(autoRefreshInterval);
-    autoRefreshInterval = null;
-  }
+const toggleRefresh = () => {
+  fetchScreenshots();
+  fetchWebsiteVisits();
+  fetchProcessRecords();
+  fetchBehaviorAnalysis();
 };
 
 onMounted(() => {
-  // 启动自动刷新
-  toggleAutoRefresh(true);
-  console.log("监控页面已加载");
+  // 获取考生详情信息
+  fetchCandidateDetails();
+
+  console.log("监控页面已加载", {
+    candidateId: candidateId.value,
+    examId: examId.value,
+    studentId: studentId.value,
+    accountId: accountId.value
+  });
 });
 
-// 组件卸载时清除定时器
-onUnmounted(() => {
-  toggleAutoRefresh(false);
-});
+
 </script>
 
 <template>
   <div class="monitor-single">
     <a-card class="header-card">
       <template #title>
-        <a-typography-title :heading="4" style="margin: 0"
-          >单人监控
-        </a-typography-title>
+        <a-space>
+          <a-button type="text" size="small" @click="goBack">
+            <template #icon>
+              <icon-arrow-left />
+            </template>
+            返回
+          </a-button>
+          <a-divider direction="vertical" />
+          <a-typography-title :heading="4" style="margin: 0"
+            >单人监控
+          </a-typography-title>
+        </a-space>
       </template>
       <a-space size="medium">
         <a-descriptions
@@ -275,7 +529,7 @@ onUnmounted(() => {
 
       <!-- 右侧信息区域 -->
       <a-card class="info-section">
-        <a-tabs type="card">
+        <a-tabs type="card" @change="toggleRefresh">
           <a-tab-pane key="2" title="访问网站">
             <a-card :bordered="false" class="info-card">
               <a-list :data="visitedWebsites">
@@ -331,14 +585,11 @@ onUnmounted(() => {
 
           <a-tab-pane key="4" title="自动截图">
             <a-card :bordered="false" class="info-card">
-              <a-grid
-                :col-gap="12"
-                :cols="{ xs: 1, sm: 2, md: 2, lg: 2, xl: 2, xxl: 2 }"
-                :row-gap="12"
-              >
-                <a-grid-item
+              <div class="screenshots-container">
+                <div
                   v-for="screenshot in screenshots"
                   :key="screenshot.id"
+                  class="screenshot-item"
                 >
                   <a-card
                     :bordered="false"
@@ -349,14 +600,14 @@ onUnmounted(() => {
                       :preview="true"
                       :src="screenshot.url"
                       alt="截图"
-                      height="100px"
+                      fit="cover"
                       width="100%"
                     />
                     <div class="screenshot-info">
                       <a-space
                         fill
                         justify="space-between"
-                        style="margin-top: 4px"
+                        style="margin: 0"
                       >
                         <a-typography-text
                           style="font-size: 12px"
@@ -375,7 +626,6 @@ onUnmounted(() => {
                           style="
                             font-size: 12px;
                             display: block;
-                            margin-top: 4px;
                             white-space: nowrap;
                             overflow: hidden;
                             text-overflow: ellipsis;
@@ -387,8 +637,8 @@ onUnmounted(() => {
                       </a-tooltip>
                     </div>
                   </a-card>
-                </a-grid-item>
-              </a-grid>
+                </div>
+              </div>
             </a-card>
           </a-tab-pane>
 
@@ -445,7 +695,7 @@ onUnmounted(() => {
 <style lang="less" scoped>
 .monitor-single {
   padding: 16px;
-  height: 70%;
+  height: 60%;
   background-color: var(--color-fill-2);
   margin: 0 auto;
 
@@ -477,15 +727,15 @@ onUnmounted(() => {
 
     .info-section {
       flex: 2;
-      overflow: auto;
+      overflow: hidden;
 
       :deep(.arco-tabs) {
         height: 100%;
 
         .arco-tabs-content {
           padding: 12px 0;
-          height: calc(100% - 40px);
-          overflow: auto;
+          //height: calc(100% - 40px);
+          overflow: hidden;
         }
 
         .arco-tabs-nav {
@@ -504,12 +754,27 @@ onUnmounted(() => {
 
       .info-card {
         width: 100%;
-        height: 100%;
+        height: 60vh;
 
         :deep(.arco-card-body) {
           padding: 12px;
-          height: 100%;
-          overflow: auto;
+          height: calc(60vh - 58px); /* 减去卡片头部的高度 */
+          overflow-y: auto;
+          overflow-x: hidden;
+          
+          &::-webkit-scrollbar {
+            width: 4px;
+          }
+          
+          &::-webkit-scrollbar-thumb {
+            background-color: var(--color-neutral-3);
+            border-radius: 4px;
+          }
+          
+          &::-webkit-scrollbar-track {
+            background-color: var(--color-neutral-1);
+            border-radius: 4px;
+          }
         }
 
         :deep(.arco-card-header) {
@@ -533,29 +798,57 @@ onUnmounted(() => {
   margin-right: 4px;
 }
 
-// 优化截图网格
-:deep(.arco-grid) {
-  .arco-grid-item {
-    height: auto;
+// 添加新的flex布局样式
+.screenshots-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-content: flex-start;
+  height: 100%;
+}
+
+.screenshot-item {
+  flex: 0 0 calc(50% - 6px);
+  height: 220px;
+  
+  @media (max-width: 768px) {
+    flex: 0 0 100%;
   }
 }
 
 .screenshot-card {
   height: 100%;
+  display: flex;
+  flex-direction: column;
 
   :deep(.arco-card-body) {
     padding: 8px;
     display: flex;
     flex-direction: column;
+    gap: 4px;
+    height: 100%;
+  }
+
+  :deep(.arco-image) {
+    flex: 1;
+    min-height: 150px;
+    margin-bottom: 0;
+
+    img {
+      object-fit: cover;
+      height: 100%;
+      width: 100%;
+    }
   }
 
   .screenshot-info {
-    margin-top: 4px;
+    margin-top: 0;
+    flex-shrink: 0;
   }
 }
 
 .timeline-container {
-  max-height: 400px;
+  height: calc(70vh - 90px);
   overflow-y: auto;
   padding-right: 4px;
 
@@ -564,8 +857,13 @@ onUnmounted(() => {
   }
 
   &::-webkit-scrollbar-thumb {
-    background-color: var(--color-neutral-4);
-    border-radius: 2px;
+    background-color: var(--color-neutral-3);
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background-color: var(--color-neutral-1);
+    border-radius: 4px;
   }
 }
 </style>

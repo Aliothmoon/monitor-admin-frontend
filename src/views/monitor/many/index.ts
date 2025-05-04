@@ -1,3 +1,5 @@
+import axios from 'axios';
+
 // 考生类型定义
 export interface Candidate {
   id: number;
@@ -9,6 +11,8 @@ export interface Candidate {
   lastActivity: string;
   riskLevel: "none" | "low" | "medium" | "high";
   riskDescription?: string;
+  accountId?: number; // 考生账号ID
+  studentId?: string; // 学号
 }
 
 // 模拟考生数据
@@ -17,9 +21,7 @@ const mockCandidates: Candidate[] = Array.from({ length: 18 }, (_, index) => {
     id: index + 1,
     name: `考生${index + 1}`,
     examId: `EXAM-${2023001 + index}`,
-    status: ["online", "online", "online", "offline", "warning", "danger"][
-      Math.floor(Math.random() * 6)
-    ] as "online" | "offline" | "warning" | "danger",
+    status: "danger" as "online" | "offline" | "warning" | "danger",
     screenshot: `https://picsum.photos/400/300?random=${index}`,
     streamUrl: "https://example.com/stream",
     lastActivity: new Date().toLocaleTimeString(),
@@ -31,6 +33,63 @@ const mockCandidates: Candidate[] = Array.from({ length: 18 }, (_, index) => {
     ],
   };
 });
+
+// 从考试ID获取考生监控数据
+export const getExamCandidateList = async (
+  examId: number,
+  current = 1,
+  pageSize = 24,
+  keyword = ""
+) => {
+  try {
+    // 先获取考试的考生列表
+    const response = await axios.get('/exam/examinees', {
+      params: {
+        examId,
+        pageNum: current,
+        pageSize,
+        name: keyword || undefined,
+        studentId: keyword || undefined,
+      }
+    });
+
+    if (response.data.code === 0) {
+      const examinees = response.data.data.records || [];
+      const total = response.data.data.totalRow || 0;
+
+      // 将考生信息转换为监控数据格式
+      const monitorData = examinees.map((examinee: any) => ({
+        id: examinee.examineeInfoId,
+        accountId: examinee.accountId || examinee.id,
+        name: examinee.name || '未知姓名',
+        examId: examinee.studentId || '未知学号',
+        studentId: examinee.studentId,
+        status: examinee.status === 1 ? "online" : "offline",
+        // screenshot: `https://picsum.photos/400/300?random=${examinee.examineeInfoId}`, // 示例截图
+        streamUrl: "https://example.com/stream",
+        lastActivity: new Date().toLocaleTimeString(),
+        riskLevel: "none",
+        riskDescription: "",
+      }));
+
+      return {
+        data: monitorData,
+        total,
+      };
+    }
+
+    return {
+      data: [],
+      total: 0,
+    };
+  } catch (error) {
+    console.error("获取考试考生数据失败:", error);
+    return {
+      data: [],
+      total: 0,
+    };
+  }
+};
 
 // 获取考生监控数据
 export const getCandidateList = async (

@@ -216,13 +216,26 @@ export async function getRiskImageTemplateList(): Promise<RiskImageTemplate[]> {
 }
 
 // 导入考生信息
-export async function importExaminees(formData: FormData): Promise<boolean> {
-  const response = await axios.post('/exam/examinees/manual-import', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data'
+export async function importExaminees(formData: FormData): Promise<any> {
+  try {
+    const response = await axios.post('/exam/examinees/manual-import', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    
+    if (response.data.code === 0) {
+      Message.success("成功导入考生信息");
+      return response.data.data;
+    } else {
+      Message.error(response.data.msg || "导入失败");
+      return false;
     }
-  });
-  return response.data.data;
+  } catch (error) {
+    console.error("导入考生信息失败", error);
+    Message.error("导入考生信息失败");
+    return false;
+  }
 }
 
 // 下载考生导入模板
@@ -287,18 +300,18 @@ export async function getExamExaminees(
 
     if (data.code === 0) {
       return {
-        data: data.data.records || [],
+        rows: data.data.records || [],
         total: data.data.totalRow || 0,
       };
     } else {
       Message.error(data.msg || "获取考生列表失败");
-      return { data: [], total: 0 };
+      return { rows: [], total: 0 };
     }
   } catch (error) {
     console.error(error);
     Message.error("获取考生列表失败");
     return {
-      data: [],
+      rows: [],
       total: 0,
     };
   }
@@ -309,9 +322,16 @@ export async function addExamineeToExam(examId: number, examineeInfoId: number):
   try {
     const response = await axios.post('/exam/examinees/add', { examId, examineeInfoId });
     const { data } = response;
-    return data.code === 0;
+    
+    if (data.code === 0) {
+      return true;
+    } else {
+      Message.error(data.msg || "添加考生失败");
+      return false;
+    }
   } catch (error) {
     console.error(error);
+    Message.error("添加考生失败");
     return false;
   }
 }
