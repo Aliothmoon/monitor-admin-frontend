@@ -201,7 +201,7 @@ import { computed, ref, reactive, onMounted } from "vue";
 import useLoading from "@/hooks/loading";
 import { Pagination } from "@/types/global";
 import type { TableColumnData } from "@arco-design/web-vue/es/table/interface";
-import { Message } from "@arco-design/web-vue";
+import { Message, Modal } from "@arco-design/web-vue";
 import dayjs from "dayjs";
 
 // 导入录屏相关API和类型
@@ -467,14 +467,23 @@ const handleSave = async () => {
 
 // 删除
 const handleRemove = async (record: ScreenRecord) => {
-  const result = await deleteScreenRecordById(record.id);
-  if (result) {
-    fetchData(
-      renderData.value.length === 1 && pagination.current > 1
-        ? pagination.current - 1
-        : pagination.current
-    );
-  }
+  Modal.confirm({
+    title: '确认删除',
+    content: `确定要删除该录屏吗？此操作不可逆。`,
+    okText: '确认',
+    cancelText: '取消',
+    onOk: async () => {
+      const result = await deleteScreenRecordById(record.id);
+      if (result) {
+        fetchData(
+          renderData.value.length === 1 && pagination.current > 1
+            ? pagination.current - 1
+            : pagination.current
+        );
+        Message.success('删除成功');
+      }
+    }
+  });
 };
 
 // 初始化

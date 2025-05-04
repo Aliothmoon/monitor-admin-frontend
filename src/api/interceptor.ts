@@ -1,11 +1,7 @@
 import axios from "axios";
 import { Message, Modal } from "@arco-design/web-vue";
 import { getToken } from "@/utils/auth";
-import {
-  ErrorCode,
-  ErrorMessages,
-  getErrorMessage,
-} from "./error-code";
+import { ErrorCode, ErrorMessages, getErrorMessage } from "./error-code";
 import router from "@/router";
 
 export interface HttpResponse<T = unknown> {
@@ -56,7 +52,10 @@ axios.interceptors.response.use(
 
     // 处理文件下载等特殊情况
     const contentType = response.headers["content-type"];
-    if (contentType && contentType.includes("application/octet-stream")) {
+    if (
+      (contentType && contentType.includes("application/octet-stream")) ||
+      response.headers["content-disposition"]
+    ) {
       return response;
     }
 

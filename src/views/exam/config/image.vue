@@ -254,7 +254,7 @@ import { computed, onMounted, reactive, ref } from "vue";
 import useLoading from "@/hooks/loading";
 import { Pagination } from "@/types/global";
 import type { TableColumnData } from "@arco-design/web-vue/es/table/interface";
-import { Message } from "@arco-design/web-vue";
+import { Message, Modal } from "@arco-design/web-vue";
 import dayjs from "dayjs";
 import { useUserStore } from "@/store";
 import { v4 as uuidv4 } from "uuid";
@@ -555,14 +555,23 @@ const handleUpdate = (record: RiskImageTemplate) => {
 
 // 删除
 const handleRemove = async (record: RiskImageTemplate) => {
-  const result = await deleteRiskImageTemplate(record.id);
-  if (result) {
-    fetchData(
-      renderData.value.length === 1 && pagination.current > 1
-        ? pagination.current - 1
-        : pagination.current
-    );
-  }
+  Modal.confirm({
+    title: '确认删除',
+    content: `确定要删除"${record.name}"吗？此操作不可逆。`,
+    okText: '确认',
+    cancelText: '取消',
+    onOk: async () => {
+      const result = await deleteRiskImageTemplate(record.id);
+      if (result) {
+        fetchData(
+          renderData.value.length === 1 && pagination.current > 1
+            ? pagination.current - 1
+            : pagination.current
+        );
+        Message.success('删除成功');
+      }
+    }
+  });
 };
 
 // 提交表单

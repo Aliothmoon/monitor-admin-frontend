@@ -148,6 +148,7 @@
         <a-form-item
           field="studentId"
           label="学号"
+          :rules="[{ required: true, message: '不能为空' }]"
         >
           <a-input v-model="upsertForm.studentId"></a-input>
         </a-form-item>

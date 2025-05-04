@@ -217,7 +217,7 @@ export async function getRiskImageTemplateList(): Promise<RiskImageTemplate[]> {
 
 // 导入考生信息
 export async function importExaminees(formData: FormData): Promise<boolean> {
-  const response = await axios.post('/exam/examinees/import', formData, {
+  const response = await axios.post('/exam/examinees/manual-import', formData, {
     headers: {
       'Content-Type': 'multipart/form-data'
     }
@@ -238,5 +238,104 @@ export async function downloadExamineeTemplate() {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+}
+
+// 导出考试考生名单
+export async function exportExaminees(examId: number) {
+  try {
+    const response = await axios.get(`/exam/examinees/export/${examId}`, {
+      responseType: 'blob'
+    });
+    
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    const fileName = `考生名单_${examId}.xlsx`;
+    link.setAttribute('download', fileName);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    return true;
+  } catch (error) {
+    console.error(error);
+    Message.error("导出考生名单失败");
+    return false;
+  }
+}
+
+// 获取考试考生名单
+export async function getExamExaminees(
+  examId: number,
+  pageNum: number = 1,
+  pageSize: number = 10,
+  studentId?: string,
+  name?: string,
+  college?: string,
+) {
+  try {
+    const response = await axios.get('/exam/examinees', {
+      params: {
+        examId,
+        pageNum,
+        pageSize,
+        studentId,
+        name,
+        college
+      }
+    });
+    const { data } = response;
+
+    if (data.code === 0) {
+      return {
+        data: data.data.records || [],
+        total: data.data.totalRow || 0,
+      };
+    } else {
+      Message.error(data.msg || "获取考生列表失败");
+      return { data: [], total: 0 };
+    }
+  } catch (error) {
+    console.error(error);
+    Message.error("获取考生列表失败");
+    return {
+      data: [],
+      total: 0,
+    };
+  }
+}
+
+// 添加考生到考试
+export async function addExamineeToExam(examId: number, examineeInfoId: number): Promise<boolean> {
+  try {
+    const response = await axios.post('/exam/examinees/add', { examId, examineeInfoId });
+    const { data } = response;
+    return data.code === 0;
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
+}
+
+// 从考试中移除考生
+export async function removeExamineeFromExam(examId: number, accountId: number): Promise<boolean> {
+  try {
+    const response = await axios.delete(`/exam/examinees/remove/${examId}/${accountId}`);
+    const { data } = response;
+    return data.code === 0;
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
+}
+
+// 更新考生账号信息
+export async function updateExamExamineeAccount(data: any): Promise<boolean> {
+  try {
+    const response = await axios.put('/exam/examinees/account', data);
+    return response.data.code === 0;
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
 }
 
