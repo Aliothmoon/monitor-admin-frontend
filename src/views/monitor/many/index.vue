@@ -1,18 +1,16 @@
 <script lang="ts" setup>
-import { onMounted, reactive, ref } from "vue";
+import { onMounted, onUnmounted, reactive, ref } from "vue";
 import { Pagination } from "@/types/global";
 import {
   Candidate,
   getCandidateList,
   getExamCandidateList,
-  getRiskLevelColor,
   getRiskLevelText,
-  getStatusColor,
-  getStatusText,
 } from "./index";
 import useLoading from "@/hooks/loading";
 import { Message } from "@arco-design/web-vue";
 import { useRoute, useRouter } from "vue-router";
+import { useUserStore } from "@/store";
 
 const router = useRouter();
 const route = useRoute();
@@ -26,6 +24,7 @@ const examName = ref<string>("多人监控");
 // 搜索表单
 const formModel = ref({
   keyword: "",
+  riskLevelFilter: "",
 });
 
 // 分页参数
@@ -43,6 +42,11 @@ const { loading, setLoading } = useLoading(false);
 const playingVideos = ref<Set<number>>(new Set());
 // 最大同时播放数量
 const MAX_PLAYING_VIDEOS = 6;
+
+// 添加自动刷新控制变量
+const autoRefreshEnabled = ref(true);
+const refreshInterval = ref(30); // 秒
+let refreshTimer: number | null = null;
 
 // 根据字符串生成颜色的函数
 const getAvatarColor = (name: string) => {
@@ -98,6 +102,17 @@ const fetchCandidateData = async (page = 1) => {
       total = result.total;
     }
 
+    // 应用风险级别过滤
+    if (formModel.value.riskLevelFilter) {
+      data = data.filter((item) => {
+        if (formModel.value.riskLevelFilter === "any") {
+          return item.riskLevel !== "none";
+        }
+        return item.riskLevel === formModel.value.riskLevelFilter;
+      });
+      total = data.length;
+    }
+
     monitoringCards.value = data;
     pagination.total = total;
   } catch (error) {
@@ -116,6 +131,7 @@ const search = () => {
 // 重置
 const reset = () => {
   formModel.value.keyword = "";
+  formModel.value.riskLevelFilter = "";
   fetchCandidateData(1);
 };
 
@@ -125,30 +141,51 @@ const refreshData = () => {
   Message.success("监控数据已刷新");
 };
 
+// 开始自动刷新
+const startAutoRefresh = () => {
+  stopAutoRefresh(); // 先停止现有的定时器
+
+  if (autoRefreshEnabled.value) {
+    refreshTimer = window.setInterval(() => {
+      fetchCandidateData(pagination.current);
+      console.log(`自动刷新监控数据 - ${new Date().toLocaleTimeString()}`);
+    }, refreshInterval.value * 1000);
+  }
+};
+
+// 停止自动刷新
+const stopAutoRefresh = () => {
+  if (refreshTimer !== null) {
+    clearInterval(refreshTimer);
+    refreshTimer = null;
+  }
+};
+
+// 切换自动刷新状态
+const toggleAutoRefresh = () => {
+  autoRefreshEnabled.value = !autoRefreshEnabled.value;
+  if (autoRefreshEnabled.value) {
+    startAutoRefresh();
+    Message.success(`已开启自动刷新 (${refreshInterval.value}秒)`);
+  } else {
+    stopAutoRefresh();
+    Message.info("已关闭自动刷新");
+  }
+};
+
+// 修改刷新时间间隔
+const changeRefreshInterval = (interval: number) => {
+  refreshInterval.value = interval;
+  if (autoRefreshEnabled.value) {
+    startAutoRefresh(); // 重启定时器以应用新间隔
+    Message.success(`已设置刷新间隔为 ${interval} 秒`);
+  }
+};
+
 // 处理分页变化
 const handlePageChange = (page: number) => {
   pagination.current = page;
   fetchCandidateData(page);
-};
-
-// 切换视频播放状态
-const toggleVideoPlay = (candidate: Candidate) => {
-  if (playingVideos.value.has(candidate.id)) {
-    // 如果视频已经在播放，则停止
-    playingVideos.value.delete(candidate.id);
-  } else {
-    // 如果视频未播放，检查是否已达到最大播放数
-    if (playingVideos.value.size >= MAX_PLAYING_VIDEOS) {
-      // 找到最早播放的视频并停止
-      const oldestVideo = Array.from(playingVideos.value)[0];
-      playingVideos.value.delete(oldestVideo);
-      Message.info(
-        `已达到最大同时播放数量(${MAX_PLAYING_VIDEOS}个)，已自动停止最早播放的视频`
-      );
-    }
-    // 开始播放新视频
-    playingVideos.value.add(candidate.id);
-  }
 };
 
 // 查看单个考生详情
@@ -164,18 +201,46 @@ const viewCandidateDetail = (candidate: Candidate) => {
   });
 };
 
+// 获取用户信息，用于拼接文件URL
+const userStore = useUserStore();
+
+// 获取完整的图片URL
+const getFullImageUrl = (imageUrl: string) => {
+  if (!imageUrl) return "";
+  return userStore.fileUrlPrefix + imageUrl;
+};
 // 在script部分添加默认图片处理
 const getScreenshot = (candidate: Candidate) => {
   // 如果截图存在且有效
-  if (candidate.screenshot && 
-      candidate.screenshot.trim() !== '' && 
-      !candidate.screenshot.includes('undefined') &&
-      !candidate.screenshot.includes('null')) {
-    return candidate.screenshot;
+  if (
+    candidate.screenshot &&
+    candidate.screenshot.trim() !== "" &&
+    !candidate.screenshot.includes("undefined") &&
+    !candidate.screenshot.includes("null")
+  ) {
+    // 添加时间戳防止缓存
+    const timestamp = new Date().getTime();
+    const url = candidate.screenshot;
+
+    // 如果是相对路径且不包含查询参数，添加时间戳
+    if (url.startsWith("/") || url.startsWith("./") || url.startsWith("http")) {
+      // 添加随机时间戳参数，防止浏览器缓存图片
+      const separator = url.includes("?") ? "&" : "?";
+      return `${url}${separator}t=${timestamp}`;
+    }
+
+    return getFullImageUrl(url);
   }
-  
+
   // 返回默认占位图
   return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='120' viewBox='0 0 200 120'%3E%3Crect width='200' height='120' fill='%23f0f2f5'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='16' text-anchor='middle' fill='%23909399'%3E等待截图...%3C/text%3E%3C/svg%3E`;
+};
+
+// 查看异常考生
+const viewRiskyStudents = () => {
+  formModel.value.riskLevelFilter = "any";
+  fetchCandidateData(1);
+  Message.info("已过滤显示异常考生");
 };
 
 // 初始加载
@@ -191,6 +256,14 @@ onMounted(() => {
   }
 
   fetchCandidateData();
+
+  // 启动自动刷新
+  startAutoRefresh();
+});
+
+// 在组件卸载时清理定时器
+onUnmounted(() => {
+  stopAutoRefresh();
 });
 </script>
 
@@ -255,18 +328,38 @@ onMounted(() => {
               </template>
               刷新数据
             </a-button>
-            <a-button status="warning">
+            <a-button
+              :status="autoRefreshEnabled ? 'success' : 'normal'"
+              @click="toggleAutoRefresh"
+            >
+              <template #icon>
+                <icon-sync />
+              </template>
+              {{ autoRefreshEnabled ? "自动刷新中" : "自动刷新" }}
+            </a-button>
+            <a-select
+              :disabled="!autoRefreshEnabled"
+              :model-value="refreshInterval"
+              style="width: 120px"
+              @change="changeRefreshInterval"
+            >
+              <a-option :value="10">10秒</a-option>
+              <a-option :value="30">30秒</a-option>
+              <a-option :value="60">1分钟</a-option>
+              <a-option :value="300">5分钟</a-option>
+            </a-select>
+            <a-button status="warning" @click="viewRiskyStudents">
               <template #icon>
                 <icon-exclamation-circle-fill />
               </template>
               查看异常
             </a-button>
-            <a-button>
-              <template #icon>
-                <icon-settings />
-              </template>
-              监控设置
-            </a-button>
+<!--            <a-button>-->
+<!--              <template #icon>-->
+<!--                <icon-settings />-->
+<!--              </template>-->
+<!--              监控设置-->
+<!--            </a-button>-->
           </a-space>
         </a-col>
       </a-row>
@@ -314,13 +407,12 @@ onMounted(() => {
                     </div>
                   </div>
 
-
-                  <div
-                    class="status-badge"
-                    :style="{ background: getStatusColor(candidate.status) }"
-                  >
-                    {{ getStatusText(candidate.status) }}
-                  </div>
+                  <!--                  <div-->
+                  <!--                    class="status-badge"-->
+                  <!--                    :style="{ background: getStatusColor(candidate.status) }"-->
+                  <!--                  >-->
+                  <!--                    {{ getStatusText(candidate.status) }}-->
+                  <!--                  </div>-->
 
                   <div
                     v-if="candidate.riskLevel !== 'none'"
@@ -374,8 +466,8 @@ onMounted(() => {
                       <a-col :span="24">
                         <a-space fill size="mini">
                           <a-typography-text type="secondary"
-                            >考号: {{ candidate.examId }}</a-typography-text
-                          >
+                            >考号: {{ candidate.examId }}
+                          </a-typography-text>
                           <a-typography-text
                             v-if="candidate.lastActivity"
                             type="secondary"

@@ -65,12 +65,40 @@ export const getExamCandidateList = async (
         examId: examinee.studentId || '未知学号',
         studentId: examinee.studentId,
         status: examinee.status === 1 ? "online" : "offline",
-        // screenshot: `https://picsum.photos/400/300?random=${examinee.examineeInfoId}`, // 示例截图
+        screenshot: "", // 先初始化为空，稍后获取最新截图
         streamUrl: "https://example.com/stream",
         lastActivity: new Date().toLocaleTimeString(),
         riskLevel: "none",
         riskDescription: "",
       }));
+
+      // 为每个考生获取最新截图
+      const screenshotPromises = monitorData.map(async (candidate) => {
+        try {
+          const screenshotResponse = await axios.get("/monitor/data/latest-screenshot", {
+            params: {
+              accountId: candidate.accountId,
+              examId: examId,
+            },
+          });
+
+          if (screenshotResponse.data.code === 0 && screenshotResponse.data.data) {
+            candidate.screenshot = screenshotResponse.data.data.url;
+            // 如果有风险警告，更新风险状态
+            if (screenshotResponse.data.data.hasWarning) {
+              candidate.riskLevel = "medium";
+              candidate.riskDescription = screenshotResponse.data.data.analysis || "屏幕异常";
+              candidate.status = "warning";
+            }
+          }
+        } catch (error) {
+          console.error(`获取考生${candidate.name}的截图失败:`, error);
+        }
+        return candidate;
+      });
+
+      // 等待所有截图请求完成
+      await Promise.all(screenshotPromises);
 
       return {
         data: monitorData,

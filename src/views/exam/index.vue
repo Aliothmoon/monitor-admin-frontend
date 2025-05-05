@@ -1133,7 +1133,7 @@ const handleExamineePageChange = (page: number) => {
 const examineeEditVisible = ref(false);
 const examineeEditType = ref<"add" | "edit">("add");
 const examineeForm = ref({
-  id: undefined,
+  accountId: undefined,
   name: "",
   studentId: "",
   college: "",
@@ -1455,8 +1455,9 @@ const handleExamineeEditSubmit = async () => {
       }
     } else {
       // 更新考生账号信息
+      console.log(examineeForm.value);
       await updateExamExamineeAccount({
-        id: examineeForm.value.id,
+        accountId: examineeForm.value.accountId,
         account: examineeForm.value.account,
         password: examineeForm.value.password || undefined,
       });

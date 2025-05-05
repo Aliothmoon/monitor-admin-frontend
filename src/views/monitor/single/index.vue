@@ -1,7 +1,8 @@
 <script lang="ts" setup>
-import { ref, onMounted, onUnmounted } from "vue";
-import { useRouter, useRoute } from "vue-router";
+import { onMounted, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import axios from "axios";
+import { useUserStore } from "@/store";
 
 // 获取路由实例和当前路由
 const router = useRouter();
@@ -10,12 +11,25 @@ const route = useRoute();
 // 从路由中获取考生ID、考试ID和学生ID
 const candidateId = ref(route.query.id ? Number(route.query.id) : null);
 const examId = ref(route.query.examId ? Number(route.query.examId) : null);
-const studentId = ref(route.query.studentId ? String(route.query.studentId) : "");
-const accountId = ref(route.query.accountId ? Number(route.query.accountId) : null);
+const studentId = ref(
+  route.query.studentId ? String(route.query.studentId) : ""
+);
+const accountId = ref(
+  route.query.accountId ? Number(route.query.accountId) : null
+);
 
 // 返回上一级
 const goBack = () => {
   router.back();
+};
+
+// 获取用户信息，用于拼接文件URL
+const userStore = useUserStore();
+
+// 获取完整的图片URL
+const getFullImageUrl = (imageUrl: string) => {
+  if (!imageUrl) return "";
+  return userStore.fileUrlPrefix + imageUrl;
 };
 
 // 创建随机屏幕截图路径 (使用picsum.photos服务提供随机图片)
@@ -154,32 +168,52 @@ const getAnalysisColor = (level: string) => {
   }
 };
 
+// 添加三个标签页的分页配置
+const websitePagination = ref({
+  current: 1,
+  pageSize: 5,
+  total: 0,
+});
+
+const processPagination = ref({
+  current: 1,
+  pageSize: 5,
+  total: 0,
+});
+
+const screenshotPagination = ref({
+  current: 1,
+  pageSize: 6,
+  total: 0,
+});
+
 // 获取考生详细信息
 const fetchCandidateDetails = async () => {
   if (!candidateId.value) return;
-  
+
   try {
     // 获取考生信息
     const response = await axios.get(`/examinee/detail/${candidateId.value}`);
-    
+
     if (response.data.code === 0) {
       const data = response.data.data;
-      
+
       studentInfo.value = {
         name: data.name || "未知姓名",
         id: data.studentId || "未知学号",
         examName: data.examName || "未知考试",
         status: data.status === 1 ? "online" : "offline",
-        screenCapture: data.screenshot || getRandomScreenshot(candidateId.value),
+        screenCapture:
+          data.screenshot || getRandomScreenshot(candidateId.value),
         switchCount: data.switchCount || 0,
         lastActiveTime: data.lastActivity || new Date().toLocaleTimeString(),
       };
-      
+
       // 更新accountId
       if (data.accountId && !accountId.value) {
         accountId.value = data.accountId;
       }
-      
+
       // 更新examId
       if (data.examId && !examId.value) {
         examId.value = data.examId;
@@ -187,7 +221,7 @@ const fetchCandidateDetails = async () => {
     }
   } catch (error) {
     console.error("获取考生详情失败:", error);
-    
+
     // 使用临时数据
     studentInfo.value = {
       name: "考生" + candidateId.value,
@@ -199,7 +233,7 @@ const fetchCandidateDetails = async () => {
       lastActiveTime: new Date().toLocaleTimeString(),
     };
   }
-  
+
   // 如果有考试ID，获取考试信息
   if (examId.value) {
     try {
@@ -211,7 +245,7 @@ const fetchCandidateDetails = async () => {
       console.error("获取考试信息失败:", error);
     }
   }
-  
+
   // 获取考生监控数据
   await fetchScreenshots();
   await fetchWebsiteVisits();
@@ -219,31 +253,151 @@ const fetchCandidateDetails = async () => {
   await fetchBehaviorAnalysis();
 };
 
-// 获取考生自动截图列表
-const fetchScreenshots = async () => {
+// 获取考生访问网站记录
+const fetchWebsiteVisits = async () => {
   if (!accountId.value || !examId.value) return;
-  
+
   try {
-    const response = await axios.get('/monitor/data/screenshots', {
+    const response = await axios.get("/monitor/data/website-visits", {
       params: {
         accountId: accountId.value,
         examId: examId.value,
-        limit: 10 // 最多获取10张截图
-      }
+        pageNum: websitePagination.value.current,
+        pageSize: websitePagination.value.pageSize
+      },
     });
-    
+
     if (response.data.code === 0 && response.data.data) {
-      // 更新截图列表
-      screenshots.value = response.data.data.map(item => ({
+      // 更新网站访问记录
+      visitedWebsites.value = response.data.data.records ? response.data.data.records.map((item) => ({
+        id: item.id,
+        url: item.url,
+        time: item.time,
+        risk: item.risk || (item.riskLevel > 0 ? "warning" : "normal"),
+        description: item.description || "网站访问",
+      })) : [];
+      
+      // 更新总数
+      websitePagination.value.total = response.data.data.total || 0;
+    }
+  } catch (error) {
+    console.error("获取网站访问记录失败:", error);
+    // 保留已有的模拟数据
+  }
+};
+
+// 处理网站访问分页变化
+const handleWebsitePageChange = (page: number) => {
+  websitePagination.value.current = page;
+  fetchWebsiteVisits();
+};
+
+// 获取考生后台进程记录
+const fetchProcessRecords = async () => {
+  if (!accountId.value || !examId.value) return;
+
+  try {
+    const response = await axios.get("/monitor/data/process-records", {
+      params: {
+        accountId: accountId.value,
+        examId: examId.value,
+        pageNum: processPagination.value.current,
+        pageSize: processPagination.value.pageSize
+      },
+    });
+
+    if (response.data.code === 0 && response.data.data) {
+      // 更新后台进程记录
+      backgroundProcesses.value = response.data.data.records ? response.data.data.records.map((item) => ({
+        id: item.id,
+        name: item.name || item.processName,
+        status: item.status || (item.riskLevel > 0 ? "warning" : "normal"),
+        description: item.description || "进程信息",
+      })) : [];
+      
+      // 更新总数
+      processPagination.value.total = response.data.data.total || 0;
+    }
+  } catch (error) {
+    console.error("获取后台进程记录失败:", error);
+    // 保留已有的模拟数据
+  }
+};
+
+// 处理进程记录分页变化
+const handleProcessPageChange = (page: number) => {
+  processPagination.value.current = page;
+  fetchProcessRecords();
+};
+
+// 获取考生行为分析记录
+const fetchBehaviorAnalysis = async () => {
+  if (!accountId.value || !examId.value) return;
+
+  try {
+    const response = await axios.get("/monitor/data/behavior-analysis", {
+      params: {
+        accountId: accountId.value,
+        examId: examId.value,
+      },
+    });
+
+    if (response.data.code === 0 && response.data.data) {
+      // 更新行为分析记录
+      analysisRecords.value = response.data.data.map((item) => ({
         id: item.id,
         time: item.time,
-        url: item.url || getRandomScreenshot(item.id), // 使用URL或备用图片
-        hasWarning: item.hasWarning || false,
-        analysis: item.analysis || "正常考试状态"
+        content: item.content,
+        level: item.level || "info",
       }));
+
+      // 更新切屏次数
+      const switchEvents = analysisRecords.value.filter(
+        (record) =>
+          record.content.includes("切屏") || record.content.includes("切换")
+      );
+      if (switchEvents.length > 0) {
+        studentInfo.value.switchCount = switchEvents.length;
+      }
+    }
+  } catch (error) {
+    console.error("获取行为分析记录失败:", error);
+    // 保留已有的模拟数据
+  }
+};
+
+// 获取考生自动截图列表
+const fetchScreenshots = async () => {
+  if (!accountId.value || !examId.value) return;
+
+  try {
+    const response = await axios.get("/monitor/data/screenshots", {
+      params: {
+        accountId: accountId.value,
+        examId: examId.value,
+        pageNum: screenshotPagination.value.current,
+        pageSize: screenshotPagination.value.pageSize
+      },
+    });
+
+    if (response.data.code === 0 && response.data.data) {
+      // 更新截图列表
+      screenshots.value = response.data.data.records ? response.data.data.records.map((item) => ({
+        id: item.id,
+        time: item.time,
+        url: getFullImageUrl(item.url), // 使用URL或备用图片
+        hasWarning: item.hasWarning || false,
+        analysis: item.analysis || "正常考试状态",
+      })) : [];
       
+      // 更新总数
+      screenshotPagination.value.total = response.data.data.total || 0;
+
       // 如果有截图，更新屏幕显示
-      if (screenshots.value.length > 0 && studentInfo.value.status === "online") {
+      if (
+        screenshots.value.length > 0 &&
+        studentInfo.value.status === "online"
+      ) {
         studentInfo.value.screenCapture = screenshots.value[0].url;
       }
     }
@@ -253,135 +407,41 @@ const fetchScreenshots = async () => {
   }
 };
 
-// 获取考生最新截图
+// 处理截图分页变化
+const handleScreenshotPageChange = (page: number) => {
+  screenshotPagination.value.current = page;
+  fetchScreenshots();
+};
+
+// 自动刷新功能
+const toggleRefresh = (key: string) => {
+  if (key === '2') { // 访问网站
+    fetchWebsiteVisits();
+  } else if (key === '3') { // 后台进程
+    fetchProcessRecords();
+  } else if (key === '4') { // 自动截图
+    fetchScreenshots();
+  }
+};
+
+// 在script部分添加一个方法来获取最新截图，以便更新主显示屏幕
 const fetchLatestScreenshot = async () => {
   if (!accountId.value || !examId.value) return;
-  
+
   try {
-    const response = await axios.get('/monitor/data/latest-screenshot', {
+    const response = await axios.get("/monitor/data/latest-screenshot", {
       params: {
         accountId: accountId.value,
-        examId: examId.value
-      }
+        examId: examId.value,
+      },
     });
-    
+
     if (response.data.code === 0 && response.data.data) {
       // 更新当前屏幕显示
-      studentInfo.value.screenCapture = response.data.data.url || getRandomScreenshot(Math.random() * 100);
-      
-      // 如果这是新截图，添加到截图列表的开头
-      const newScreenshot = response.data.data;
-      const existingIndex = screenshots.value.findIndex(s => s.id === newScreenshot.id);
-      
-      if (existingIndex === -1) {
-        screenshots.value.unshift({
-          id: newScreenshot.id,
-          time: newScreenshot.time,
-          url: newScreenshot.url || getRandomScreenshot(newScreenshot.id),
-          hasWarning: newScreenshot.hasWarning || false,
-          analysis: newScreenshot.analysis || "正常考试状态"
-        });
-        
-        // 如果列表超过10个，移除最老的
-        if (screenshots.value.length > 10) {
-          screenshots.value.pop();
-        }
-      }
+      studentInfo.value.screenCapture = getFullImageUrl(response.data.data.url) || getRandomScreenshot(Math.random() * 100);
     }
   } catch (error) {
     console.error("获取最新截图失败:", error);
-    // 使用随机截图作为后备
-    refreshScreenshot();
-  }
-};
-
-// 获取考生访问网站记录
-const fetchWebsiteVisits = async () => {
-  if (!accountId.value || !examId.value) return;
-  
-  try {
-    const response = await axios.get('/monitor/data/website-visits', {
-      params: {
-        accountId: accountId.value,
-        examId: examId.value
-      }
-    });
-    
-    if (response.data.code === 0 && response.data.data) {
-      // 更新网站访问记录
-      visitedWebsites.value = response.data.data.map(item => ({
-        id: item.id,
-        url: item.url,
-        time: item.time,
-        risk: item.risk || (item.riskLevel > 0 ? "warning" : "normal"),
-        description: item.description || "网站访问"
-      }));
-    }
-  } catch (error) {
-    console.error("获取网站访问记录失败:", error);
-    // 保留已有的模拟数据
-  }
-};
-
-// 获取考生后台进程记录
-const fetchProcessRecords = async () => {
-  if (!accountId.value || !examId.value) return;
-  
-  try {
-    const response = await axios.get('/monitor/data/process-records', {
-      params: {
-        accountId: accountId.value,
-        examId: examId.value
-      }
-    });
-    
-    if (response.data.code === 0 && response.data.data) {
-      // 更新后台进程记录
-      backgroundProcesses.value = response.data.data.map(item => ({
-        id: item.id,
-        name: item.name,
-        status: item.status || (item.riskLevel > 0 ? "warning" : "normal"),
-        description: item.description || "进程信息"
-      }));
-    }
-  } catch (error) {
-    console.error("获取后台进程记录失败:", error);
-    // 保留已有的模拟数据
-  }
-};
-
-// 获取考生行为分析记录
-const fetchBehaviorAnalysis = async () => {
-  if (!accountId.value || !examId.value) return;
-  
-  try {
-    const response = await axios.get('/monitor/data/behavior-analysis', {
-      params: {
-        accountId: accountId.value,
-        examId: examId.value
-      }
-    });
-    
-    if (response.data.code === 0 && response.data.data) {
-      // 更新行为分析记录
-      analysisRecords.value = response.data.data.map(item => ({
-        id: item.id,
-        time: item.time,
-        content: item.content,
-        level: item.level || "info"
-      }));
-      
-      // 更新切屏次数
-      const switchEvents = analysisRecords.value.filter(
-        record => record.content.includes("切屏") || record.content.includes("切换")
-      );
-      if (switchEvents.length > 0) {
-        studentInfo.value.switchCount = switchEvents.length;
-      }
-    }
-  } catch (error) {
-    console.error("获取行为分析记录失败:", error);
-    // 保留已有的模拟数据
   }
 };
 
@@ -404,35 +464,32 @@ const lockScreen = () => {
 };
 
 const forceRefresh = () => {
-  refreshScreenshot();
+  fetchLatestScreenshot();
   // eslint-disable-next-line no-alert
   alert("已强制刷新考生页面");
-};
-
-// 定时刷新屏幕截图（模拟实时监控）
-let autoRefreshInterval: number | null = null;
-
-// 自动刷新功能
-const toggleRefresh = () => {
-  fetchScreenshots();
-  fetchWebsiteVisits();
-  fetchProcessRecords();
-  fetchBehaviorAnalysis();
 };
 
 onMounted(() => {
   // 获取考生详情信息
   fetchCandidateDetails();
 
+  // 定时刷新最新的截图
+  setInterval(() => {
+    fetchLatestScreenshot();
+  }, 5000);
+  
+  // 定时刷新网站访问记录
+  setInterval(() => {
+    toggleRefresh('2');
+  }, 10000);
+
   console.log("监控页面已加载", {
     candidateId: candidateId.value,
     examId: examId.value,
     studentId: studentId.value,
-    accountId: accountId.value
+    accountId: accountId.value,
   });
 });
-
-
 </script>
 
 <template>
@@ -482,26 +539,26 @@ onMounted(() => {
             <div>考生屏幕</div>
           </template>
           <template #extra>
-            <a-space class="mt-2" size="medium">
-              <a-button status="warning" type="outline" @click="sendWarning">
-                <template #icon>
-                  <icon-align-left />
-                </template>
-                发送警告
-              </a-button>
-              <a-button status="danger" @click="lockScreen">
-                <template #icon>
-                  <icon-lock />
-                </template>
-                锁定屏幕
-              </a-button>
-              <a-button type="primary" @click="forceRefresh">
-                <template #icon>
-                  <icon-refresh />
-                </template>
-                强制刷新
-              </a-button>
-            </a-space>
+<!--            <a-space class="mt-2" size="medium">-->
+<!--              <a-button status="warning" type="outline" @click="sendWarning">-->
+<!--                <template #icon>-->
+<!--                  <icon-align-left />-->
+<!--                </template>-->
+<!--                发送警告-->
+<!--              </a-button>-->
+<!--              <a-button status="danger" @click="lockScreen">-->
+<!--                <template #icon>-->
+<!--                  <icon-lock />-->
+<!--                </template>-->
+<!--                锁定屏幕-->
+<!--              </a-button>-->
+<!--              <a-button type="primary" @click="forceRefresh">-->
+<!--                <template #icon>-->
+<!--                  <icon-refresh />-->
+<!--                </template>-->
+<!--                强制刷新-->
+<!--              </a-button>-->
+<!--            </a-space>-->
           </template>
           <div
             :class="{ offline: studentInfo.status === 'offline' }"
@@ -554,6 +611,19 @@ onMounted(() => {
                   </a-list-item>
                 </template>
               </a-list>
+              
+              <!-- 分页组件 -->
+              <div class="pagination-container">
+                <a-pagination
+                  v-model:current="websitePagination.current"
+                  v-model:page-size="websitePagination.pageSize"
+                  :total="websitePagination.total"
+                  :page-size-options="[5, 10, 20]"
+                  size="small"
+                  show-total
+                  @change="handleWebsitePageChange"
+                />
+              </div>
             </a-card>
           </a-tab-pane>
 
@@ -580,6 +650,19 @@ onMounted(() => {
                   </a-list-item>
                 </template>
               </a-list>
+              
+              <!-- 分页组件 -->
+              <div class="pagination-container">
+                <a-pagination
+                  v-model:current="processPagination.current"
+                  v-model:page-size="processPagination.pageSize"
+                  :total="processPagination.total"
+                  :page-size-options="[5, 10, 20]"
+                  size="small"
+                  show-total
+                  @change="handleProcessPageChange"
+                />
+              </div>
             </a-card>
           </a-tab-pane>
 
@@ -604,11 +687,7 @@ onMounted(() => {
                       width="100%"
                     />
                     <div class="screenshot-info">
-                      <a-space
-                        fill
-                        justify="space-between"
-                        style="margin: 0"
-                      >
+                      <a-space fill justify="space-between" style="margin: 0">
                         <a-typography-text
                           style="font-size: 12px"
                           type="secondary"
@@ -639,53 +718,65 @@ onMounted(() => {
                   </a-card>
                 </div>
               </div>
-            </a-card>
-          </a-tab-pane>
-
-          <a-tab-pane key="5" title="行为分析">
-            <a-card :bordered="false" class="info-card">
-              <div class="timeline-container">
-                <a-timeline>
-                  <a-timeline-item
-                    v-for="record in analysisRecords"
-                    :key="record.id"
-                    :line-color="getAnalysisColor(record.level)"
-                    :line-type="
-                      record.level === 'warning' || record.level === 'danger'
-                        ? 'dashed'
-                        : 'solid'
-                    "
-                  >
-                    <a-space>
-                      <a-typography-text
-                        style="font-size: 12px"
-                        type="secondary"
-                        >{{ record.time }}
-                      </a-typography-text>
-                      <a-typography-text style="font-size: 13px"
-                        >{{ record.content }}
-                      </a-typography-text>
-                    </a-space>
-                  </a-timeline-item>
-                </a-timeline>
-              </div>
-            </a-card>
-          </a-tab-pane>
-
-          <a-tab-pane key="8" title="切屏次数">
-            <a-card :bordered="false" class="info-card">
-              <div style="text-align: center">
-                <a-statistic
-                  :title="studentInfo.switchCount > 3 ? '异常' : '正常'"
-                  :value="studentInfo.switchCount"
-                  :value-style="{
-                    color: studentInfo.switchCount > 3 ? '#f5222d' : '#52c41a',
-                    fontSize: '32px',
-                  }"
+              
+              <!-- 分页组件 -->
+              <div class="pagination-container">
+                <a-pagination
+                  v-model:current="screenshotPagination.current"
+                  v-model:page-size="screenshotPagination.pageSize"
+                  :total="screenshotPagination.total"
+                  :page-size-options="[6, 12, 24]"
+                  size="small"
+                  show-total
+                  @change="handleScreenshotPageChange"
                 />
               </div>
             </a-card>
           </a-tab-pane>
+
+<!--          <a-tab-pane key="5" title="行为分析">-->
+<!--            <a-card :bordered="false" class="info-card">-->
+<!--              <div class="timeline-container">-->
+<!--                <a-timeline>-->
+<!--                  <a-timeline-item-->
+<!--                    v-for="record in analysisRecords"-->
+<!--                    :key="record.id"-->
+<!--                    :line-color="getAnalysisColor(record.level)"-->
+<!--                    :line-type="-->
+<!--                      record.level === 'warning' || record.level === 'danger'-->
+<!--                        ? 'dashed'-->
+<!--                        : 'solid'-->
+<!--                    "-->
+<!--                  >-->
+<!--                    <a-space>-->
+<!--                      <a-typography-text-->
+<!--                        style="font-size: 12px"-->
+<!--                        type="secondary"-->
+<!--                        >{{ record.time }}-->
+<!--                      </a-typography-text>-->
+<!--                      <a-typography-text style="font-size: 13px"-->
+<!--                        >{{ record.content }}-->
+<!--                      </a-typography-text>-->
+<!--                    </a-space>-->
+<!--                  </a-timeline-item>-->
+<!--                </a-timeline>-->
+<!--              </div>-->
+<!--            </a-card>-->
+<!--          </a-tab-pane>-->
+
+<!--          <a-tab-pane key="8" title="切屏次数">-->
+<!--            <a-card :bordered="false" class="info-card">-->
+<!--              <div style="text-align: center">-->
+<!--                <a-statistic-->
+<!--                  :value="studentInfo.switchCount"-->
+<!--                  :value-style="{-->
+<!--                    color: studentInfo.switchCount > 3 ? '#f5222d' : '#52c41a',-->
+<!--                    fontSize: '32px',-->
+<!--                  }"-->
+<!--                />-->
+<!--              </div>-->
+<!--            </a-card>-->
+<!--          </a-tab-pane>-->
         </a-tabs>
       </a-card>
     </div>
@@ -761,16 +852,18 @@ onMounted(() => {
           height: calc(60vh - 58px); /* 减去卡片头部的高度 */
           overflow-y: auto;
           overflow-x: hidden;
-          
+          display: flex;
+          flex-direction: column;
+
           &::-webkit-scrollbar {
             width: 4px;
           }
-          
+
           &::-webkit-scrollbar-thumb {
             background-color: var(--color-neutral-3);
             border-radius: 4px;
           }
-          
+
           &::-webkit-scrollbar-track {
             background-color: var(--color-neutral-1);
             border-radius: 4px;
@@ -804,13 +897,14 @@ onMounted(() => {
   flex-wrap: wrap;
   gap: 12px;
   align-content: flex-start;
-  height: 100%;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .screenshot-item {
   flex: 0 0 calc(50% - 6px);
   height: 220px;
-  
+
   @media (max-width: 768px) {
     flex: 0 0 100%;
   }
@@ -860,10 +954,41 @@ onMounted(() => {
     background-color: var(--color-neutral-3);
     border-radius: 4px;
   }
-  
+
   &::-webkit-scrollbar-track {
     background-color: var(--color-neutral-1);
     border-radius: 4px;
   }
+}
+
+// 分页容器样式
+.pagination-container {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-neutral-3);
+  flex-shrink: 0;
+  
+  :deep(.arco-pagination) {
+    margin: 0;
+    
+    .arco-pagination-item {
+      min-width: 28px;
+      height: 28px;
+      line-height: 28px;
+    }
+    
+    .arco-pagination-item-active {
+      font-weight: bold;
+    }
+  }
+}
+
+// 列表样式调整
+:deep(.arco-list) {
+  flex: 1;
+  overflow-y: auto;
+  max-height: calc(60vh - 110px); // 为分页组件留出空间
 }
 </style>

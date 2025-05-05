@@ -91,14 +91,19 @@
           >
             修改
           </a-button>
-          <a-button
-            size="small"
-            status="danger"
-            type="primary"
-            @click="handleRemove(record)"
+          <a-popconfirm
+            content="确定要删除该监考员账号吗？"
+            type="warning"
+            @ok="handleRemove(record)"
           >
-            删除
-          </a-button>
+            <a-button
+              size="small"
+              status="danger"
+              type="primary"
+            >
+              删除
+            </a-button>
+          </a-popconfirm>
         </template>
       </a-table>
     </a-card>
@@ -134,6 +139,13 @@
           label="密码"
         >
           <a-input-password v-model="upsertForm.password"></a-input-password>
+        </a-form-item>
+        <a-form-item
+          v-if="upsertType === 'u'"
+          field="password"
+          label="密码"
+        >
+          <a-input-password v-model="upsertForm.password" placeholder="不填写则不修改密码"></a-input-password>
         </a-form-item>
       </a-form>
     </a-modal>
@@ -265,6 +277,7 @@ const handleUpdate = (record: MonitorUser) => {
   // @ts-ignore
   upsertForm.value = {
     ...record,
+    password: ''
   };
   upsertType.value = "u";
 };

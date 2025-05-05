@@ -14,7 +14,7 @@
             </a-typography-paragraph>
           </a-col>
           <a-col :span="8" class="text-right">
-            <a-button status="success" type="primary">
+            <a-button status="success" type="primary" @click="$router.push('/exam/manage')">
               <template #icon>
                 <icon-video-camera />
               </template>
@@ -91,8 +91,8 @@
                 </template>
               </a-statistic>
               <div class="stat-footer">
-                <a-link
-                  >查看考生分布
+                <a-link @click="$router.push('/users/candidate-accounts')">
+                  查看考生分布
                   <icon-right />
                 </a-link>
               </div>
@@ -143,6 +143,7 @@
                             v-if="exam.status === '进行中'"
                             size="mini"
                             type="text"
+                            @click="$router.push('/exam/manage')"
                           >
                             监控
                           </a-button>
@@ -150,6 +151,9 @@
                       </a-col>
                     </a-row>
                   </a-space>
+                </a-list-item>
+                <a-list-item v-if="examSchedule.length === 0">
+                  <a-empty description="暂无考试数据" />
                 </a-list-item>
               </a-list>
             </a-card>
@@ -159,39 +163,33 @@
               <template #title>
                 <a-space>
                   <icon-video-camera />
-                  <span>实时监控</span>
+                  <span>考试监控</span>
                 </a-space>
               </template>
               <div v-if="loading" class="loading-container">
                 <a-spin />
               </div>
-              <div v-else class="camera-grid">
-                <div
-                  v-for="candidate in candidateLiveData"
-                  :key="candidate.id"
-                  :class="{ warning: candidate.hasAnomaly }"
-                  class="camera-cell"
-                >
-                  <div v-if="candidate.hasAnomaly" class="camera-overlay">
-                    <icon-exclamation-circle />
-                    <span>{{ candidate.anomalyType }}</span>
-                  </div>
-                  <div class="camera-info">
-                    <span
-                      >{{ candidate.name }}
-                      <a-tag
-                        :color="
-                          candidate.cameraStatus === '正常' ? 'green' : 'red'
-                        "
-                        size="small"
-                        >{{ candidate.cameraStatus }}</a-tag
-                      ></span
-                    >
-                  </div>
+              <div v-else-if="examSchedule.length === 0" class="placeholder-container">
+                <a-empty description="暂无进行中的考试">
+                  <template #image>
+                    <icon-video-camera style="font-size: 48px; opacity: 0.25" />
+                  </template>
+                  <a-button type="primary" @click="$router.push('/exam/manage')">
+                    创建考试
+                  </a-button>
+                </a-empty>
+              </div>
+              <div v-else class="placeholder-container">
+                <div class="text-center">
+                  <a-space direction="vertical" align="center">
+                    <icon-video-camera style="font-size: 48px; opacity: 0.5" />
+                    <div>请进入考试监控页面查看详细监控信息</div>
+    
+                  </a-space>
                 </div>
               </div>
               <template #extra>
-                <a-button type="text">
+                <a-button type="text" @click="$router.push('/exam/manage')">
                   点击查看考场
                   <icon-right />
                 </a-button>
@@ -201,52 +199,13 @@
         </a-row>
       </div>
     </div>
-    <!--    <div class="right-side">-->
-    <!--      <a-card class="activity-card">-->
-    <!--        <template #title>-->
-    <!--          <a-space>-->
-    <!--            <icon-notification />-->
-    <!--            <span>系统通知</span>-->
-    <!--            <a-badge count="3" dot />-->
-    <!--          </a-space>-->
-    <!--        </template>-->
-    <!--        <a-timeline>-->
-    <!--          <a-timeline-item v-for="(notification, index) in systemNotifications" :key="index">-->
-    <!--            <div class="timeline-title">{{ notification.title }}</div>-->
-    <!--            <div class="timeline-content">{{ notification.content }}</div>-->
-    <!--            <div class="timeline-time">{{ notification.time }}</div>-->
-    <!--          </a-timeline-item>-->
-    <!--        </a-timeline>-->
-    <!--      </a-card>-->
-    <!--      -->
-    <!--&lt;!&ndash;      <AnomalyTrack :anomalies="recentAnomalies" style="margin-top: 16px" />&ndash;&gt;-->
-    <!--&lt;!&ndash;      &ndash;&gt;-->
-    <!--&lt;!&ndash;      <a-card class="quick-actions-card" title="快捷操作" style="margin-top: 16px">&ndash;&gt;-->
-    <!--&lt;!&ndash;        <a-grid :cols="3" :colGap="8" :rowGap="8">&ndash;&gt;-->
-    <!--&lt;!&ndash;          <a-grid-item v-for="(action, index) in quickActions" :key="index">&ndash;&gt;-->
-    <!--&lt;!&ndash;            <a-button class="action-button" :status="action.status">&ndash;&gt;-->
-    <!--&lt;!&ndash;              <template #icon>&ndash;&gt;-->
-    <!--&lt;!&ndash;                <component :is="action.icon" />&ndash;&gt;-->
-    <!--&lt;!&ndash;              </template>&ndash;&gt;-->
-    <!--&lt;!&ndash;              {{ action.name }}&ndash;&gt;-->
-    <!--&lt;!&ndash;            </a-button>&ndash;&gt;-->
-    <!--&lt;!&ndash;          </a-grid-item>&ndash;&gt;-->
-    <!--&lt;!&ndash;        </a-grid>&ndash;&gt;-->
-    <!--&lt;!&ndash;      </a-card>&ndash;&gt;-->
-    <!--    </div>-->
   </div>
 </template>
 
 <script lang="ts" setup>
 import { ref, computed, onMounted } from "vue";
-import {
-  getMonitorStats,
-  getExamSchedule,
-  getSystemNotifications,
-  getCandidateLiveData,
-} from "./index";
-import AnomalyTrack from "./components/anomaly-track.vue";
 import { useUserStore } from "@/store";
+import axios from "axios";
 
 const userStore = useUserStore();
 const userInfo = computed(() => {
@@ -257,6 +216,7 @@ const userInfo = computed(() => {
 
 const loading = ref(true);
 
+// 简化的统计数据
 const stats = ref({
   activeExams: 0,
   totalExams: 0,
@@ -270,24 +230,8 @@ const stats = ref({
 // 考试日程数据
 const examSchedule = ref([]);
 
-// 系统通知数据
-const systemNotifications = ref([]);
-
-// 异常事件数据
-const recentAnomalies = ref([]);
-
 // 实时监控数据
 const candidateLiveData = ref([]);
-
-// 快捷操作数据
-const quickActions = ref([
-  { name: "紧急暂停", icon: "icon-pause-circle", status: "danger" as const },
-  { name: "全体通知", icon: "icon-notification", status: "warning" as const },
-  { name: "延长时间", icon: "icon-clock-circle", status: "normal" as const },
-  { name: "添加监考", icon: "icon-user-add", status: "normal" as const },
-  { name: "导出记录", icon: "icon-export", status: "normal" as const },
-  { name: "系统设置", icon: "icon-settings", status: "normal" as const },
-]);
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -304,24 +248,120 @@ const getStatusColor = (status: string) => {
   }
 };
 
+// 获取考试数据，可以从真实接口获取
+const fetchExams = async () => {
+  try {
+    // 调用后端接口获取考试列表
+    const res = await axios.get("/dashboard/exams", {
+      params: {
+        limit: 5
+      }
+    }).catch(() => {
+      // 接口异常时使用模拟数据
+      return {
+        data: {
+          data: [
+            {
+              name: "2023-数据结构",
+              status: "进行中",
+              time: "09:00-11:00",
+              duration: 120,
+              proctor: "王教授",
+              candidateCount: 48,
+            },
+            {
+              name: "2023-算法实现",
+              status: "即将开始",
+              time: "13:30-15:30",
+              duration: 120,
+              proctor: "李教授",
+              candidateCount: 60,
+            },
+            {
+              name: "计算机网络原理",
+              status: "已结束",
+              time: "08:00-10:00",
+              duration: 120,
+              proctor: "张教授",
+              candidateCount: 42,
+            }
+          ]
+        }
+      }
+    });
+
+    examSchedule.value = res.data.data || [];
+  } catch (error) {
+    console.error("获取考试数据失败:", error);
+    // 设置一些默认数据
+    examSchedule.value = [];
+  }
+};
+
+// 获取统计数据
+const fetchStats = async () => {
+  try {
+    // 调用后端接口获取统计数据
+    const res = await axios.get("/dashboard/stats").catch(() => {
+      // 接口异常时使用模拟数据
+      return {
+        data: {
+          data: {
+            activeExams: 2,
+            totalExams: 5,
+            anomalies: 3,
+            pendingAnomalies: 1,
+            onlineProctors: 5,
+            totalProctors: 10,
+            onlineCandidates: 45,
+          }
+        }
+      }
+    });
+    
+    stats.value = res.data.data || {
+      activeExams: 0,
+      totalExams: 0,
+      anomalies: 0,
+      pendingAnomalies: 0,
+      onlineProctors: 0,
+      totalProctors: 0,
+      onlineCandidates: 0,
+    };
+  } catch (error) {
+    console.error("获取统计数据失败:", error);
+    // 出错时重置数据
+    stats.value = {
+      activeExams: 0,
+      totalExams: 0,
+      anomalies: 0,
+      pendingAnomalies: 0,
+      onlineProctors: 0,
+      totalProctors: 0,
+      onlineCandidates: 0,
+    };
+  }
+};
+
 const fetchData = async () => {
   try {
     loading.value = true;
-
-    // 并行获取所有数据
-    const [statsRes, examRes, notificationsRes, liveDataRes] =
-      await Promise.all([
-        getMonitorStats(),
-        getExamSchedule(),
-        getSystemNotifications(),
-        getCandidateLiveData(),
-      ]);
-
-    stats.value = statsRes.data;
-    recentAnomalies.value = statsRes.data.recentAnomalies || [];
-    examSchedule.value = examRes.data;
-    systemNotifications.value = notificationsRes.data;
-    candidateLiveData.value = liveDataRes.data;
+    
+    // 获取数据
+    await Promise.all([
+      fetchExams(),
+      fetchStats()
+    ]);
+    
+    // 简化的实时监控数据
+    candidateLiveData.value = Array.from({ length: 6 }, (_, i) => ({
+      id: i + 1,
+      name: `考生${i + 1}`,
+      status: i === 2 ? "异常" : "正常",
+      hasAnomaly: i === 2,
+      anomalyType: i === 2 ? "可疑行为" : null,
+      cameraStatus: i === 4 ? "断线" : "正常",
+    }));
   } catch (error) {
     console.error("获取数据失败:", error);
   } finally {
@@ -353,10 +393,6 @@ export default {
   overflow: auto;
 }
 
-.right-side {
-  width: 300px;
-}
-
 .panel {
   background-color: var(--color-bg-2);
   border-radius: 4px;
@@ -373,6 +409,10 @@ export default {
 
 .text-right {
   text-align: right;
+}
+
+.text-center {
+  text-align: center;
 }
 
 :deep(.panel-border) {
@@ -417,9 +457,7 @@ export default {
 }
 
 .exam-schedule-card,
-.live-monitoring-card,
-.activity-card,
-.quick-actions-card {
+.live-monitoring-card {
   height: 100%;
 
   :deep(.arco-list-item) {
@@ -431,84 +469,14 @@ export default {
   }
 }
 
-.camera-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-gap: 10px;
-
-  .camera-cell {
-    position: relative;
-    aspect-ratio: 16 / 9;
-    background-color: rgba(var(--gray-8), 0.8);
-    border-radius: 4px;
-    overflow: hidden;
-
-    &.warning {
-      border: 2px solid rgb(var(--red-6));
-    }
-
-    .camera-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background-color: rgba(var(--red-6), 0.2);
-      color: rgb(var(--red-6));
-      font-size: 16px;
-    }
-
-    .camera-info {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      padding: 4px 8px;
-      background-color: rgba(0, 0, 0, 0.6);
-      color: white;
-      font-size: 12px;
-    }
-  }
-}
-
-.activity-card {
-  .timeline-title {
-    font-weight: 500;
-    margin-bottom: 4px;
-  }
-
-  .timeline-content {
-    color: var(--color-text-3);
-    font-size: 13px;
-  }
-
-  .timeline-time {
-    font-size: 12px;
-    color: var(--color-text-4);
-    margin-top: 4px;
-  }
-}
-
-.quick-actions-card {
-  .action-button {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    height: auto;
-    padding: 12px 0;
-
-    :deep(.arco-icon) {
-      font-size: 20px;
-      margin-bottom: 4px;
-    }
-  }
-}
-
 .loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+.placeholder-container {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -519,11 +487,6 @@ export default {
 @media screen and (max-width: 1200px) {
   .container-form {
     flex-direction: column;
-  }
-
-  .right-side {
-    width: 100%;
-    margin-top: 16px;
   }
 
   .monitor-stats {
